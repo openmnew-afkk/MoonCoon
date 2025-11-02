@@ -39,9 +39,10 @@ function expressPlugin(): Plugin {
   return {
     name: "express-plugin",
     apply: "serve",
-    async configureServer(server) {
-      // Динамический импорт только в dev режиме
-      const { createServer } = await import("./server/index.js");
+    configureServer(server) {
+      // Импортируем сервер только в рантайме dev режима
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { createServer } = require("./server/index.ts");
       const app = createServer();
       
       // Handle API routes with Express
