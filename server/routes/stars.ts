@@ -54,7 +54,7 @@ export const handleStarsAdd: RequestHandler = async (req, res) => {
 
 export const handleStarsWithdraw: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount, commission, finalAmount }: WithdrawRequest = req.body;
+    const { userId, amount }: StarsRequest = req.body;
 
     const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
     const isAdmin = ADMIN_USER_ID && userId?.toString() === ADMIN_USER_ID;
