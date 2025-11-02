@@ -78,15 +78,15 @@ export const handleStarsWithdraw: RequestHandler = async (req, res) => {
     };
 
     const rate = getCommissionRate(amount);
-    const calcCommission = Math.floor(amount * rate);
-    const calcFinalAmount = amount - calcCommission;
+    const withdrawCommission = Math.floor(amount * rate);
+    const withdrawFinalAmount = amount - withdrawCommission;
 
     res.json({
       success: true,
       balance: userStars[userId],
-      withdrawn: calcFinalAmount,
-      commission: calcCommission,
-      message: `Запрос на вывод ${calcFinalAmount} звезд принят. Комиссия: ${calcCommission} звезд (${rate * 100}%)`,
+      withdrawn: withdrawFinalAmount,
+      commission: withdrawCommission,
+      message: `Запрос на вывод ${withdrawFinalAmount} звезд принят. Комиссия: ${withdrawCommission} звезд (${rate * 100}%)`,
     });
   } catch (error) {
     console.error("Ошибка при выводе звезд:", error);
