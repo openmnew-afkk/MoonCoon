@@ -3,7 +3,15 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const plugins = [react()];
+  
+  // Добавляем expressPlugin только в dev режиме
+  if (mode === 'development') {
+    plugins.push(expressPlugin());
+  }
+  
+  return {
   server: {
     host: "localhost",
     port: 3000,
@@ -17,14 +25,15 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: "dist/spa",
   },
-  plugins: [react(), expressPlugin()],
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-}));
+};
+});
 
 function expressPlugin(): Plugin {
   return {
