@@ -4,6 +4,8 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Явно указываем что включать в сборку
+  include: ['client/**/*', 'shared/**/*', 'index.html', 'public/**/*'],
   root: ".",
   publicDir: "public",
   server: {

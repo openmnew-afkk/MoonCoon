@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run build:client",
+  "buildCommand": "pnpm run build:prod",
   "outputDirectory": "dist/spa",
   "installCommand": "pnpm install",
   "rewrites": [
