@@ -80,14 +80,13 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
         body: JSON.stringify({
           userId,
           amount: withdrawAmount,
-          commission,
-          finalAmount,
         }),
       });
 
       if (response.ok) {
+        const data = await response.json();
         webApp?.showAlert(
-          `Запрос на вывод ${finalAmount} звезд отправлен. Комиссия: ${commission} звезд (10%)`
+          `Запрос на вывод ${data.amount} звезд отправлен. Комиссия: ${data.commission} звезд (${data.commissionPercentage}%)`
         );
         setShowWithdraw(false);
         onSuccess?.();

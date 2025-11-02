@@ -1,0 +1,29 @@
+{
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist/spa",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "functions": {
+    "api/serverless.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/serverless"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

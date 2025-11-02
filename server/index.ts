@@ -78,31 +78,6 @@ export function createServer() {
   app.post("/api/premium/purchase", handlePremiumPurchase);
 
   // Posts API (in-memory)
-  app.post('/api/posts', (req, res) => {
-    try {
-      const { userId, caption, media, mediaType, visibility } = req.body || {};
-      if (!userId || !media || !mediaType) {
-        return res.status(400).json({ error: 'Недостаточно данных' });
-      }
-      const post = {
-        id: `post_${Date.now()}`,
-        userId,
-        caption: caption || '',
-        media,
-        mediaType, // 'image' | 'video'
-        visibility: visibility || 'public', // public | followers | friends
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        comments: 0,
-      };
-      posts.unshift(post);
-      res.json({ success: true, post });
-    } catch (e) {
-      console.error('Ошибка публикации поста:', e);
-      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-    }
-  });
-
   app.get('/api/posts', (_req, res) => {
     res.json({ posts: sortWithPinned(posts) });
   });
