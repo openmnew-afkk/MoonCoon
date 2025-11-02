@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run build:prod",
+  "buildCommand": "vite build --config vite.config.prod.ts",
   "outputDirectory": "dist/spa",
   "installCommand": "pnpm install",
   "rewrites": [
