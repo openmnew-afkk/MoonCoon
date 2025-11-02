@@ -28,8 +28,6 @@ export interface StarsAddResponse {
 export interface StarsWithdrawRequest {
   userId: string;
   amount: number;
-  commission: number;
-  finalAmount: number;
 }
 
 export interface StarsWithdrawResponse {
