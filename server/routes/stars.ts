@@ -5,11 +5,6 @@ interface StarsRequest {
   amount: number;
 }
 
-interface WithdrawRequest extends StarsRequest {
-  commission: number;
-  finalAmount: number;
-}
-
 interface SendStarRequest {
   fromUserId: string;
   toPostId: string;
