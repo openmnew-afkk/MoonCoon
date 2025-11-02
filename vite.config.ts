@@ -1,17 +1,9 @@
-import { defineConfig, Plugin } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const plugins = [react()];
-  
-  // Добавляем expressPlugin только в dev режиме
-  if (mode === 'development') {
-    plugins.push(expressPlugin());
-  }
-  
-  return {
+export default defineConfig({
   server: {
     host: "localhost",
     port: 3000,
@@ -21,54 +13,22 @@ export default defineConfig(({ mode }) => {
       allow: ["./client", "./shared"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
+    proxy: {
+      // Проксируем API запросы на отдельный dev сервер
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: "dist/spa",
   },
-  plugins,
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
-};
 });
-
-function expressPlugin(): Plugin {
-  return {
-    name: "express-plugin",
-    apply: "serve",
-    configureServer(server) {
-      // Импортируем сервер только в рантайме dev режима
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { createServer } = require("./server/index.ts");
-      const app = createServer();
-      
-      // Handle API routes with Express
-      server.middlewares.use("/api", (req, res, next) => {
-        // Remove /api prefix before passing to Express
-        const originalUrl = req.url;
-        if (originalUrl) {
-          req.url = originalUrl.replace(/^\/api/, "") || "/";
-        }
-        
-        // Call Express app
-        app(req, res, (err?: any) => {
-          // Restore original URL
-          if (originalUrl) {
-            req.url = originalUrl;
-          }
-          if (err) {
-            next(err);
-          } else {
-            // If Express didn't send response, continue to next middleware
-            if (!res.headersSent) {
-              next();
-            }
-          }
-        });
-      });
-    },
-  };
-}
