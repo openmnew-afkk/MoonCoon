@@ -251,7 +251,7 @@ export default function Profile() {
                     <Edit3 size={20} className="text-white" />
                   </div>
                   {/* Premium badge on avatar */}
-                  {premium.isPremium && (
+                  {(premium.isPremium || (user?.id && parseInt(user.id.toString()) <= 1000)) && (
                     <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1.5 shadow-lg">
                       <Sparkles size={14} className="text-white" />
                     </div>
@@ -389,8 +389,8 @@ export default function Profile() {
       
       {/* Profile Editor Modal */}
       {showProfileEditor && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowProfileEditor(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowProfileEditor(false)}>
+          <div className="glass-card modal-content rounded-2xl p-4 contain-layout" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Редактор профиля</h2>
               <button onClick={()=>setShowProfileEditor(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
@@ -440,8 +440,8 @@ export default function Profile() {
 
       {/* Privacy Settings Modal */}
       {showPrivacySettings && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacySettings(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacySettings(false)}>
+          <div className="glass-card modal-content rounded-2xl p-4 contain-layout" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Приватность</h2>
               <button onClick={()=>setShowPrivacySettings(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
@@ -479,7 +479,7 @@ export default function Profile() {
 
       {/* Content Safety Modal */}
       {showContentSafety && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowContentSafety(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowContentSafety(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Безопасность</h2>
@@ -525,7 +525,7 @@ export default function Profile() {
 
       {/* Withdraw Modal */}
       {showWithdraw && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowWithdraw(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowWithdraw(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Вывод средств</h2>
@@ -580,7 +580,7 @@ export default function Profile() {
 
       {/* Child Mode Modal */}
       {showChildMode && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowChildMode(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowChildMode(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Детский режим</h2>
@@ -628,7 +628,7 @@ export default function Profile() {
 
       {/* Posts Modal */}
       {showPosts && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPosts(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPosts(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Мои посты</h2>
@@ -651,7 +651,7 @@ export default function Profile() {
 
       {/* Rules Modal */}
       {showRulesModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowRulesModal(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowRulesModal(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Правила платформы</h2>
@@ -714,7 +714,7 @@ export default function Profile() {
 
       {/* Privacy Modal */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacyModal(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacyModal(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Политика конфиденциальности</h2>
@@ -736,7 +736,7 @@ export default function Profile() {
 
       {/* Support Modal */}
       {showSupportModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowSupportModal(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowSupportModal(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-5" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Поддержка</h2>
@@ -770,7 +770,7 @@ export default function Profile() {
 
       {/* Ads Modal */}
       {showAdsModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowAdsModal(false)}>
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowAdsModal(false)}>
           <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Реклама</h2>

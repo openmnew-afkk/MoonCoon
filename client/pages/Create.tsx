@@ -474,7 +474,7 @@ export default function Create() {
               {/* Publish Button */}
               <button
                 onClick={publishPost}
-                disabled={!hasMedia || !caption.trim()}
+                disabled={!hasMedia}
                 className="w-full glass-button rounded-2xl py-3 font-semibold bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 <Share2 size={20} />

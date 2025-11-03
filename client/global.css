@@ -227,4 +227,39 @@ input[type='range']::-moz-range-thumb:hover {
       inset 0 0 25px rgba(255, 255, 255, 0.15);
     transform: scale(1.02);
   }
+
+  /* Safe area positioning fixes */
+  .safe-top {
+    padding-top: calc(env(safe-area-inset-top) + 1rem);
+  }
+
+  .safe-header {
+    padding-top: calc(env(safe-area-inset-top) + 7rem);
+  }
+
+  /* Modal positioning fixes */
+  .modal-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  .modal-content {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  /* Prevent content overflow */
+  .contain-layout {
+    contain: layout style paint;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }
