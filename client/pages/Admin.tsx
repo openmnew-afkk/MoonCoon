@@ -66,13 +66,18 @@ export default function Admin() {
       }
 
       try {
-        // Проверяем статус админа
-        const response = await fetch(`/api/admin/check?userId=${user.id}`);
+        // Проверяем статус админа по userId и username
+        const params = new URLSearchParams({ userId: user.id.toString() });
+        if (user.username) {
+          params.append('username', user.username);
+        }
+        
+        const response = await fetch(`/api/admin/check?${params}`);
         if (response.ok) {
           const data = await response.json();
+          console.log('🔑 Admin check result:', data);
           if (data.isAdmin) {
             setIsAdmin(true);
-            // Сохраняем сессию
             localStorage.setItem("admin_session", `admin_${user.id}`);
             loadUsers();
           }

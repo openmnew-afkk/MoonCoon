@@ -13,45 +13,7 @@ interface DiscoveryItem {
 }
 
 // Пустой массив - контент будет добавляться пользователями
-const discoveryItems: DiscoveryItem[] = [
-  },
-  {
-    id: "5",
-    image: "https://images.unsplash.com/photo-1611339555312-e607c06352fd?w=300&h=380&fit=crop",
-    title: "Веб-дизайн тренды",
-    author: "Alex Studio",
-    category: "Веб",
-    likes: 3210,
-    saves: 812,
-  },
-  {
-    id: "6",
-    image: "https://images.unsplash.com/photo-1615529162924-f2a0b480ed51?w=300&h=420&fit=crop",
-    title: "Графический дизайн",
-    author: "Design Co",
-    category: "Дизайн",
-    likes: 2100,
-    saves: 634,
-  },
-  {
-    id: "7",
-    image: "https://images.unsplash.com/photo-1488749807830-63789f68bb65?w=300&h=380&fit=crop",
-    title: "Путешествие и приключение",
-    author: "Travel Vibes",
-    category: "Путешествие",
-    likes: 1890,
-    saves: 512,
-  },
-  {
-    id: "8",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=300&h=440&fit=crop",
-    title: "Цифровая живопись",
-    author: "Art Studio",
-    category: "Искусство",
-    likes: 2567,
-    saves: 723,
-  },
-];
+const discoveryItems: DiscoveryItem[] = [];
 
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");

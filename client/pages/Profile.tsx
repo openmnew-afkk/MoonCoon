@@ -189,14 +189,14 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
+      {/* Header - опущен вниз для Telegram бота */}
+      <div className="fixed top-12 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold">Профиль</h1>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto pt-20 px-4">
+      <div className="max-w-2xl mx-auto pt-32 px-4">
         {/* Profile Header - Minimal */}
         <div className="glass-card mb-4 overflow-hidden">
           {/* Cover - Minimal */}

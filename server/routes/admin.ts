@@ -5,9 +5,16 @@ const adminSessions: Set<string> = new Set();
 const adminUsers: Set<string> = new Set(); // userId админов
 const bannedUsers: Set<string> = new Set(); // userId забаненных
 
-// Автоматически делаем первого пользователя админом (можно настроить через .env)
+// Автоматически делаем пользователя админом (можно настроить через .env)
 if (process.env.ADMIN_USER_ID) {
   adminUsers.add(process.env.ADMIN_USER_ID);
+}
+
+// Хранилище username админов
+const adminUsernames: Set<string> = new Set();
+if (process.env.ADMIN_USERNAME) {
+  adminUsernames.add(process.env.ADMIN_USERNAME.toLowerCase().replace('@', ''));
+  console.log('✅ Admin username:', process.env.ADMIN_USERNAME);
 }
 
 interface AdminAuthRequest {
@@ -49,13 +56,32 @@ export const handleAdminAuth: RequestHandler = async (req, res) => {
 
 export const handleAdminCheck: RequestHandler = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ isAdmin: false });
+    // Проверяем по userId или username из query
+    const userId = req.query.userId as string;
+    const username = req.query.username as string;
+
+    let isAdmin = false;
+
+    // Проверка по userId
+    if (userId) {
+      isAdmin = adminUsers.has(userId.toString());
+      console.log(`🔍 Проверка userId: ${userId}, isAdmin: ${isAdmin}`);
     }
 
-    const sessionToken = authHeader.substring(7);
-    const isAdmin = adminSessions.has(sessionToken);
+    // Проверка по username
+    if (!isAdmin && username) {
+      const cleanUsername = username.toLowerCase().replace('@', '');
+      isAdmin = adminUsernames.has(cleanUsername);
+      console.log(`🔍 Проверка username: ${cleanUsername}, isAdmin: ${isAdmin}`);
+    }
+
+    // Если есть Authorization header - проверяем сессию
+    const authHeader = req.headers.authorization;
+    if (!isAdmin && authHeader && authHeader.startsWith("Bearer ")) {
+      const sessionToken = authHeader.substring(7);
+      isAdmin = adminSessions.has(sessionToken);
+      console.log(`🔍 Проверка session: ${sessionToken.substring(0, 20)}..., isAdmin: ${isAdmin}`);
+    }
 
     res.json({
       isAdmin,

@@ -174,7 +174,7 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
+      <div className="fixed top-12 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">MoonCoon</h1>
@@ -183,7 +183,7 @@ export default function Feed() {
       </div>
 
       {/* Posts Feed */}
-      <div className="max-w-2xl mx-auto pt-16 px-3 sm:px-4 pb-8">
+      <div className="max-w-2xl mx-auto pt-28 px-3 sm:px-4 pb-8">
         {/* Stories Section */}
         <Stories />
 

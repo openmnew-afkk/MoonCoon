@@ -75,6 +75,8 @@ export default function Messages() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
                   className="w-full glass-morphism rounded-full pl-10 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
                 />
@@ -84,7 +86,7 @@ export default function Messages() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto pt-20 h-[calc(100vh-5rem)] flex flex-col pb-24">
+      <div className="max-w-2xl mx-auto pt-28 h-[calc(100vh-5rem)] flex flex-col pb-24">
         {
         {selectedConversation ? (
           <div className="flex flex-col h-full">

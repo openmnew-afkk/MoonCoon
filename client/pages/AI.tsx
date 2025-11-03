@@ -201,18 +201,11 @@ export default function AI() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
+      {/* Header - опущен вниз */}
+      <div className="fixed top-12 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {mode === "openai" ? (
-                <Brain className="text-primary" size={28} />
-              ) : (
-                <ImageIcon className="text-accent" size={28} />
-              )}
-              <h1 className="text-2xl font-bold">AI Помощник</h1>
-            </div>
+            <h1 className="text-2xl font-bold">AI</h1>
             
             {/* Mode Toggle */}
             <div className="flex items-center gap-2">
@@ -244,7 +237,7 @@ export default function AI() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto pt-24 h-[calc(100vh-5rem)] flex flex-col pb-24">
+      <div className="max-w-2xl mx-auto pt-28 h-[calc(100vh-5rem)] flex flex-col pb-24">
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 px-4 py-4">
           {messages.map((message) => (
