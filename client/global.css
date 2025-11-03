@@ -204,4 +204,27 @@ input[type='range']::-moz-range-thumb:hover {
   .delay-1000 {
     animation-delay: 1000ms;
   }
+
+  /* Profile Avatar Glow Effect */
+  .profile-avatar-glow {
+    background: linear-gradient(135deg, 
+      rgba(147, 51, 234, 0.3) 0%, 
+      rgba(168, 85, 247, 0.4) 50%, 
+      rgba(196, 181, 253, 0.3) 100%);
+    box-shadow: 
+      0 0 20px rgba(147, 51, 234, 0.4),
+      0 0 40px rgba(147, 51, 234, 0.2),
+      0 0 60px rgba(147, 51, 234, 0.1),
+      inset 0 0 20px rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(147, 51, 234, 0.5);
+  }
+
+  .profile-avatar-glow:hover {
+    box-shadow: 
+      0 0 25px rgba(147, 51, 234, 0.6),
+      0 0 50px rgba(147, 51, 234, 0.3),
+      0 0 75px rgba(147, 51, 234, 0.15),
+      inset 0 0 25px rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+  }
 }

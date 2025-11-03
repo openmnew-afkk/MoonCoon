@@ -91,7 +91,7 @@ export function createServer() {
       console.log('📥 Получен запрос на создание поста');
       console.log('Body keys:', Object.keys(req.body || {}));
       
-      const { userId, caption, visibility, media, mediaType } = req.body || {};
+      const { userId, caption, visibility, media, mediaType, type } = req.body || {};
       
       // Проверка обязательных полей
       if (!userId) {
@@ -106,7 +106,28 @@ export function createServer() {
         console.error('❌ Отсутствует mediaType');
         return res.status(400).json({ error: 'Не указан тип медиа' });
       }
+
+      // Если это история, добавляем в массив stories
+      if (type === 'story') {
+        const story = {
+          id: Date.now().toString(),
+          userId,
+          caption: caption || '',
+          media,
+          mediaType,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 часа
+          views: 0,
+          pinned: false
+        };
+        
+        stories.push(story);
+        console.log('✅ История создана:', story.id, '| userId:', userId, '| mediaType:', mediaType);
+        
+        return res.json({ success: true, story });
+      }
       
+      // Обычный пост
       const post = {
         id: Date.now().toString(),
         userId,
@@ -125,11 +146,9 @@ export function createServer() {
       
       res.json({ success: true, post });
     } catch (error: any) {
+      console.error('❌ Ошибка создания поста:', error);
+      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
-  });
-
-  app.get('/api/posts', (_req, res) => {
-    res.json({ posts: sortWithPinned(posts) });
   });
 
   // Stories API (in-memory)

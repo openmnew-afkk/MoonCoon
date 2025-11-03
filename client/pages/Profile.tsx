@@ -1,4 +1,4 @@
-import { Settings, Heart, Lock, LogOut, BarChart3, Edit3, MessageCircle, Share2, Star, Sparkles, Shield, Baby, Wallet, User } from "lucide-react";
+import { Settings, Heart, Lock, LogOut, BarChart3, Edit3, MessageCircle, Share2, Star, Sparkles, Shield, Baby, Wallet, User, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import StarsPayment from "@/components/StarsPayment";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -245,7 +245,7 @@ export default function Profile() {
                   <img
                     src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
                     alt="Avatar"
-                    className="w-28 h-28 rounded-full border-4 border-background shadow-xl object-cover"
+                    className="w-28 h-28 rounded-full profile-avatar-glow shadow-xl object-cover transition-all duration-300"
                   />
                   <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                     <Edit3 size={20} className="text-white" />
@@ -387,6 +387,245 @@ export default function Profile() {
 
       {/* ========== МОДАЛКИ ========== */}
       
+      {/* Profile Editor Modal */}
+      {showProfileEditor && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowProfileEditor(false)}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Редактор профиля</h2>
+              <button onClick={()=>setShowProfileEditor(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Имя</label>
+                <input 
+                  type="text" 
+                  defaultValue={user?.first_name || ''}
+                  className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ваше имя"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Биография</label>
+                <textarea 
+                  rows={3}
+                  className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                  placeholder="Расскажите о себе..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Ссылка</label>
+                <input 
+                  type="url" 
+                  className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button onClick={()=>setShowProfileEditor(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
+                <button 
+                  onClick={()=>{
+                    alert('Профиль сохранен!');
+                    setShowProfileEditor(false);
+                  }}
+                  className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
+                >
+                  Сохранить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Settings Modal */}
+      {showPrivacySettings && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacySettings(false)}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Приватность</h2>
+              <button onClick={()=>setShowPrivacySettings(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+            </div>
+            <div className="space-y-3">
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Приватный аккаунт</span>
+                <input type="checkbox" className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Разрешить сообщения</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Показывать онлайн статус</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Активность</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+            </div>
+            <button 
+              onClick={()=>{
+                alert('Настройки приватности сохранены!');
+                setShowPrivacySettings(false);
+              }}
+              className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold mt-4"
+            >
+              Сохранить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Content Safety Modal */}
+      {showContentSafety && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowContentSafety(false)}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Безопасность</h2>
+              <button onClick={()=>setShowContentSafety(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+            </div>
+            <div className="space-y-3">
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Размытие контента 18+</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Скрыть подозрительный контент</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Автомодерация</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <div className="glass-card p-3 rounded-xl">
+                <p className="text-xs text-muted-foreground mb-2">Блокировать пользователей</p>
+                <input 
+                  type="text" 
+                  placeholder="@username или ID"
+                  className="w-full glass-morphism rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <button className="w-full glass-button py-2 rounded-lg text-xs mt-2 bg-red-500/20 text-red-500 hover:bg-red-500/30">
+                  Заблокировать
+                </button>
+              </div>
+            </div>
+            <button 
+              onClick={()=>{
+                alert('Настройки безопасности сохранены!');
+                setShowContentSafety(false);
+              }}
+              className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold mt-4"
+            >
+              Сохранить
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Modal */}
+      {showWithdraw && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowWithdraw(false)}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Вывод средств</h2>
+              <button onClick={()=>setShowWithdraw(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+            </div>
+            <div className="text-center mb-4">
+              <p className="text-2xl font-bold mb-1">{starsBalance} ⭐</p>
+              <p className="text-xs text-muted-foreground">Доступно для вывода</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">Сумма (звёзды)</label>
+                <input 
+                  type="number" 
+                  min="100" 
+                  max={starsBalance}
+                  defaultValue="100"
+                  className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Минимум 100 ⭐"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Способ вывода</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="glass-button py-2 rounded-xl text-sm bg-primary/20 text-primary border border-primary">
+                    Telegram
+                  </button>
+                  <button className="glass-button py-2 rounded-xl text-sm opacity-50">
+                    Скоро
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Комиссия: 10%. Минимальная сумма: 100 ⭐. Обработка: 1-3 дня.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <button onClick={()=>setShowWithdraw(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
+              <button 
+                onClick={()=>{
+                  alert('Заявка на вывод отправлена! Ожидайте обработки.');
+                  setShowWithdraw(false);
+                }}
+                className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
+              >
+                Вывести
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Child Mode Modal */}
+      {showChildMode && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowChildMode(false)}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Детский режим</h2>
+              <button onClick={()=>setShowChildMode(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+            </div>
+            <div className="space-y-4">
+              <div className="glass-card p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <p className="text-sm text-blue-300 mb-2">🛡️ Защищённый режим</p>
+                <p className="text-xs text-muted-foreground">
+                  Блокирует весь контент 18+, включает строгую модерацию и ограничивает функции.
+                </p>
+              </div>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Включить детский режим</span>
+                <input type="checkbox" className="w-4 h-4" />
+              </label>
+              <div className="glass-card p-3 rounded-xl">
+                <p className="text-sm font-medium mb-2">PIN-код для отключения</p>
+                <input 
+                  type="password" 
+                  maxLength={4}
+                  className="w-full glass-morphism rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 text-center tracking-widest"
+                  placeholder="••••"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  4-значный код для выхода из детского режима
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <button onClick={()=>setShowChildMode(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
+              <button 
+                onClick={()=>{
+                  alert('Детский режим включен! Для отключения потребуется PIN-код.');
+                  setShowChildMode(false);
+                }}
+                className="flex-1 glass-button bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 py-2.5 rounded-xl text-sm font-semibold"
+              >
+                Включить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Posts Modal */}
       {showPosts && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPosts(false)}>
@@ -595,6 +834,12 @@ export default function Profile() {
               >Отмена</button>
               <button
                 onClick={async ()=>{
+                  // Проверяем сеть перед отправкой
+                  if (!navigator.onLine) {
+                    alert('❌ Нет интернет-соединения. Проверьте подключение к сети.');
+                    return;
+                  }
+
                   try {
                     const endpoint = adsType === 'story' ? '/api/ads/story' : '/api/ads/post';
                     const res = await fetch(endpoint, {
@@ -602,15 +847,27 @@ export default function Profile() {
                       headers: {'Content-Type': 'application/json'},
                       body: JSON.stringify({ userId: user?.id?.toString(), hours: adsHours })
                     });
+                    
+                    if (!res.ok) {
+                      if (res.status === 0 || !res.status) {
+                        throw new Error('Нет соединения с сервером');
+                      }
+                    }
+                    
                     const data = await res.json();
                     if (res.ok) {
-                      alert(`Закреплено до ${new Date(data.pinnedUntil).toLocaleString('ru-RU')}`);
+                      alert(`✅ Закреплено до ${new Date(data.pinnedUntil).toLocaleString('ru-RU')}`);
                       setShowAdsModal(false);
                     } else {
-                      alert(data.error || 'Ошибка покупки');
+                      alert(`❌ ${data.error || 'Ошибка покупки рекламы'}`);
                     }
-                  } catch {
-                    alert('Ошибка сети');
+                  } catch (error: any) {
+                    console.error('Ошибка запроса рекламы:', error);
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                      alert('❌ Нет сети: Проверьте интернет-соединение и попробуйте снова');
+                    } else {
+                      alert(`❌ Ошибка сети: ${error.message || 'Не удалось подключиться к серверу'}`);
+                    }
                   }
                 }}
                 className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"

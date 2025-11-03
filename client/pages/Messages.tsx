@@ -254,7 +254,7 @@ export default function Messages() {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Диалоги не найдены</p>
               </div>
-            ) : (
+            ) : 
               filteredConversations.map((conversation) => (
               <button
                 key={conversation.id}
@@ -293,8 +293,7 @@ export default function Messages() {
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                 )}
               </button>
-            )))
-            )}
+            ))}
           </div>
         )}
       </div>

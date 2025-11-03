@@ -4,17 +4,17 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="glass-card rounded-none border-b border-glass-light/10 sticky top-0 z-20 ios-shadow">
+      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <SettingsIcon className="text-primary" size={28} />
-            Settings
+            Настройки
           </h1>
-          <p className="text-sm text-muted-foreground">Customize your experience</p>
+          <p className="text-sm text-muted-foreground">Настройте ваше приложение</p>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 7rem)' }}>
         {/* Account Settings */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Account</h3>
