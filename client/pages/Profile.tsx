@@ -498,7 +498,7 @@ export default function Profile() {
       {/* Support Modal */}
       {showSupportModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowSupportModal(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+          <div className="glass-card max-w-sm w-full rounded-2xl p-5" onClick={(e)=>e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Поддержка</h2>
               <button onClick={()=>setShowSupportModal(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
