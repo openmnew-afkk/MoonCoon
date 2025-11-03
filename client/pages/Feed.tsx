@@ -34,6 +34,9 @@ export default function Feed() {
   const [posts, setPosts] = useState<Post[]>(mockPosts);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const [startY, setStartY] = useState(0);
   const { user } = useTelegram();
   const [starsBalance, setStarsBalance] = useState(0);
   const [showStarModal, setShowStarModal] = useState<string | null>(null);
@@ -54,10 +57,25 @@ export default function Feed() {
           const postsWithProfiles = await Promise.all(
             data.posts.map(async (post: any) => {
               try {
-                const profileResponse = await fetch(
-                  `/api/users/${post.userId}`,
-                );
-                const profile = await profileResponse.json();
+                // If this is current user's post, use their real data
+                let profile;
+                if (user?.id && post.userId === user.id.toString()) {
+                  profile = {
+                    name: user.first_name || user.username || "Вы",
+                    username: user.username
+                      ? `@${user.username}`
+                      : `@user${user.id}`,
+                    avatarUrl:
+                      user.photo_url ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+                    verified: parseInt(user.id.toString()) <= 1000,
+                  };
+                } else {
+                  const profileResponse = await fetch(
+                    `/api/users/${post.userId}`,
+                  );
+                  profile = await profileResponse.json();
+                }
 
                 return {
                   id: post.id,
@@ -134,8 +152,25 @@ export default function Feed() {
         const postsWithProfiles = await Promise.all(
           data.posts.map(async (post: any) => {
             try {
-              const profileResponse = await fetch(`/api/users/${post.userId}`);
-              const profile = await profileResponse.json();
+              // If this is current user's post, use their real data
+              let profile;
+              if (user?.id && post.userId === user.id.toString()) {
+                profile = {
+                  name: user.first_name || user.username || "Вы",
+                  username: user.username
+                    ? `@${user.username}`
+                    : `@user${user.id}`,
+                  avatarUrl:
+                    user.photo_url ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+                  verified: parseInt(user.id.toString()) <= 1000,
+                };
+              } else {
+                const profileResponse = await fetch(
+                  `/api/users/${post.userId}`,
+                );
+                profile = await profileResponse.json();
+              }
 
               return {
                 id: post.id,
@@ -202,18 +237,43 @@ export default function Feed() {
     }
   }, [user]);
 
-  const toggleLike = (postId: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              liked: !post.liked,
-              likes: post.liked ? post.likes - 1 : post.likes + 1,
-            }
-          : post,
-      ),
-    );
+  const toggleLike = async (postId: string) => {
+    if (!user?.id) {
+      alert("Необходима авторизация для лайков");
+      return;
+    }
+
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const action = post.liked ? "unlike" : "like";
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id.toString(),
+          action,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPosts(
+          posts.map((p) =>
+            p.id === postId
+              ? { ...p, liked: data.liked, likes: data.likes }
+              : p,
+          ),
+        );
+      } else {
+        alert("Ошибка при обновлении лайка");
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      alert("Ошибка сети");
+    }
   };
 
   const toggleComments = (postId: string) => {
@@ -307,22 +367,18 @@ export default function Feed() {
       >
         {/* Pull to Refresh Indicator */}
         {refreshing && (
-          <div className="flex justify-center items-center py-4 mb-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
-            <span className="text-sm text-primary">Обновление...</span>
+          <div className="flex justify-center items-center py-6 mb-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary/20 border-t-primary"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <span className="text-sm text-primary ml-3 font-medium">
+              Обновление ленты...
+            </span>
           </div>
         )}
-
-        {/* Refresh Button */}
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-            className="glass-button px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50"
-          >
-            {refreshing ? "Обновляем..." : "🔄 Обновить ленту"}
-          </button>
-        </div>
 
         {/* Stories Section */}
         <Stories />
@@ -416,7 +472,10 @@ export default function Feed() {
                 {/* Post Media */}
                 <div className="mb-3 rounded-2xl overflow-hidden -mx-1 sm:mx-0">
                   {post.image && (
-                    <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
+                    <div
+                      className="relative w-full"
+                      style={{ aspectRatio: "1/1" }}
+                    >
                       <img
                         src={post.image}
                         alt={post.caption}
@@ -425,20 +484,25 @@ export default function Feed() {
                         onContextMenu={(e) => e.preventDefault()}
                         onClick={() => {
                           // Открыть полноэкранный просмотр
-                          const modal = document.createElement('div');
-                          modal.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4';
-                          modal.onclick = () => document.body.removeChild(modal);
-                          
-                          const img = document.createElement('img');
+                          const modal = document.createElement("div");
+                          modal.className =
+                            "fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4";
+                          modal.onclick = () =>
+                            document.body.removeChild(modal);
+
+                          const img = document.createElement("img");
                           img.src = post.image!;
-                          img.className = 'max-w-full max-h-full object-contain';
+                          img.className =
+                            "max-w-full max-h-full object-contain";
                           img.onclick = (e) => e.stopPropagation();
-                          
-                          const closeBtn = document.createElement('button');
-                          closeBtn.innerHTML = '✕';
-                          closeBtn.className = 'absolute top-4 right-4 text-white text-2xl bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70';
-                          closeBtn.onclick = () => document.body.removeChild(modal);
-                          
+
+                          const closeBtn = document.createElement("button");
+                          closeBtn.innerHTML = "✕";
+                          closeBtn.className =
+                            "absolute top-4 right-4 text-white text-2xl bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70";
+                          closeBtn.onclick = () =>
+                            document.body.removeChild(modal);
+
                           modal.appendChild(img);
                           modal.appendChild(closeBtn);
                           document.body.appendChild(modal);
@@ -447,7 +511,10 @@ export default function Feed() {
                     </div>
                   )}
                   {post.video && (
-                    <div className="relative w-full" style={{ aspectRatio: '16/9', maxHeight: '400px' }}>
+                    <div
+                      className="relative w-full"
+                      style={{ aspectRatio: "16/9", maxHeight: "400px" }}
+                    >
                       <VideoPlayer src={post.video} thumbnail={post.image} />
                     </div>
                   )}

@@ -8,6 +8,8 @@ const adminUsernames = new Set(["testuser"]); // Test admin
 const userSettings: Record<string, any> = {}; // User settings storage
 const userStars: Record<string, number> = {}; // User stars balance
 const userProfiles: Record<string, any> = {}; // User profile data cache
+const postLikes: Record<string, Set<string>> = {}; // Track likes per post
+const postComments: Record<string, any[]> = {}; // Store comments per post
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
@@ -252,6 +254,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           profile: userProfiles[userId],
         });
         return res.json(userProfiles[userId]);
+      }
+    }
+
+    // Likes API
+    if (url.match(/^\/api\/posts\/([^\/]+)\/like$/)) {
+      const postId = url.split("/")[3];
+      const { userId, action } = req.body || {};
+
+      if (!userId || !action) {
+        return res.status(400).json({ error: "Missing userId or action" });
+      }
+
+      if (!postLikes[postId]) {
+        postLikes[postId] = new Set();
+      }
+
+      let liked = false;
+      if (action === "like") {
+        postLikes[postId].add(userId);
+        liked = true;
+      } else if (action === "unlike") {
+        postLikes[postId].delete(userId);
+        liked = false;
+      }
+
+      // Update post likes count
+      const post = posts.find((p) => p.id === postId);
+      if (post) {
+        post.likes = postLikes[postId].size;
+      }
+
+      console.log("❤️ Post like:", {
+        postId,
+        userId,
+        action,
+        likes: postLikes[postId].size,
+      });
+      return res.json({ success: true, liked, likes: postLikes[postId].size });
+    }
+
+    // Comments API
+    if (url.match(/^\/api\/posts\/([^\/]+)\/comments$/)) {
+      const postId = url.split("/")[3];
+
+      if (req.method === "GET") {
+        const comments = postComments[postId] || [];
+        return res.json({ comments });
+      }
+
+      if (req.method === "POST") {
+        const { userId, text, author } = req.body || {};
+
+        if (!userId || !text) {
+          return res.status(400).json({ error: "Missing userId or text" });
+        }
+
+        if (!postComments[postId]) {
+          postComments[postId] = [];
+        }
+
+        const comment = {
+          id: Date.now().toString(),
+          userId,
+          text,
+          author: author || "Пользователь",
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+          timestamp: new Date().toISOString(),
+          likes: 0,
+          liked: false,
+        };
+
+        postComments[postId].push(comment);
+
+        // Update post comments count
+        const post = posts.find((p) => p.id === postId);
+        if (post) {
+          post.comments = postComments[postId].length;
+        }
+
+        console.log("💬 Comment added:", {
+          postId,
+          userId,
+          comments: postComments[postId].length,
+        });
+        return res.json({
+          success: true,
+          comment,
+          total: postComments[postId].length,
+        });
       }
     }
 

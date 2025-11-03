@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, MessageCircle, Send } from "lucide-react";
+import { useTelegram } from "@/hooks/useTelegram";
 
 interface Comment {
   id: string;
@@ -18,24 +19,56 @@ interface CommentsProps {
 
 export default function Comments({ postId, onClose }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { user } = useTelegram();
 
   const [newComment, setNewComment] = useState("");
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-
-    const comment: Comment = {
-      id: Date.now().toString(),
-      author: "Ваше имя",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
-      text: newComment,
-      timestamp: "Сейчас",
-      likes: 0,
-      liked: false,
+  // Load comments on mount
+  useEffect(() => {
+    const loadComments = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`);
+        if (response.ok) {
+          const data = await response.json();
+          setComments(data.comments || []);
+        }
+      } catch (error) {
+        console.error("Error loading comments:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setComments([...comments, comment]);
-    setNewComment("");
+    loadComments();
+  }, [postId]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !user?.id) return;
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id.toString(),
+          text: newComment.trim(),
+          author: user.first_name || user.username || "Пользователь",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setComments([...comments, data.comment]);
+        setNewComment("");
+      } else {
+        alert("Ошибка при добавлении комментария");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      alert("Ошибка сети");
+    }
   };
 
   const toggleCommentLike = (commentId: string) => {

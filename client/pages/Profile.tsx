@@ -80,7 +80,7 @@ export default function Profile() {
             setStats({
               posts: 0,
               followers: Math.floor(Math.random() * 50) + 10,
-              following: Math.floor(Math.random() * 100) + 20
+              following: Math.floor(Math.random() * 100) + 20,
             });
           }
 
