@@ -204,42 +204,52 @@ export default function AI() {
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">AI</h1>
-            
-            {/* Mode Toggle */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">OpenAI</span>
-              <button
-                onClick={() => {
-                  setMode(mode === "openai" ? "nanobonano" : "openai");
-                  setSelectedImage(null);
-                  setInputValue("");
-                }}
-                className="relative w-12 h-6 rounded-full bg-glass-light/30 p-1 transition-all"
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 rounded-full bg-primary transition-all ${
-                    mode === "nanobonano" ? "left-7" : "left-1"
-                  }`}
-                />
-              </button>
-              <span className="text-xs text-muted-foreground">NanoBonano</span>
-            </div>
+          {/* Mode Toggle - Centered */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xs text-muted-foreground">OpenAI</span>
+            <button
+              onClick={() => {
+                setMode(mode === "openai" ? "nanobonano" : "openai");
+                setSelectedImage(null);
+                setInputValue("");
+              }}
+              className="relative w-12 h-6 rounded-full bg-glass-light/30 p-1 transition-all"
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-full bg-primary transition-all ${
+                  mode === "nanobonano" ? "left-7" : "left-1"
+                }`}
+              />
+            </button>
+            <span className="text-xs text-muted-foreground">NanoBonano</span>
           </div>
-          
-          {/* Mode Description */}
-          <p className="text-xs text-muted-foreground mt-1">
-            {mode === "openai"
-              ? "Чат с OpenAI GPT-3.5 - создание контента и текстов"
-              : "NanoBonano - редактирование и улучшение фото"}
-          </p>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 px-4 py-4">
+        {/* В разработке */}
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="text-primary" size={40} />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">AI в разработке</h2>
+            <p className="text-muted-foreground mb-4">Скоро здесь появится мощный AI-ассистент</p>
+            <div className="glass-card p-4 max-w-sm mx-auto">
+              <p className="text-sm text-muted-foreground">Функции в разработке:</p>
+              <ul className="text-sm text-left mt-2 space-y-1">
+                <li>✨ Генерация контента</li>
+                <li>🎨 Улучшение фото</li>
+                <li>💬 Умный чат-бот</li>
+                <li>🔮 И многое другое...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        {/* Старый код закомментирован */}
+        {false && (
+        <div className="flex-1 overflow-y-auto space-y-4 px-4 py-4" style={{ display: 'none' }}>
           {messages.map((message) => (
             <div
               key={message.id}
@@ -283,6 +293,8 @@ export default function AI() {
 
           <div ref={messagesEndRef} />
         </div>
+        )}
+        {/* Конец закомментированного кода */}
 
         {/* Image Preview for NanoBonano */}
         {mode === "nanobonano" && selectedImage && !isTyping && (

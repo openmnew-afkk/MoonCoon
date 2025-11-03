@@ -16,45 +16,39 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
   const [withdrawAmount, setWithdrawAmount] = useState<number>(100);
 
   const handlePurchase = async () => {
-    if (!webApp) {
-      alert("Telegram Web App не инициализирован");
-      return;
-    }
-
     try {
-      // Открываем официальную страницу покупки звезд Telegram
-      // Используем прямой deep link для покупки звезд
-      const starsPurchaseUrl = `https://t.me/premium?ref=stars`;
-      
-      // Открываем через Telegram Mini App API
-      try {
-        if (webApp.openLink) {
-          webApp.openLink(starsPurchaseUrl);
-        } else if (webApp.openTelegramLink) {
-          webApp.openTelegramLink(starsPurchaseUrl);
+      const response = await fetch("/api/stars/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          amount,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (webApp) {
+          webApp.showAlert(`Успешно добавлено ${amount} ⭐\nНовый баланс: ${data.balance} ⭐`);
         } else {
-          // Fallback: открываем в новом окне
-          window.open(starsPurchaseUrl, '_blank');
+          alert(`Успешно добавлено ${amount} ⭐`);
         }
-      } catch (error) {
-        // Альтернативный способ
-        window.location.href = starsPurchaseUrl;
+        onSuccess?.();
+      } else {
+        const error = await response.json();
+        if (webApp) {
+          webApp.showAlert(error.error || "Ошибка при добавлении звезд");
+        } else {
+          alert(error.error || "Ошибка при добавлении звезд");
+        }
       }
-      
-      // После покупки пользователь вернется в приложение
-      // Можно показать инструкцию
-      webApp.showAlert(
-        `Открыта страница покупки ${amount} звезд Telegram.\n\nПосле покупки звезды будут автоматически добавлены на ваш баланс.`,
-        () => {
-          // Обновляем баланс после возврата
-          setTimeout(() => {
-            onSuccess?.();
-          }, 2000);
-        }
-      );
     } catch (error) {
-      console.error("Ошибка при открытии покупки звезд:", error);
-      webApp?.showAlert("Ошибка при открытии страницы покупки. Попробуйте позже.");
+      console.error("Ошибка при добавлении звезд:", error);
+      if (webApp) {
+        webApp.showAlert("Ошибка при добавлении звезд. Попробуйте позже.");
+      } else {
+        alert("Ошибка при добавлении звезд");
+      }
     }
   };
 

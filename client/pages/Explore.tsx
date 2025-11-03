@@ -50,10 +50,7 @@ export default function Explore() {
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Search className="text-primary" size={28} />
-            <h1 className="text-2xl font-bold">Поиск</h1>
-          </div>
+          {/* Empty header */}
         </div>
       </div>
 

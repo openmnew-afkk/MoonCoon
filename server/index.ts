@@ -34,6 +34,8 @@ export function createServer() {
   const users: any[] = [];
   const messages: any[] = [];
   const notifications: Map<string, number> = new Map();
+  const starsBalance: Map<string, number> = new Map();
+  const premiumUsers: Map<string, { expiresAt: string; type: string }> = new Map();
 
   // Вспомогательная сортировка: сначала pinned, затем по дате
   const sortWithPinned = (arr: any[]) => {
@@ -123,35 +125,14 @@ export function createServer() {
       
       res.json({ success: true, post });
     } catch (error: any) {
-      console.error('❌ Ошибка создания поста:', error.message || error);
-      res.status(500).json({ error: 'Ошибка сервера: ' + (error.message || 'Неизвестная ошибка') });
     }
+  });
+
+  app.get('/api/posts', (_req, res) => {
+    res.json({ posts: sortWithPinned(posts) });
   });
 
   // Stories API (in-memory)
-  app.post('/api/stories', (req, res) => {
-    try {
-      const { userId, media, mediaType, allowReactions } = req.body || {};
-      if (!userId || !media || !mediaType) {
-        return res.status(400).json({ error: 'Недостаточно данных' });
-      }
-      const story = {
-        id: `story_${Date.now()}`,
-        userId,
-        media,
-        mediaType, // 'image' | 'video'
-        allowReactions: allowReactions !== false,
-        expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString(),
-        createdAt: new Date().toISOString(),
-      };
-      stories.unshift(story);
-      res.json({ success: true, story });
-    } catch (e) {
-      console.error('Ошибка публикации истории:', e);
-      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-    }
-  });
-
   app.get('/api/stories', (_req, res) => {
     res.json({ stories: sortWithPinned(stories) });
   });

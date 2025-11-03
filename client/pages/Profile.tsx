@@ -204,7 +204,7 @@ export default function Profile() {
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Профиль</h1>
+          {/* Empty header */}
         </div>
       </div>
 
@@ -212,7 +212,7 @@ export default function Profile() {
         {/* Profile Header - Minimal */}
         <div className="glass-card mb-4 overflow-hidden">
           {/* Cover - Minimal */}
-          <div className="h-16 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 relative" />
+          <div className="h-20 bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/10"></div>
 
           {/* Profile Info */}
           <div className="px-4 pb-4">
