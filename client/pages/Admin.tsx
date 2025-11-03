@@ -184,7 +184,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6rem)' }}>
+      <div className="max-w-6xl mx-auto px-4 py-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 7rem)' }}>
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (

@@ -57,7 +57,7 @@ export default function Explore() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
+      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">

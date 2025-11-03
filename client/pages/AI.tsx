@@ -237,7 +237,7 @@ export default function AI() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
+      <div className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 px-4 py-4">
           {messages.map((message) => (

@@ -251,7 +251,7 @@ export default function Create() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
+      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
         {/* Mode Selector */}
         <div className="flex gap-2 mb-6">
           <button

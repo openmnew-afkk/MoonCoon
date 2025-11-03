@@ -25,13 +25,15 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   // Временное in-memory хранилище
   const posts: any[] = [];
   const stories: any[] = [];
   const users: any[] = [];
+  const messages: any[] = [];
+  const notifications: Map<string, number> = new Map();
 
   // Вспомогательная сортировка: сначала pinned, затем по дате
   const sortWithPinned = (arr: any[]) => {
@@ -354,6 +356,83 @@ export function createServer() {
       res.json({ success: true, price, pinnedUntil: post.pinnedUntil, post });
     } catch (e) {
       console.error('ads/post error', e);
+      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+  });
+
+  // Messages API
+  app.post('/api/messages/send', (req, res) => {
+    try {
+      const { fromUserId, toUserId, text } = req.body || {};
+      if (!fromUserId || !toUserId || !text) {
+        return res.status(400).json({ error: 'Недостаточно данных' });
+      }
+      
+      const message = {
+        id: `msg_${Date.now()}`,
+        senderId: fromUserId,
+        receiverId: toUserId,
+        text,
+        timestamp: new Date().toISOString(),
+        read: false,
+      };
+      
+      messages.push(message);
+      
+      // Увеличиваем счетчик уведомлений для получателя
+      const currentNotifications = notifications.get(toUserId) || 0;
+      notifications.set(toUserId, currentNotifications + 1);
+      
+      console.log('✉️ Сообщение отправлено:', { from: fromUserId, to: toUserId });
+      res.json({ success: true, message });
+    } catch (e) {
+      console.error('messages/send error', e);
+      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+  });
+
+  app.get('/api/messages/:conversationId', (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId обязателен' });
+      }
+      
+      // Получаем сообщения между двумя пользователями
+      const conversationMessages = messages.filter(
+        m => (m.senderId === userId && m.receiverId === conversationId) ||
+             (m.senderId === conversationId && m.receiverId === userId)
+      );
+      
+      // Помечаем сообщения как прочитанные
+      conversationMessages.forEach(m => {
+        if (m.receiverId === userId && !m.read) {
+          m.read = true;
+          const currentNotifications = notifications.get(userId as string) || 0;
+          notifications.set(userId as string, Math.max(0, currentNotifications - 1));
+        }
+      });
+      
+      res.json({ messages: conversationMessages });
+    } catch (e) {
+      console.error('messages/get error', e);
+      res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+  });
+
+  app.get('/api/messages/notifications', (req, res) => {
+    try {
+      const { userId } = req.query;
+      if (!userId) {
+        return res.status(400).json({ error: 'userId обязателен' });
+      }
+      
+      const count = notifications.get(userId as string) || 0;
+      res.json({ count });
+    } catch (e) {
+      console.error('messages/notifications error', e);
       res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
   });

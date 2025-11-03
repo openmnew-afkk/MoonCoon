@@ -183,7 +183,7 @@ export default function Feed() {
       </div>
 
       {/* Posts Feed */}
-      <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
         {/* Stories Section */}
         <Stories />
 

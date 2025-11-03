@@ -136,30 +136,30 @@ export default function Profile() {
 
   if (showPremium) {
     return (
-      <div className="min-h-screen bg-background pb-24">
-        <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
-          <div className="max-w-2xl mx-auto px-4 py-4">
-            <button
-              onClick={() => setShowPremium(false)}
-              className="flex items-center gap-2 text-primary font-semibold mb-2 hover:opacity-80 transition-opacity"
-            >
-              ← Назад
-            </button>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="text-yellow-400 fill-yellow-400" size={28} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPremium(false)}>
+        <div className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="sticky top-0 glass-morphism border-b border-glass-light/20 p-4 flex items-center justify-between z-10">
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Sparkles className="text-yellow-400 fill-yellow-400" size={24} />
               Premium
             </h1>
+            <button
+              onClick={() => setShowPremium(false)}
+              className="glass-button p-2 rounded-full hover:bg-glass-light/40 transition-all"
+            >
+              <X size={20} />
+            </button>
           </div>
-        </div>
-        <div className="max-w-2xl mx-auto pt-20 px-4">
-          <PremiumPurchase
-            userId={user?.id?.toString() || "0"}
-            currentStars={starsBalance}
-            onSuccess={() => {
-              setShowPremium(false);
-              window.location.reload();
-            }}
-          />
+          <div className="p-4">
+            <PremiumPurchase
+              userId={user?.id?.toString() || "0"}
+              currentStars={starsBalance}
+              onSuccess={() => {
+                setShowPremium(false);
+                window.location.reload();
+              }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -167,30 +167,33 @@ export default function Profile() {
 
   if (showStars) {
     return (
-      <div className="min-h-screen bg-background pb-24">
-        <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
-          <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowStars(false)}>
+        <div className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="sticky top-0 glass-morphism border-b border-glass-light/20 p-4 flex items-center justify-between z-10">
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Star className="text-yellow-400 fill-yellow-400" size={24} />
+              Звезды Telegram
+            </h1>
             <button
               onClick={() => setShowStars(false)}
-              className="flex items-center gap-2 text-primary font-semibold mb-2 hover:opacity-80 transition-opacity"
+              className="glass-button p-2 rounded-full hover:bg-glass-light/40 transition-all"
             >
-              ← Назад
+              <X size={20} />
             </button>
-            <h1 className="text-2xl font-bold">Звезды Telegram</h1>
           </div>
-        </div>
-        <div className="max-w-2xl mx-auto pt-20 px-4">
-          <StarsPayment
-            userId={user?.id?.toString() || "0"}
-            currentStars={starsBalance}
-            onSuccess={() => {
-              // Обновить баланс после успешной операции
-              fetch(`/api/stars/balance?userId=${user?.id}`)
-                .then((res) => res.json())
-                .then((data) => setStarsBalance(data.balance || 0))
-                .catch(console.error);
-            }}
-          />
+          <div className="p-4">
+            <StarsPayment
+              userId={user?.id?.toString() || "0"}
+              currentStars={starsBalance}
+              onSuccess={() => {
+                // Обновить баланс после успешной операции
+                fetch(`/api/stars/balance?userId=${user?.id}`)
+                  .then((res) => res.json())
+                  .then((data) => setStarsBalance(data.balance || 0))
+                  .catch(console.error);
+              }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -205,7 +208,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
+      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
         {/* Profile Header - Minimal */}
         <div className="glass-card mb-4 overflow-hidden">
           {/* Cover - Minimal */}
@@ -213,8 +216,8 @@ export default function Profile() {
 
           {/* Profile Info */}
           <div className="px-4 pb-4">
-            {/* Avatar + Name */}
-            <div className="flex items-center gap-3 -mt-8 mb-4">
+            {/* Avatar + Name - Centered */}
+            <div className="flex flex-col items-center -mt-16 mb-4">
               <input id="avatarInput" type="file" accept="image/*" className="hidden" onChange={async (e)=>{
                 const file = e.target.files?.[0];
                 if (!file || !user?.id) return;
@@ -232,23 +235,28 @@ export default function Profile() {
                 };
                 reader.readAsDataURL(file);
               }} />
-              <button onClick={()=>document.getElementById('avatarInput')?.click()} className="relative group">
-                <img
-                  src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
-                  alt="Avatar"
-                  className="w-16 h-16 rounded-full border-4 border-background shadow-lg object-cover"
-                />
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Edit3 size={16} className="text-white" />
+              <button onClick={()=>document.getElementById('avatarInput')?.click()} className="relative group mb-3">
+                {/* Purple glow effect */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 blur-xl opacity-60 animate-pulse"></div>
+                <div className="relative">
+                  <img
+                    src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
+                    alt="Avatar"
+                    className="w-28 h-28 rounded-full border-4 border-purple-500/50 shadow-2xl object-cover relative z-10"
+                    style={{ boxShadow: '0 0 30px rgba(168, 85, 247, 0.4)' }}
+                  />
+                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                    <Edit3 size={20} className="text-white" />
+                  </div>
                 </div>
               </button>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold">{user?.first_name || 'Ваше имя'}</h2>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <h2 className="text-xl font-bold">{user?.first_name || 'Ваше имя'}</h2>
                   {premium.isPremium && <PremiumBadge size="sm" />}
                 </div>
-                <p className="text-xs text-muted-foreground">@{user?.username || 'yourprofile'}</p>
+                <p className="text-sm text-muted-foreground">@{user?.username || 'yourprofile'}</p>
               </div>
             </div>
 

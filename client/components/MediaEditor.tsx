@@ -181,26 +181,34 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
     }
   };
 
+  const [activeTab, setActiveTab] = useState<'filters' | 'adjust'>('filters');
+
   return (
-    <div className="glass-card space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
+    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+        <button
+          onClick={onCancel}
+          className="text-white hover:text-primary transition-colors"
+        >
+          <X size={24} />
+        </button>
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <Sparkles className="text-primary" size={20} />
-          Редактор фото
+          Редактор
         </h3>
         <button
-          onClick={resetFilters}
-          className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+          onClick={handleSave}
+          className="text-primary font-semibold hover:opacity-80 transition-opacity"
         >
-          <RotateCw size={16} />
-          Сбросить
+          {saved ? 'Готово' : 'Применить'}
         </button>
       </div>
 
       {/* Preview с возможностью перемещения и масштабирования */}
       <div 
         ref={containerRef}
-        className="relative bg-black rounded-2xl overflow-hidden h-96 flex items-center justify-center cursor-move"
+        className="relative bg-black flex-1 flex items-center justify-center cursor-move overflow-hidden"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -234,196 +242,170 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
         <canvas ref={canvasRef} className="hidden" />
         
         {/* Индикаторы управления */}
-        <div className="absolute bottom-2 right-2 flex gap-2">
+        <div className="absolute bottom-4 right-4 flex gap-2">
           <button
             onClick={() => setScale((prev) => Math.max(0.5, prev - 0.1))}
-            className="glass-morphism p-2 rounded-lg hover:bg-glass-light/40"
+            className="bg-black/60 backdrop-blur-sm p-2 rounded-full hover:bg-black/80 text-white"
           >
-            <ZoomOut size={16} />
+            <ZoomOut size={18} />
           </button>
           <button
             onClick={() => setScale((prev) => Math.min(3, prev + 0.1))}
-            className="glass-morphism p-2 rounded-lg hover:bg-glass-light/40"
+            className="bg-black/60 backdrop-blur-sm p-2 rounded-full hover:bg-black/80 text-white"
           >
-            <ZoomIn size={16} />
+            <ZoomIn size={18} />
           </button>
-          <div className="glass-morphism px-3 py-2 rounded-lg text-xs flex items-center gap-2">
-            <Move size={14} />
-            <span>{Math.round(scale * 100)}%</span>
-          </div>
         </div>
       </div>
 
-      {/* Preset Filters */}
-      <div>
-        <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-          <Filter size={16} />
-          Готовые фильтры
-        </label>
-        <div className="grid grid-cols-4 gap-2">
-          {PRESET_FILTERS.map((preset, i) => (
-            <button
-              key={i}
-              onClick={() => applyPresetFilter(preset.filter)}
-              className={cn(
-                "glass-button py-2 text-xs font-medium transition-all",
-                selectedFilter === preset.filter && "bg-primary/20 text-primary border-2 border-primary"
-              )}
-            >
-              {preset.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {/* Brightness */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2">
-              <Sun size={16} />
-              Яркость
-            </span>
-            <span className="text-primary">{brightness}%</span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="200"
-            value={brightness}
-            onChange={(e) => setBrightness(parseInt(e.target.value))}
-            className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Contrast */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2">
-              <ContrastIcon size={16} />
-              Контрастность
-            </span>
-            <span className="text-primary">{contrast}%</span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="200"
-            value={contrast}
-            onChange={(e) => setContrast(parseInt(e.target.value))}
-            className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Saturation */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2">
-              <Droplet size={16} />
-              Насыщенность
-            </span>
-            <span className="text-primary">{saturation}%</span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="200"
-            value={saturation}
-            onChange={(e) => setSaturation(parseInt(e.target.value))}
-            className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Blur */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2">
-              <Circle size={16} />
-              Размытие
-            </span>
-            <span className="text-primary">{blur}px</span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="20"
-            value={blur}
-            onChange={(e) => setBlur(parseInt(e.target.value))}
-            className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Warmth */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span>Теплота</span>
-            <span className="text-primary">{warmth > 0 ? "+" : ""}{warmth}</span>
-          </label>
-          <input
-            type="range"
-            min="-50"
-            max="50"
-            value={warmth}
-            onChange={(e) => setWarmth(parseInt(e.target.value))}
-            className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        {/* Rotation */}
-        <div>
-          <label className="text-sm font-medium flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2">
-              <RotateCw size={16} />
-              Поворот
-            </span>
-            <span className="text-primary">{rotation}°</span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={rotation}
-              onChange={(e) => setRotation(parseInt(e.target.value))}
-              className="flex-1 h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer"
-            />
-            <button
-              onClick={() => setRotation((prev) => (prev + 90) % 360)}
-              className="glass-button px-3 py-1 text-xs"
-            >
-              90°
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-2 pt-4 border-t border-glass-light/10">
-        {onCancel && (
+      {/* Bottom Controls */}
+      <div className="bg-black/80 backdrop-blur-sm">
+        {/* Tabs */}
+        <div className="flex border-b border-white/10">
           <button
-            onClick={onCancel}
-            className="flex-1 glass-button rounded-2xl py-2.5 opacity-70 hover:opacity-100 transition-opacity"
+            onClick={() => setActiveTab('filters')}
+            className={cn(
+              "flex-1 py-3 text-sm font-medium transition-all",
+              activeTab === 'filters' ? 'text-primary border-b-2 border-primary' : 'text-white/60'
+            )}
           >
-            Отмена
+            Фильтры
           </button>
+          <button
+            onClick={() => setActiveTab('adjust')}
+            className={cn(
+              "flex-1 py-3 text-sm font-medium transition-all",
+              activeTab === 'adjust' ? 'text-primary border-b-2 border-primary' : 'text-white/60'
+            )}
+          >
+            Настройки
+          </button>
+        </div>
+
+        {/* Filters Tab */}
+        {activeTab === 'filters' && (
+          <div className="p-4">
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {PRESET_FILTERS.map((preset, i) => (
+                <button
+                  key={i}
+                  onClick={() => applyPresetFilter(preset.filter)}
+                  className="flex-shrink-0 flex flex-col items-center gap-2"
+                >
+                  <div
+                    className={cn(
+                      "w-16 h-16 rounded-xl overflow-hidden border-2 transition-all",
+                      selectedFilter === preset.filter ? 'border-primary' : 'border-white/20'
+                    )}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={preset.name}
+                      className="w-full h-full object-cover"
+                      style={{ filter: preset.filter }}
+                    />
+                  </div>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    selectedFilter === preset.filter ? 'text-primary' : 'text-white/60'
+                  )}>
+                    {preset.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
-        <button
-          onClick={handleSave}
-          className="flex-1 glass-button rounded-2xl py-2.5 bg-primary/20 text-primary hover:bg-primary/30 transition-all flex items-center justify-center gap-2"
-        >
-          {saved ? (
-            <>
-              <Check size={20} />
-              Сохранено
-            </>
-          ) : (
-            <>
-              <Copy size={20} />
-              Применить
-            </>
-          )}
-        </button>
+
+        {/* Adjust Tab */}
+        {activeTab === 'adjust' && (
+          <div className="p-4 space-y-4 max-h-64 overflow-y-auto">
+            {/* Brightness */}
+            <div>
+              <label className="text-sm font-medium flex items-center justify-between mb-2 text-white">
+                <span className="flex items-center gap-2">
+                  <Sun size={16} />
+                  Яркость
+                </span>
+                <span className="text-primary">{brightness}%</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={brightness}
+                onChange={(e) => setBrightness(parseInt(e.target.value))}
+                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            {/* Contrast */}
+            <div>
+              <label className="text-sm font-medium flex items-center justify-between mb-2 text-white">
+                <span className="flex items-center gap-2">
+                  <ContrastIcon size={16} />
+                  Контрастность
+                </span>
+                <span className="text-primary">{contrast}%</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={contrast}
+                onChange={(e) => setContrast(parseInt(e.target.value))}
+                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            {/* Saturation */}
+            <div>
+              <label className="text-sm font-medium flex items-center justify-between mb-2 text-white">
+                <span className="flex items-center gap-2">
+                  <Droplet size={16} />
+                  Насыщенность
+                </span>
+                <span className="text-primary">{saturation}%</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={saturation}
+                onChange={(e) => setSaturation(parseInt(e.target.value))}
+                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            {/* Rotation */}
+            <div>
+              <label className="text-sm font-medium flex items-center justify-between mb-2 text-white">
+                <span className="flex items-center gap-2">
+                  <RotateCw size={16} />
+                  Поворот
+                </span>
+                <span className="text-primary">{rotation}°</span>
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  value={rotation}
+                  onChange={(e) => setRotation(parseInt(e.target.value))}
+                  className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <button
+                  onClick={() => setRotation((prev) => (prev + 90) % 360)}
+                  className="bg-white/10 px-3 py-1 rounded-lg text-xs text-white hover:bg-white/20"
+                >
+                  90°
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
