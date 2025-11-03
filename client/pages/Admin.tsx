@@ -83,18 +83,18 @@ export default function Admin() {
           params.append("username", user.username);
         }
 
-        console.log("🔍 Проверяем админ статус для:", { 
-          userId: user.id, 
+        console.log("🔍 Проверяем админ статус для:", {
+          userId: user.id,
           username: user.username,
-          url: `/api/admin/check?${params}`
+          url: `/api/admin/check?${params}`,
         });
 
         const response = await fetch(`/api/admin/check?${params}`);
-        
+
         console.log("🌐 Ответ сервера:", {
           status: response.status,
           statusText: response.statusText,
-          ok: response.ok
+          ok: response.ok,
         });
 
         if (response.ok) {

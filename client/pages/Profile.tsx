@@ -56,6 +56,7 @@ export default function Profile() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showAdsModal, setShowAdsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [adsType, setAdsType] = useState<"story" | "post">("story");
   const [adsHours, setAdsHours] = useState(1);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
@@ -433,7 +434,7 @@ export default function Profile() {
             <span className="text-[10px] font-medium">Поддержка</span>
           </button>
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => setShowSettingsModal(true)}
             className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
           >
             <Settings className="text-foreground/70" size={18} />
@@ -1172,6 +1173,88 @@ export default function Profile() {
                 className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
               >
                 Купить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowSettingsModal(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Настройки</h2>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3">
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Приватный аккаунт</span>
+                <input type="checkbox" className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Разрешить сообщения</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">
+                  Показывать онлайн статус
+                </span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
+                <span className="text-sm font-medium">Уведомления</span>
+                <input type="checkbox" defaultChecked className="w-4 h-4" />
+              </label>
+              <div className="glass-card p-3 rounded-xl">
+                <p className="text-sm font-medium mb-2">Тема</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button className="glass-button py-2 text-xs rounded-lg bg-primary/20 text-primary border border-primary">
+                    Авто
+                  </button>
+                  <button className="glass-button py-2 text-xs rounded-lg">
+                    Светлая
+                  </button>
+                  <button className="glass-button py-2 text-xs rounded-lg">
+                    Тёмная
+                  </button>
+                </div>
+              </div>
+              <div className="glass-card p-3 rounded-xl">
+                <p className="text-sm font-medium mb-2">Язык</p>
+                <select className="w-full glass-morphism rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50">
+                  <option>Русский</option>
+                  <option>English</option>
+                  <option>Español</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="flex-1 glass-button py-2.5 rounded-xl text-sm"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => {
+                  alert("Настройки сохранены!");
+                  setShowSettingsModal(false);
+                }}
+                className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
+              >
+                Сохранить
               </button>
             </div>
           </div>

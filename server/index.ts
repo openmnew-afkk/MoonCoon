@@ -106,7 +106,7 @@ export function createServer() {
         visibility: visibility || "public",
         mediaType: mediaType || "❌ Не указан",
         mediaSize: media ? `✅ ${media.length} символов` : "❌ Нет",
-        type: type || "post"
+        type: type || "post",
       });
 
       // Проверка обязательных полей
@@ -126,7 +126,9 @@ export function createServer() {
       // Проверка размера медиа
       if (media.length > 25 * 1024 * 1024) {
         console.error("❌ Медиа файл слишком большой:", media.length);
-        return res.status(413).json({ error: "Файл слишком большой. Максимум 25MB" });
+        return res
+          .status(413)
+          .json({ error: "Файл слишком большой. Максимум 25MB" });
       }
 
       // Если это история, добавляем в массив stories
