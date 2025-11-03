@@ -33,6 +33,7 @@ const mockPosts: Post[] = [];
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>(mockPosts);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useTelegram();
   const [starsBalance, setStarsBalance] = useState(0);
   const [showStarModal, setShowStarModal] = useState<string | null>(null);
@@ -42,38 +43,154 @@ export default function Feed() {
 
   // Загружаем посты с сервера
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/posts")
-      .then((res) => res.json())
-      .then((data) => {
+    const loadPosts = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/posts");
+        const data = await response.json();
+
         if (data.posts && Array.isArray(data.posts)) {
-          // Преобразуем посты с сервера в формат Feed
-          const formattedPosts = data.posts.map((post: any) => ({
-            id: post.id,
-            author: {
-              name: post.userId || "User",
-              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
-              username: `@user${post.userId}`,
-            },
-            image: post.mediaType === "image" ? post.media : undefined,
-            video: post.mediaType === "video" ? post.media : undefined,
-            caption: post.caption || "",
-            likes: post.likes || 0,
-            comments: post.comments || 0,
-            stars: 0,
-            timestamp: new Date(post.createdAt).toLocaleDateString("ru-RU"),
-            liked: false,
-            starred: false,
-            showComments: false,
-          }));
-          setPosts(formattedPosts);
+          // Загружаем профили пользователей для каждого поста
+          const postsWithProfiles = await Promise.all(
+            data.posts.map(async (post: any) => {
+              try {
+                const profileResponse = await fetch(
+                  `/api/users/${post.userId}`,
+                );
+                const profile = await profileResponse.json();
+
+                return {
+                  id: post.id,
+                  author: {
+                    name: profile.name || "Пользователь",
+                    avatar:
+                      profile.avatarUrl ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
+                    username: profile.username || `@user${post.userId}`,
+                    verified: profile.verified || false,
+                  },
+                  image: post.mediaType === "image" ? post.media : undefined,
+                  video: post.mediaType === "video" ? post.media : undefined,
+                  caption: post.caption || "",
+                  likes: post.likes || 0,
+                  comments: post.comments || 0,
+                  stars: 0,
+                  timestamp: new Date(post.createdAt).toLocaleDateString(
+                    "ru-RU",
+                  ),
+                  liked: false,
+                  starred: false,
+                  showComments: false,
+                };
+              } catch (profileError) {
+                console.error("Ошибка загрузки профиля:", profileError);
+                // Fallback если профиль не загрузился
+                return {
+                  id: post.id,
+                  author: {
+                    name: "Пользователь",
+                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
+                    username: `@user${post.userId}`,
+                    verified: false,
+                  },
+                  image: post.mediaType === "image" ? post.media : undefined,
+                  video: post.mediaType === "video" ? post.media : undefined,
+                  caption: post.caption || "",
+                  likes: post.likes || 0,
+                  comments: post.comments || 0,
+                  stars: 0,
+                  timestamp: new Date(post.createdAt).toLocaleDateString(
+                    "ru-RU",
+                  ),
+                  liked: false,
+                  starred: false,
+                  showComments: false,
+                };
+              }
+            }),
+          );
+
+          setPosts(postsWithProfiles);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Ошибка загрузки постов:", error);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
   }, []);
+
+  // Функция для обновления ленты
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const response = await fetch("/api/posts");
+      const data = await response.json();
+
+      if (data.posts && Array.isArray(data.posts)) {
+        // Загружаем профили пользователей для каждого поста
+        const postsWithProfiles = await Promise.all(
+          data.posts.map(async (post: any) => {
+            try {
+              const profileResponse = await fetch(`/api/users/${post.userId}`);
+              const profile = await profileResponse.json();
+
+              return {
+                id: post.id,
+                author: {
+                  name: profile.name || "Пользователь",
+                  avatar:
+                    profile.avatarUrl ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
+                  username: profile.username || `@user${post.userId}`,
+                  verified: profile.verified || false,
+                },
+                image: post.mediaType === "image" ? post.media : undefined,
+                video: post.mediaType === "video" ? post.media : undefined,
+                caption: post.caption || "",
+                likes: post.likes || 0,
+                comments: post.comments || 0,
+                stars: 0,
+                timestamp: new Date(post.createdAt).toLocaleDateString("ru-RU"),
+                liked: false,
+                starred: false,
+                showComments: false,
+              };
+            } catch (profileError) {
+              console.error("Ошибка загрузки профиля:", profileError);
+              return {
+                id: post.id,
+                author: {
+                  name: "Пользователь",
+                  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
+                  username: `@user${post.userId}`,
+                  verified: false,
+                },
+                image: post.mediaType === "image" ? post.media : undefined,
+                video: post.mediaType === "video" ? post.media : undefined,
+                caption: post.caption || "",
+                likes: post.likes || 0,
+                comments: post.comments || 0,
+                stars: 0,
+                timestamp: new Date(post.createdAt).toLocaleDateString("ru-RU"),
+                liked: false,
+                starred: false,
+                showComments: false,
+              };
+            }
+          }),
+        );
+
+        setPosts(postsWithProfiles);
+      }
+    } catch (error) {
+      console.error("Ошибка обновления постов:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Загружаем баланс звезд
   useEffect(() => {
@@ -188,6 +305,25 @@ export default function Feed() {
         className="max-w-2xl mx-auto px-3 sm:px-4 pb-8"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
       >
+        {/* Pull to Refresh Indicator */}
+        {refreshing && (
+          <div className="flex justify-center items-center py-4 mb-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
+            <span className="text-sm text-primary">Обновление...</span>
+          </div>
+        )}
+
+        {/* Refresh Button */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing || loading}
+            className="glass-button px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50"
+          >
+            {refreshing ? "Обновляем..." : "🔄 Обновить ленту"}
+          </button>
+        </div>
+
         {/* Stories Section */}
         <Stories />
 
@@ -280,16 +416,40 @@ export default function Feed() {
                 {/* Post Media */}
                 <div className="mb-3 rounded-2xl overflow-hidden -mx-1 sm:mx-0">
                   {post.image && (
-                    <img
-                      src={post.image}
-                      alt={post.caption}
-                      className="w-full h-auto object-cover select-none"
-                      draggable={false}
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
+                    <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
+                      <img
+                        src={post.image}
+                        alt={post.caption}
+                        className="w-full h-full object-cover select-none cursor-pointer"
+                        draggable={false}
+                        onContextMenu={(e) => e.preventDefault()}
+                        onClick={() => {
+                          // Открыть полноэкранный просмотр
+                          const modal = document.createElement('div');
+                          modal.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4';
+                          modal.onclick = () => document.body.removeChild(modal);
+                          
+                          const img = document.createElement('img');
+                          img.src = post.image!;
+                          img.className = 'max-w-full max-h-full object-contain';
+                          img.onclick = (e) => e.stopPropagation();
+                          
+                          const closeBtn = document.createElement('button');
+                          closeBtn.innerHTML = '✕';
+                          closeBtn.className = 'absolute top-4 right-4 text-white text-2xl bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70';
+                          closeBtn.onclick = () => document.body.removeChild(modal);
+                          
+                          modal.appendChild(img);
+                          modal.appendChild(closeBtn);
+                          document.body.appendChild(modal);
+                        }}
+                      />
+                    </div>
                   )}
                   {post.video && (
-                    <VideoPlayer src={post.video} thumbnail={post.image} />
+                    <div className="relative w-full" style={{ aspectRatio: '16/9', maxHeight: '400px' }}>
+                      <VideoPlayer src={post.video} thumbnail={post.image} />
+                    </div>
                   )}
                 </div>
 

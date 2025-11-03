@@ -17,35 +17,7 @@ interface CommentsProps {
 }
 
 export default function Comments({ postId, onClose }: CommentsProps) {
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: "1",
-      author: "Sarah Design",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-      text: "Потрясающий контент! 🎨",
-      timestamp: "1 час назад",
-      likes: 12,
-      liked: false,
-    },
-    {
-      id: "2",
-      author: "Alex Studio",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
-      text: "Это просто шедевр!",
-      timestamp: "30 минут назад",
-      likes: 8,
-      liked: false,
-    },
-    {
-      id: "3",
-      author: "Creative Mind",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=creative",
-      text: "Как ты это сделал?",
-      timestamp: "10 минут назад",
-      likes: 3,
-      liked: true,
-    },
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   const [newComment, setNewComment] = useState("");
 

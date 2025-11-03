@@ -205,12 +205,12 @@ export default function MediaEditor({
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+      <div className="flex items-center justify-between p-4 bg-black/90 backdrop-blur-sm relative z-10">
         <button
           onClick={onCancel}
-          className="text-white hover:text-primary transition-colors"
+          className="text-white hover:text-primary transition-colors p-2 bg-black/40 rounded-full"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <Sparkles className="text-primary" size={20} />
@@ -218,7 +218,7 @@ export default function MediaEditor({
         </h3>
         <button
           onClick={handleSave}
-          className="text-primary font-semibold hover:opacity-80 transition-opacity"
+          className="text-primary font-semibold hover:opacity-80 transition-opacity px-4 py-2 bg-primary/20 rounded-full"
         >
           {saved ? "Готово" : "Применить"}
         </button>

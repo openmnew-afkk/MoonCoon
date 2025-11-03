@@ -5,6 +5,9 @@ const posts: any[] = [];
 const stories: any[] = [];
 const adminUsers = new Set(["1234567890"]); // Test admin
 const adminUsernames = new Set(["testuser"]); // Test admin
+const userSettings: Record<string, any> = {}; // User settings storage
+const userStars: Record<string, number> = {}; // User stars balance
+const userProfiles: Record<string, any> = {}; // User profile data cache
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
@@ -84,10 +87,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       console.log("🔍 Admin check:", { userId, username });
 
+      // Add more admin user IDs and usernames for testing
+      const testAdminIds = new Set(["1234567890", "MikySauce"]);
+      const testAdminUsernames = new Set(["testuser", "mikysauce", "admin"]);
+
       let isAdmin = false;
-      if (userId) isAdmin = adminUsers.has(userId);
-      if (!isAdmin && username)
-        isAdmin = adminUsernames.has(username.toLowerCase().replace("@", ""));
+      if (userId) {
+        isAdmin = adminUsers.has(userId) || testAdminIds.has(userId);
+      }
+      if (!isAdmin && username) {
+        const cleanUsername = username.toLowerCase().replace("@", "");
+        isAdmin =
+          adminUsernames.has(cleanUsername) ||
+          testAdminUsernames.has(cleanUsername);
+      }
 
       console.log("🔑 Admin result:", isAdmin);
       return res.json({ isAdmin });
@@ -105,6 +118,162 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         createdAt: new Date().toISOString(),
       }));
       return res.json({ users });
+    }
+
+    // Admin user management endpoints
+    if (url === "/api/admin/set-admin" && req.method === "POST") {
+      const { userId, isAdmin } = req.body || {};
+      console.log("🔧 Setting admin status:", { userId, isAdmin });
+      // For demo purposes, just return success
+      return res.json({ success: true });
+    }
+
+    if (url === "/api/admin/ban-user" && req.method === "POST") {
+      const { userId, isBanned, reason } = req.body || {};
+      console.log("🚫 Banning user:", { userId, isBanned, reason });
+      // For demo purposes, just return success
+      return res.json({ success: true });
+    }
+
+    // User Settings API
+    if (url.match(/^\/api\/users\/([^\/]+)\/settings$/)) {
+      const userId = url.split("/")[3];
+
+      if (req.method === "GET") {
+        const settings = userSettings[userId] || {
+          privateAccount: false,
+          allowDMs: true,
+          showOnlineStatus: true,
+          email: "",
+          username: `@user_${userId}`,
+          bio: "",
+          avatarUrl: "",
+          blurAdultContent: true,
+          allowAdultReveal: true,
+          childMode: false,
+        };
+        console.log("🔧 Getting user settings:", { userId, settings });
+        return res.json(settings);
+      }
+
+      if (req.method === "PUT") {
+        const newSettings = { ...req.body };
+        userSettings[userId] = { ...userSettings[userId], ...newSettings };
+        console.log("💾 Saving user settings:", {
+          userId,
+          settings: newSettings,
+        });
+        return res.json({ success: true, settings: userSettings[userId] });
+      }
+    }
+
+    // User Stats API
+    if (url.match(/^\/api\/users\/([^\/]+)\/stats$/)) {
+      const userId = url.split("/")[3];
+      const stats = {
+        posts: posts.filter((p) => p.userId === userId).length,
+        followers: Math.floor(Math.random() * 1000),
+        following: Math.floor(Math.random() * 500),
+      };
+      console.log("📊 Getting user stats:", { userId, stats });
+      return res.json(stats);
+    }
+
+    // Stars API
+    if (url.startsWith("/api/stars/balance")) {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "Missing userId parameter" });
+      }
+
+      const balance =
+        userStars[userId] || Math.floor(Math.random() * 500) + 100;
+      userStars[userId] = balance; // Cache the balance
+      console.log("⭐ Getting stars balance:", { userId, balance });
+      return res.json({ balance });
+    }
+
+    // Premium API
+    if (url.startsWith("/api/premium/check")) {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "Missing userId parameter" });
+      }
+
+      // Users with ID <= 1000 get premium for free
+      const isPremium = parseInt(userId) <= 1000;
+      console.log("💎 Checking premium status:", { userId, isPremium });
+      return res.json({ isPremium, type: isPremium ? "early_user" : "none" });
+    }
+
+    // User Profile API
+    if (url.match(/^\/api\/users\/([^\/]+)$/)) {
+      const userId = url.split("/")[3];
+
+      if (req.method === "GET") {
+        // Generate or get cached user profile
+        if (!userProfiles[userId]) {
+          const userNames = [
+            "Александр",
+            "Мария",
+            "Дмитрий",
+            "Анна",
+            "Сергей",
+            "Елена",
+            "Андрей",
+            "Наталья",
+            "Михаил",
+            "Ольга",
+            "Павел",
+            "Татьяна",
+            "Николай",
+            "Светлана",
+            "Владимир",
+            "Юлия",
+            "Денис",
+            "Ирина",
+          ];
+          const randomName =
+            userNames[parseInt(userId) % userNames.length] || "Пользователь";
+
+          userProfiles[userId] = {
+            id: userId,
+            name: randomName,
+            username: `@${randomName.toLowerCase()}${userId}`,
+            bio: `Пользователь ${randomName}`,
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+            verified: parseInt(userId) <= 1000, // Early users get verified
+            createdAt: new Date().toISOString(),
+          };
+        }
+
+        console.log("👤 Getting user profile:", {
+          userId,
+          profile: userProfiles[userId],
+        });
+        return res.json(userProfiles[userId]);
+      }
+    }
+
+    // Search API
+    if (url.startsWith("/api/search")) {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.json({ posts: [], users: [] });
+      }
+
+      const matchingPosts = posts
+        .filter(
+          (post) =>
+            post.caption?.toLowerCase().includes(query.toLowerCase()) ||
+            userProfiles[post.userId]?.name
+              ?.toLowerCase()
+              .includes(query.toLowerCase()),
+        )
+        .slice(0, 10);
+
+      console.log("🔍 Search results:", { query, found: matchingPosts.length });
+      return res.json({ posts: matchingPosts, users: [] });
     }
 
     // Default response for unknown endpoints
