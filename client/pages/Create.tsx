@@ -245,13 +245,13 @@ export default function Create() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
-        <div className="max-w-2xl mx-auto px-4 py-3">
+      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold">Создать</h1>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto pt-20 px-4">
+      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
         {/* Mode Selector */}
         <div className="flex gap-2 mb-6">
           <button

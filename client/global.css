@@ -110,10 +110,17 @@ input[type='range']::-moz-range-thumb:hover {
     @apply border-border;
   }
 
+  html {
+    @apply dark;
+    color-scheme: dark !important;
+  }
+
   html,
   body {
     @apply bg-background text-foreground;
     height: 100%;
+    background-color: hsl(217 32.6% 10%) !important;
+    color: hsl(210 40% 98%) !important;
   }
 
   body {

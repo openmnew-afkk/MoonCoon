@@ -48,8 +48,8 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
-        <div className="max-w-2xl mx-auto px-4 py-3">
+      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Search className="text-primary" size={28} />
             <h1 className="text-2xl font-bold">Поиск</h1>
@@ -57,7 +57,7 @@ export default function Explore() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto pt-20 px-4 pb-24">
+      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
