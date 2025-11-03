@@ -170,7 +170,7 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="glass-card rounded-none border-b border-glass-light/10 sticky top-0 z-20 ios-shadow">
+      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -184,7 +184,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6 pt-24">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (

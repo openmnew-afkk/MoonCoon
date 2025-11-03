@@ -17,6 +17,7 @@ import Explore from "./pages/Explore";
 import Create from "./pages/Create";
 import Profile from "./pages/Profile";
 import AI from "./pages/AI";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
 
@@ -57,6 +58,7 @@ const AppContent = () => {
           <Route path="/create" element={<Create />} />
           <Route path="/ai" element={<AI />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </MainLayout>

@@ -74,8 +74,17 @@ export default function Profile() {
           const settingsRes = await fetch(`/api/users/${user.id}/settings`);
           if (settingsRes.ok) {
             const s = await settingsRes.json();
-            if (s.avatarUrl) setAvatarUrl(s.avatarUrl);
+            if (s.avatarUrl) {
+              setAvatarUrl(s.avatarUrl);
+            } else if (user.photo_url) {
+              // Если нет сохраненного аватара, используем фото из Telegram
+              setAvatarUrl(user.photo_url);
+            }
+          } else if (user.photo_url) {
+            // Если настройки не загрузились, используем фото из Telegram
+            setAvatarUrl(user.photo_url);
           }
+          
           if (balanceRes.ok) {
             const data = await balanceRes.json();
             setStarsBalance(data.balance || 0);
@@ -225,7 +234,7 @@ export default function Profile() {
               }} />
               <button onClick={()=>document.getElementById('avatarInput')?.click()} className="relative group">
                 <img
-                  src={avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
+                  src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
                   alt="Avatar"
                   className="w-16 h-16 rounded-full border-4 border-background shadow-lg object-cover"
                 />
