@@ -1,4 +1,4 @@
-import { Settings, Heart, Lock, LogOut, BarChart3, Edit3, MessageCircle, Share2, Star, Sparkles } from "lucide-react";
+import { Settings, Heart, Lock, LogOut, BarChart3, Edit3, MessageCircle, Share2, Star, Sparkles, Shield, Baby, Wallet, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import StarsPayment from "@/components/StarsPayment";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -42,6 +42,11 @@ export default function Profile() {
   const [showAdsModal, setShowAdsModal] = useState(false);
   const [adsType, setAdsType] = useState<'story'|'post'>('story');
   const [adsHours, setAdsHours] = useState(1);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [showContentSafety, setShowContentSafety] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showChildMode, setShowChildMode] = useState(false);
 
   // Загружаем данные пользователя
   useEffect(() => {
@@ -291,8 +296,8 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Quick Actions - Single Row */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        {/* Quick Actions - Row 1 */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
           <button onClick={() => setShowStars(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
             <Star className="text-primary fill-primary" size={18} />
             <span className="text-[10px] font-medium">{starsBalance} ⭐</span>
@@ -301,26 +306,55 @@ export default function Profile() {
             <Sparkles className="text-yellow-400 fill-yellow-400" size={18} />
             <span className="text-[10px] font-medium">Premium</span>
           </button>
-          <button onClick={() => setShowSettings(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
-            <Settings className="text-foreground/70" size={18} />
-            <span className="text-[10px] font-medium">Еще</span>
-          </button>
-        </div>
-
-        {/* Secondary Actions */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
           <button onClick={() => setShowPosts(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
             <Heart className="text-accent" size={18} />
             <span className="text-[10px] font-medium">Посты</span>
+          </button>
+        </div>
+
+        {/* Row 2 */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          <button onClick={() => setShowProfileEditor(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <User className="text-blue-400" size={18} />
+            <span className="text-[10px] font-medium">Редактор</span>
+          </button>
+          <button onClick={() => setShowPrivacySettings(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <Lock className="text-green-400" size={18} />
+            <span className="text-[10px] font-medium">Приватность</span>
+          </button>
+          <button onClick={() => setShowContentSafety(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <Shield className="text-orange-400" size={18} />
+            <span className="text-[10px] font-medium">Безопасность</span>
+          </button>
+        </div>
+
+        {/* Row 3 */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          <button onClick={() => setShowWithdraw(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <Wallet className="text-emerald-400" size={18} />
+            <span className="text-[10px] font-medium">Вывод</span>
+          </button>
+          <button onClick={() => setShowChildMode(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <Baby className="text-pink-400" size={18} />
+            <span className="text-[10px] font-medium">Детский</span>
           </button>
           <button onClick={() => setShowAdsModal(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
             <BarChart3 className="text-purple-400" size={18} />
             <span className="text-[10px] font-medium">Реклама</span>
           </button>
+        </div>
+
+        {/* Row 4 */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <button onClick={() => setShowSupportModal(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
             <MessageCircle className="text-blue-400" size={18} />
             <span className="text-[10px] font-medium">Поддержка</span>
           </button>
+          <button onClick={() => setShowSettings(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+            <Settings className="text-foreground/70" size={18} />
+            <span className="text-[10px] font-medium">Настройки</span>
+          </button>
+          <div></div>
         </div>
 
         {/* Legal Buttons - Single Row */}
@@ -690,198 +724,6 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="max-w-2xl mx-auto pt-20 px-4">
-        {/* Profile Editor */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Редактор профиля</p>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Email адрес</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full glass-morphism rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="your@email.com"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Для восстановления доступа</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Имя пользователя</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full glass-morphism rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="@username"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Уникальный идентификатор</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">О себе</label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full glass-morphism rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                rows={3}
-                placeholder="Расскажите о себе..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Privacy & Security */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-            <Lock className="text-primary" size={16} />
-            Приватность и безопасность
-          </p>
-          <div className="space-y-3">
-            <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
-              <span className="font-medium">Приватный аккаунт</span>
-              <input
-                type="checkbox"
-                checked={privateAccount}
-                onChange={(e) => setPrivateAccount(e.target.checked)}
-                className="w-4 h-4 cursor-pointer"
-              />
-            </label>
-            <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
-              <span className="font-medium">Разрешить DM от кого угодно</span>
-              <input
-                type="checkbox"
-                checked={allowDMs}
-                onChange={(e) => setAllowDMs(e.target.checked)}
-                className="w-4 h-4 cursor-pointer"
-              />
-            </label>
-            <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
-              <span className="font-medium">Показать статус онлайн</span>
-              <input
-                type="checkbox"
-                checked={showOnlineStatus}
-                onChange={(e) => setShowOnlineStatus(e.target.checked)}
-                className="w-4 h-4 cursor-pointer"
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Content Safety (RF compliance, +18 blur, Child Mode) */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Безопасность контента</p>
-          <div className="space-y-3">
-            <div className="glass-card p-4 rounded-2xl">
-              <p className="text-xs text-muted-foreground mb-2">
-                Мы соблюдаем правила РФ. Запрещён контент 18+. Материалы, которые могут быть откровенными, автоматически скрываются (блюр). Вы можете открыть такие материалы вручную с предупреждением.
-              </p>
-              <label className="flex items-center justify-between cursor-pointer">
-                <span className="font-medium">Блюрить потенциальный 18+ контент</span>
-                <input
-                  type="checkbox"
-                  checked={blurAdultContent}
-                  onChange={(e) => setBlurAdultContent(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
-                />
-              </label>
-              <label className="flex items-center justify-between cursor-pointer mt-3">
-                <span className="font-medium">Разрешить показ по нажатию (с предупреждением)</span>
-                <input
-                  type="checkbox"
-                  checked={allowAdultReveal}
-                  onChange={(e) => setAllowAdultReveal(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
-                />
-              </label>
-            </div>
-
-            <div className="glass-card p-4 rounded-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Детский режим</p>
-                  <p className="text-xs text-muted-foreground">Усиленные ограничения контента, скрытие откровенных материалов, ограничение функций</p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={childMode}
-                  onChange={(e) => {
-                    const next = e.target.checked;
-                    if (!next) {
-                      // Выключение: запросить PIN если он установлен
-                      if (hasChildPin) {
-                        setShowConfirmPin(true);
-                        return;
-                      }
-                    } else {
-                      // Включение: если PIN не установлен — предложить установить
-                      if (!hasChildPin) {
-                        setShowSetPin(true);
-                      }
-                    }
-                    setChildMode(next);
-                  }}
-                  className="w-4 h-4 cursor-pointer"
-                />
-              </div>
-              {hasChildPin ? (
-                <p className="text-[11px] text-muted-foreground mt-2">PIN установлен. Для отключения Детского режима потребуется PIN.</p>
-              ) : (
-                <button onClick={()=>setShowSetPin(true)} className="mt-3 text-xs text-primary hover:underline">Установить PIN</button>
-              )}
-            </div>
-          </div>
-        </div>
-
-
-        {/* Admin Stars Withdraw (only for @MikySauce) */}
-        {user?.username === "MikySauce" && (
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">Админ</p>
-            <div className="glass-card p-4 rounded-2xl space-y-3">
-              <p className="text-sm font-semibold">Вывод звёзд без комиссии</p>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Сумма</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={adminWithdrawAmount}
-                  onChange={(e)=>setAdminWithdrawAmount(Number(e.target.value))}
-                  className="w-full glass-morphism rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-                />
-              </div>
-              <button
-                onClick={async ()=>{
-                  try {
-                    const res = await fetch('/api/stars/withdraw',{
-                      method:'POST',
-                      headers:{'Content-Type':'application/json'},
-                      body: JSON.stringify({ userId: user?.id?.toString(), amount: adminWithdrawAmount })
-                    });
-                    const data = await res.json();
-                    if(res.ok){
-                      alert(data.message || 'Вывод оформлен');
-                    } else {
-                      alert(data.error || 'Ошибка вывода');
-                    }
-                  } catch(e){
-                    alert('Ошибка сети');
-                  }
-                }}
-                className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 rounded-xl py-3 text-sm font-semibold"
-              >
-                Вывести
-              </button>
-              <p className="text-[11px] text-muted-foreground">Только для администратора @MikySauce. Без минимальной суммы и без комиссии.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Save Button */}
-        <button
-          onClick={handleSave}
-          className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 rounded-xl py-3 font-semibold mb-6"
-        >
-          Сохранить изменения
-        </button>
 
         {/* Danger Zone */}
         <div>
@@ -922,92 +764,6 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        {/* PIN Modals inside SettingsPanel */}
-        {showSetPin && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={()=>{setShowSetPin(false); setPinInput("");}}>
-            <div className="glass-card max-w-sm w-full p-5" onClick={(e)=>e.stopPropagation()}>
-              <h2 className="text-lg font-semibold mb-2">Установить PIN для Детского режима</h2>
-              <p className="text-xs text-muted-foreground mb-3">Введите 4-6 цифр. PIN потребуется для отключения режима.</p>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                minLength={4}
-                maxLength={6}
-                value={pinInput}
-                onChange={(e)=>setPinInput(e.target.value.replace(/[^0-9]/g, '').slice(0,6))}
-                className="w-full glass-morphism rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Введите PIN"
-              />
-              <div className="mt-4 flex justify-end gap-2">
-                <button className="glass-button px-3 py-2 rounded-xl text-xs" onClick={()=>{setShowSetPin(false); setPinInput("");}}>Отмена</button>
-                <button
-                  className="glass-button px-3 py-2 rounded-xl text-xs bg-primary/20 text-primary hover:bg-primary/30"
-                  onClick={async ()=>{
-                    if (pinInput.length < 4) return;
-                    try {
-                      const res = await fetch(`/api/users/${user?.id}/settings`,{
-                        method:'PUT',
-                        headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({ setChildModePin: pinInput, childMode: true })
-                      });
-                      if(res.ok){
-                        setHasChildPin(true);
-                        setChildMode(true);
-                        setShowSetPin(false);
-                        setPinInput("");
-                      }
-                    } catch {}
-                  }}
-                >Сохранить</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showConfirmPin && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={()=>{setShowConfirmPin(false); setPinInput("");}}>
-            <div className="glass-card max-w-sm w-full p-5" onClick={(e)=>e.stopPropagation()}>
-              <h2 className="text-lg font-semibold mb-2">Введите PIN для отключения</h2>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                minLength={4}
-                maxLength={6}
-                value={pinInput}
-                onChange={(e)=>setPinInput(e.target.value.replace(/[^0-9]/g, '').slice(0,6))}
-                className="w-full glass-morphism rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="PIN"
-              />
-              <div className="mt-4 flex justify-end gap-2">
-                <button className="glass-button px-3 py-2 rounded-xl text-xs" onClick={()=>{setShowConfirmPin(false); setPinInput("");}}>Отмена</button>
-                <button
-                  className="glass-button px-3 py-2 rounded-xl text-xs bg-primary/20 text-primary hover:bg-primary/30"
-                  onClick={async ()=>{
-                    try {
-                      const res = await fetch(`/api/users/${user?.id}/settings`,{
-                        method:'PUT',
-                        headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({ verifyChildModePin: pinInput, childMode: false })
-                      });
-                      const data = await res.json().catch(()=>({}));
-                      if(res.ok){
-                        setChildMode(false);
-                        setShowConfirmPin(false);
-                        setPinInput("");
-                      } else {
-                        alert(data.error || 'Неверный PIN');
-                      }
-                    } catch {
-                      alert('Ошибка сети');
-                    }
-                  }}
-                >Подтвердить</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
