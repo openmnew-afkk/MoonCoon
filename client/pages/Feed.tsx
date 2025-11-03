@@ -40,6 +40,41 @@ export default function Feed() {
   const [showPostMenu, setShowPostMenu] = useState<string | null>(null);
   const { premium } = usePremium();
 
+  // Загружаем посты с сервера
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/posts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.posts && Array.isArray(data.posts)) {
+          // Преобразуем посты с сервера в формат Feed
+          const formattedPosts = data.posts.map((post: any) => ({
+            id: post.id,
+            author: {
+              name: post.userId || 'User',
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`,
+              username: `@user${post.userId}`,
+            },
+            image: post.mediaType === 'image' ? post.media : undefined,
+            video: post.mediaType === 'video' ? post.media : undefined,
+            caption: post.caption || '',
+            likes: post.likes || 0,
+            comments: post.comments || 0,
+            stars: 0,
+            timestamp: new Date(post.createdAt).toLocaleDateString('ru-RU'),
+            liked: false,
+            starred: false,
+            showComments: false,
+          }));
+          setPosts(formattedPosts);
+        }
+      })
+      .catch((error) => {
+        console.error('Ошибка загрузки постов:', error);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   // Загружаем баланс звезд
   useEffect(() => {
     if (user?.id) {
@@ -153,16 +188,32 @@ export default function Feed() {
         <Stories />
 
         {/* Posts */}
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="glass-card overflow-hidden">
-              {/* Post Header */}
-              <div className="flex items-center gap-3 mb-3 p-3 sm:p-4 border-b border-glass-light/10">
-                <img
-                  src={post.author.avatar}
-                  alt={post.author.name}
-                  className="w-10 h-10 rounded-full flex-shrink-0"
-                />
+        <div className="space-y-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+              <p className="text-muted-foreground">Загрузка постов...</p>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <MessageCircle className="text-primary" size={40} />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Постов пока нет</h3>
+              <p className="text-muted-foreground">
+                Станьте первым, кто опубликует контент!
+              </p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <div key={post.id} className="glass-card overflow-hidden">
+                {/* Post Header */}
+                <div className="flex items-center gap-3 mb-3 p-3 sm:p-4 border-b border-glass-light/10">
+                  <img
+                    src={post.author.avatar}
+                    alt={post.author.name}
+                    className="w-10 h-10 rounded-full flex-shrink-0"
+                  />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-sm truncate">{post.author.name}</p>
@@ -354,8 +405,9 @@ export default function Feed() {
                   </button>
                 </div>
               ) : null}
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

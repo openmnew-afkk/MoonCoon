@@ -55,6 +55,13 @@ export default function Messages() {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
+    // TODO: Отправка сообщения на сервер
+    console.log('Отправка сообщения:', message);
+    setMessage('');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -78,6 +85,7 @@ export default function Messages() {
       </div>
 
       <div className="max-w-2xl mx-auto pt-20 h-[calc(100vh-5rem)] flex flex-col pb-24">
+        {
         {selectedConversation ? (
           <div className="flex flex-col h-full">
             {/* Conversation Header */}
@@ -137,10 +145,14 @@ export default function Messages() {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Message..."
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Напишите сообщение..."
                 className="flex-1 glass-morphism rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <button className="glass-button rounded-full p-2.5 bg-primary/20 text-primary hover:bg-primary/30">
+              <button 
+                onClick={handleSendMessage}
+                className="glass-button rounded-full p-2.5 bg-primary/20 text-primary hover:bg-primary/30 transition-all active:scale-95"
+              >
                 <Send size={20} />
               </button>
             </div>

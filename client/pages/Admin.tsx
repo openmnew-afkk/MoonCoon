@@ -54,10 +54,38 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [banReason, setBanReason] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
+  // Проверка прав администратора
   useEffect(() => {
-    loadUsers();
-  }, []);
+    const checkAdmin = async () => {
+      if (!user?.id) {
+        setAuthChecked(true);
+        return;
+      }
+
+      try {
+        // Проверяем статус админа
+        const response = await fetch(`/api/admin/check?userId=${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isAdmin) {
+            setIsAdmin(true);
+            // Сохраняем сессию
+            localStorage.setItem("admin_session", `admin_${user.id}`);
+            loadUsers();
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка проверки прав:', error);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    checkAdmin();
+  }, [user]);
 
   const loadUsers = async () => {
     const adminSession = localStorage.getItem("admin_session");

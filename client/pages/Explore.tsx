@@ -12,42 +12,8 @@ interface DiscoveryItem {
   saves: number;
 }
 
+// Пустой массив - контент будет добавляться пользователями
 const discoveryItems: DiscoveryItem[] = [
-  {
-    id: "1",
-    image: "https://images.unsplash.com/photo-1569163139394-de4798aa62b1?w=300&h=400&fit=crop",
-    title: "Минималистский дизайн",
-    author: "Sarah Design",
-    category: "Дизайн",
-    likes: 1200,
-    saves: 340,
-  },
-  {
-    id: "2",
-    image: "https://images.unsplash.com/photo-1606216174714-b922a92d6f1b?w=300&h=500&fit=crop",
-    title: "Цифровое искусство",
-    author: "Creative Mind",
-    category: "Искусство",
-    likes: 890,
-    saves: 210,
-  },
-  {
-    id: "3",
-    image: "https://images.unsplash.com/photo-1609042227505-5876f6aa4e90?w=300&h=350&fit=crop",
-    title: "Фотография природы",
-    author: "Nature Vibes",
-    category: "Фотография",
-    likes: 2340,
-    saves: 567,
-  },
-  {
-    id: "4",
-    image: "https://images.unsplash.com/photo-1616394584918-fd0fdd8c615b?w=300&h=450&fit=crop",
-    title: "UI/UX прототип",
-    author: "Design Studio",
-    category: "Дизайн",
-    likes: 1567,
-    saves: 423,
   },
   {
     id: "5",
