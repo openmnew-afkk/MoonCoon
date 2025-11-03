@@ -13,10 +13,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/serverless.ts": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  ]
 }
