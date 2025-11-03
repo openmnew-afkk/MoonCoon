@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Settings as SettingsIcon,
   Bell,
@@ -5,31 +6,41 @@ import {
   Palette,
   Globe,
   LogOut,
+  X,
 } from "lucide-react";
 
 export default function Settings() {
-  return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div
-        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <SettingsIcon className="text-primary" size={28} />
-            Настройки
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Настройте ваше приложение
-          </p>
-        </div>
-      </div>
+  const [showSettings, setShowSettings] = useState(false);
 
-      <div
-        className="max-w-2xl mx-auto px-4"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 7rem)" }}
+  return (
+    <>
+      {/* Trigger Button - можно разместить где угодно */}
+      <button 
+        onClick={() => setShowSettings(true)}
+        className="glass-button p-3 rounded-full"
       >
+        <SettingsIcon className="text-primary" size={20} />
+      </button>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowSettings(false)}>
+          <div className="glass-card modal-content rounded-2xl p-4 contain-layout max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 sticky top-0 bg-glass-light/90 backdrop-blur-sm p-2 -m-2 rounded-xl">
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <SettingsIcon className="text-primary" size={24} />
+                Настройки
+              </h1>
+              <button 
+                onClick={() => setShowSettings(false)} 
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
         {/* Account Settings */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Account</h3>
@@ -173,7 +184,10 @@ export default function Settings() {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

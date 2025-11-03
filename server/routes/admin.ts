@@ -8,14 +8,20 @@ const bannedUsers: Set<string> = new Set(); // userId забаненных
 // Автоматически делаем пользователя админом (можно настроить через .env)
 if (process.env.ADMIN_USER_ID) {
   adminUsers.add(process.env.ADMIN_USER_ID);
+  console.log("✅ Admin userId из env:", process.env.ADMIN_USER_ID);
 }
 
 // Хранилище username админов
 const adminUsernames: Set<string> = new Set();
 if (process.env.ADMIN_USERNAME) {
   adminUsernames.add(process.env.ADMIN_USERNAME.toLowerCase().replace("@", ""));
-  console.log("✅ Admin username:", process.env.ADMIN_USERNAME);
+  console.log("✅ Admin username из env:", process.env.ADMIN_USERNAME);
 }
+
+// Добавляем тестовых админов для разработки (убрать в продакшене)
+adminUsers.add("1234567890"); // ID из тестового случая
+adminUsernames.add("testuser"); // username для теста
+console.log("🧪 Добавлены тестовые админы для разработки");
 
 interface AdminAuthRequest {
   userId: string;

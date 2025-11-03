@@ -83,7 +83,20 @@ export default function Admin() {
           params.append("username", user.username);
         }
 
+        console.log("🔍 Проверяем админ статус для:", { 
+          userId: user.id, 
+          username: user.username,
+          url: `/api/admin/check?${params}`
+        });
+
         const response = await fetch(`/api/admin/check?${params}`);
+        
+        console.log("🌐 Ответ сервера:", {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+
         if (response.ok) {
           const data = await response.json();
           console.log("🔑 Admin check result:", data);
@@ -91,10 +104,15 @@ export default function Admin() {
             setIsAdmin(true);
             localStorage.setItem("admin_session", `admin_${user.id}`);
             loadUsers();
+          } else {
+            console.log("❌ Пользователь не является админом");
           }
+        } else {
+          const errorText = await response.text();
+          console.error("❌ Ошибка HTTP:", response.status, errorText);
         }
       } catch (error) {
-        console.error("Ошибка проверки прав:", error);
+        console.error("❌ Ошибка сети или подключения к серверу:", error);
       } finally {
         setAuthChecked(true);
       }

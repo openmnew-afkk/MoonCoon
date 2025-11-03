@@ -28,8 +28,8 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
-  app.use(express.json({ limit: "100mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+  app.use(express.json({ limit: "25mb" })); // Снижено с 100mb до 25mb для Vercel
+  app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
   // Временное in-memory хранилище
   const posts: any[] = [];
@@ -93,10 +93,21 @@ export function createServer() {
   app.post("/api/posts", (req, res) => {
     try {
       console.log("📥 Получен запрос на создание поста");
+      console.log("Body size:", JSON.stringify(req.body || {}).length, "bytes");
       console.log("Body keys:", Object.keys(req.body || {}));
 
       const { userId, caption, visibility, media, mediaType, type } =
         req.body || {};
+
+      // Детальная диагностика
+      console.log("📊 Данные запроса:", {
+        userId: userId ? "✅ Есть" : "❌ Нет",
+        caption: caption ? `✅ ${caption.length} символов` : "⚠️ Пустой",
+        visibility: visibility || "public",
+        mediaType: mediaType || "❌ Не указан",
+        mediaSize: media ? `✅ ${media.length} символов` : "❌ Нет",
+        type: type || "post"
+      });
 
       // Проверка обязательных полей
       if (!userId) {
@@ -110,6 +121,12 @@ export function createServer() {
       if (!mediaType) {
         console.error("❌ Отсутствует mediaType");
         return res.status(400).json({ error: "Не указан тип медиа" });
+      }
+
+      // Проверка размера медиа
+      if (media.length > 25 * 1024 * 1024) {
+        console.error("❌ Медиа файл слишком большой:", media.length);
+        return res.status(413).json({ error: "Файл слишком большой. Максимум 25MB" });
       }
 
       // Если это история, добавляем в массив stories
