@@ -123,33 +123,60 @@ export default function Create() {
       alert('Добавьте фото или видео');
       return;
     }
+
+    if (!user?.id) {
+      alert('Необходима авторизация в Telegram');
+      return;
+    }
+
     const mediaPayload = await getMediaPayload();
     if (!mediaPayload) {
       alert('Не удалось подготовить медиа');
       return;
     }
     try {
-      console.log('Публикация поста...', { userId: user?.id, caption, visibility, mediaType: mediaPayload.mediaType });
+      const payload = {
+        userId: user.id.toString(),
+        caption: caption || '',
+        visibility: visibility || 'public',
+        media: mediaPayload.media,
+        mediaType: mediaPayload.mediaType,
+      };
+
+      console.log('Публикация поста...', { 
+        userId: payload.userId, 
+        captionLength: payload.caption.length,
+        visibility: payload.visibility,
+        mediaType: payload.mediaType,
+        mediaSize: payload.media.length 
+      });
+
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id?.toString() || '0',
-          caption,
-          visibility,
-          ...mediaPayload,
-        }),
+        body: JSON.stringify(payload),
       });
+
       console.log('Ответ сервера:', res.status, res.statusText);
+
       if (res.ok) {
         const data = await res.json();
         console.log('Пост опубликован:', data);
         resetForm();
         alert('✅ Пост успешно опубликован!');
       } else {
-        const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }));
-        console.error('Ошибка публикации:', err);
-        alert(`❌ Ошибка публикации:\n${err.error || 'Проверьте консоль'}`);
+        const errorText = await res.text();
+        console.error('Ошибка сервера:', errorText);
+        
+        let errorMessage = 'Неизвестная ошибка';
+        try {
+          const err = JSON.parse(errorText);
+          errorMessage = err.error || err.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        alert(`❌ Ошибка публикации (${res.status}):\n${errorMessage}`);
       }
     } catch (e: any) {
       console.error('Ошибка сети:', e);

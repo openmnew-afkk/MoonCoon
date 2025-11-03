@@ -84,10 +84,25 @@ export function createServer() {
 
   app.post('/api/posts', (req, res) => {
     try {
-      const { userId, caption, visibility, media, mediaType } = req.body;
-      if (!userId || !media || !mediaType) {
-        return res.status(400).json({ error: 'Недостаточно данных' });
+      console.log('📥 Получен запрос на создание поста');
+      console.log('Body keys:', Object.keys(req.body || {}));
+      
+      const { userId, caption, visibility, media, mediaType } = req.body || {};
+      
+      // Проверка обязательных полей
+      if (!userId) {
+        console.error('❌ Отсутствует userId');
+        return res.status(400).json({ error: 'Не указан ID пользователя' });
       }
+      if (!media) {
+        console.error('❌ Отсутствует media');
+        return res.status(400).json({ error: 'Не указано медиа' });
+      }
+      if (!mediaType) {
+        console.error('❌ Отсутствует mediaType');
+        return res.status(400).json({ error: 'Не указан тип медиа' });
+      }
+      
       const post = {
         id: Date.now().toString(),
         userId,
@@ -100,12 +115,14 @@ export function createServer() {
         comments: 0,
         pinned: false
       };
+      
       posts.push(post);
-      console.log('✅ Пост создан:', post.id);
+      console.log('✅ Пост создан:', post.id, '| userId:', userId, '| mediaType:', mediaType);
+      
       res.json({ success: true, post });
-    } catch (error) {
-      console.error('❌ Ошибка создания поста:', error);
-      res.status(500).json({ error: 'Ошибка сервера' });
+    } catch (error: any) {
+      console.error('❌ Ошибка создания поста:', error.message || error);
+      res.status(500).json({ error: 'Ошибка сервера: ' + (error.message || 'Неизвестная ошибка') });
     }
   });
 
