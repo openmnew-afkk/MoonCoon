@@ -346,6 +346,80 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Telegram Stars API
+    if (url.startsWith("/api/stars/balance") && req.method === "GET") {
+      const { userId } = req.query;
+      if (!userId || typeof userId !== "string") {
+        return res.status(400).json({ error: "User ID required" });
+      }
+
+      const balance = userStars[userId] || 0;
+      console.log("⭐ Get stars balance:", { userId, balance });
+      return res.json({ balance });
+    }
+
+    if (url === "/api/stars/add" && req.method === "POST") {
+      const { userId, stars } = req.body || {};
+      if (!userId || typeof stars !== "number") {
+        return res.status(400).json({ error: "User ID and stars amount required" });
+      }
+
+      // Add stars to user balance
+      userStars[userId] = (userStars[userId] || 0) + stars;
+
+      console.log("⭐ Add stars:", { userId, stars, newBalance: userStars[userId] });
+      return res.json({ success: true, balance: userStars[userId] });
+    }
+
+    if (url === "/api/stars/spend" && req.method === "POST") {
+      const { userId, stars, purpose } = req.body || {};
+      if (!userId || typeof stars !== "number") {
+        return res.status(400).json({ error: "User ID and stars amount required" });
+      }
+
+      const currentBalance = userStars[userId] || 0;
+      if (currentBalance < stars) {
+        return res.status(400).json({ error: "Insufficient stars balance" });
+      }
+
+      // Spend stars
+      userStars[userId] = currentBalance - stars;
+
+      console.log("⭐ Spend stars:", { userId, stars, purpose, newBalance: userStars[userId] });
+      return res.json({ success: true, balance: userStars[userId] });
+    }
+
+    if (url === "/api/stars/send" && req.method === "POST") {
+      const { fromUserId, toUserId, stars, message } = req.body || {};
+      if (!fromUserId || !toUserId || typeof stars !== "number") {
+        return res.status(400).json({ error: "From/To user IDs and stars amount required" });
+      }
+
+      const senderBalance = userStars[fromUserId] || 0;
+      if (senderBalance < stars) {
+        return res.status(400).json({ error: "Insufficient stars balance" });
+      }
+
+      // Transfer stars
+      userStars[fromUserId] = senderBalance - stars;
+      userStars[toUserId] = (userStars[toUserId] || 0) + stars;
+
+      console.log("⭐ Send stars:", { 
+        fromUserId, 
+        toUserId, 
+        stars, 
+        message, 
+        senderBalance: userStars[fromUserId],
+        receiverBalance: userStars[toUserId]
+      });
+      
+      return res.json({ 
+        success: true, 
+        senderBalance: userStars[fromUserId],
+        receiverBalance: userStars[toUserId]
+      });
+    }
+
     // Search API
     if (url.startsWith("/api/search")) {
       const query = req.query.q as string;

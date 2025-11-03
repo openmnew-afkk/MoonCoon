@@ -19,7 +19,10 @@ const MAX_VIDEO_DURATION_FREE = 60; // 60 секунд для всех бесп�
 const MAX_VIDEO_DURATION_STANDARD = 5 * 60; // 5 минут для Premium
 const MAX_VIDEO_DURATION_BLOGGER = 18 * 60; // 18 минут для Premium Blogger
 
-export default function Create() {
+export { default } from './CreateInstagram';
+
+// Legacy Create component (keeping for reference)
+function CreateLegacy() {
   const [mode, setMode] = useState<CreateMode>("post");
   const [caption, setCaption] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
