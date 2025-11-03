@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [20.x]
 
     steps:
       - name: Checkout code
@@ -32,11 +32,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Check available scripts
+        run: pnpm run
+
       - name: Run type check
         run: pnpm typecheck
 
       - name: Run linter
-        run: pnpm run lint
+        run: pnpm lint
 
       - name: Run tests
         run: pnpm test
@@ -57,7 +60,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 20.x
           cache: "pnpm"
 
       - name: Install dependencies
