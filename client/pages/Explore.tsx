@@ -18,9 +18,18 @@ const discoveryItems: DiscoveryItem[] = [];
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"popular" | "recent" | "likes">("popular");
+  const [sortBy, setSortBy] = useState<"popular" | "recent" | "likes">(
+    "popular",
+  );
 
-  const categories = ["Все", "Дизайн", "Фотография", "Искусство", "Веб", "Путешествие"];
+  const categories = [
+    "Все",
+    "Дизайн",
+    "Фотография",
+    "Искусство",
+    "Веб",
+    "Путешествие",
+  ];
 
   const filteredItems = discoveryItems
     .filter((item) => {
@@ -29,7 +38,10 @@ export default function Explore() {
         item.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory = !selectedCategory || selectedCategory === "Все" || item.category === selectedCategory;
+      const matchesCategory =
+        !selectedCategory ||
+        selectedCategory === "Все" ||
+        item.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     })
@@ -48,17 +60,24 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          {/* Empty header */}
-        </div>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-2xl mx-auto px-4 py-4">{/* Empty header */}</div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
+      <div
+        className="max-w-2xl mx-auto px-4 pb-24"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
+      >
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
             <input
               type="text"
               value={searchQuery}
@@ -73,19 +92,24 @@ export default function Explore() {
         <div className="mb-6 space-y-4">
           {/* Category Filter */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-2">Категории</p>
+            <p className="text-sm font-medium text-muted-foreground mb-2">
+              Категории
+            </p>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() =>
-                    setSelectedCategory(selectedCategory === category ? null : category)
+                    setSelectedCategory(
+                      selectedCategory === category ? null : category,
+                    )
                   }
                   className={cn(
                     "glass-button rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all",
-                    selectedCategory === category || (selectedCategory === null && category === "Все")
+                    selectedCategory === category ||
+                      (selectedCategory === null && category === "Все")
                       ? "bg-primary/20 text-primary"
-                      : "opacity-70 hover:opacity-100"
+                      : "opacity-70 hover:opacity-100",
                   )}
                 >
                   {category}
@@ -96,13 +120,15 @@ export default function Explore() {
 
           {/* Sort Filter */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-2">Сортировка</p>
+            <p className="text-sm font-medium text-muted-foreground mb-2">
+              Сортировка
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setSortBy("popular")}
                 className={cn(
                   "glass-button rounded-xl px-4 py-2 text-sm font-medium transition-all",
-                  sortBy === "popular" ? "bg-primary/20 text-primary" : ""
+                  sortBy === "popular" ? "bg-primary/20 text-primary" : "",
                 )}
               >
                 Популярные
@@ -111,7 +137,7 @@ export default function Explore() {
                 onClick={() => setSortBy("likes")}
                 className={cn(
                   "glass-button rounded-xl px-4 py-2 text-sm font-medium transition-all",
-                  sortBy === "likes" ? "bg-primary/20 text-primary" : ""
+                  sortBy === "likes" ? "bg-primary/20 text-primary" : "",
                 )}
               >
                 По лайкам
@@ -120,7 +146,7 @@ export default function Explore() {
                 onClick={() => setSortBy("recent")}
                 className={cn(
                   "glass-button rounded-xl px-4 py-2 text-sm font-medium transition-all",
-                  sortBy === "recent" ? "bg-primary/20 text-primary" : ""
+                  sortBy === "recent" ? "bg-primary/20 text-primary" : "",
                 )}
               >
                 Новые
@@ -137,15 +163,17 @@ export default function Explore() {
               Тренды сейчас
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-8">
-              {["#Дизайн", "#Фотография", "#Путешествие", "#Искусство"].map((tag) => (
-                <div
-                  key={tag}
-                  className="glass-card hover:bg-glass-light/40 cursor-pointer transition-all"
-                >
-                  <p className="font-semibold text-accent text-lg">{tag}</p>
-                  <p className="text-xs text-muted-foreground">2.5M постов</p>
-                </div>
-              ))}
+              {["#Дизайн", "#Фотография", "#Путешествие", "#Искусство"].map(
+                (tag) => (
+                  <div
+                    key={tag}
+                    className="glass-card hover:bg-glass-light/40 cursor-pointer transition-all"
+                  >
+                    <p className="font-semibold text-accent text-lg">{tag}</p>
+                    <p className="text-xs text-muted-foreground">2.5M постов</p>
+                  </div>
+                ),
+              )}
             </div>
           </div>
         )}
@@ -174,8 +202,12 @@ export default function Explore() {
                     onContextMenu={(e) => e.preventDefault()}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                    <h3 className="font-semibold text-white mb-1">{item.title}</h3>
-                    <p className="text-xs text-gray-300 mb-2">от {item.author}</p>
+                    <h3 className="font-semibold text-white mb-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-gray-300 mb-2">
+                      от {item.author}
+                    </p>
                     <div className="flex items-center justify-between text-white text-xs">
                       <span className="px-2 py-1 bg-white/20 rounded-full backdrop-blur-sm">
                         {item.category}
@@ -194,8 +226,13 @@ export default function Explore() {
             ))
           ) : (
             <div className="col-span-full py-12 text-center">
-              <Sparkles className="mx-auto text-muted-foreground mb-4" size={40} />
-              <p className="text-muted-foreground font-medium mb-2">Ничего не найдено</p>
+              <Sparkles
+                className="mx-auto text-muted-foreground mb-4"
+                size={40}
+              />
+              <p className="text-muted-foreground font-medium mb-2">
+                Ничего не найдено
+              </p>
               <p className="text-xs text-muted-foreground">
                 Попробуйте другой поисковый запрос или категорию
               </p>

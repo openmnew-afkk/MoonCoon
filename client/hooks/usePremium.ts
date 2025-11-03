@@ -39,4 +39,3 @@ export function usePremium() {
 
   return { premium, loading, setPremium };
 }
-

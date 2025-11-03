@@ -56,19 +56,43 @@ interface TelegramWebApp {
     disable: () => void;
     showProgress: (leaveActive: boolean) => void;
     hideProgress: () => void;
-    setParams: (params: { text?: string; color?: string; text_color?: string; is_active?: boolean; is_visible?: boolean }) => void;
+    setParams: (params: {
+      text?: string;
+      color?: string;
+      text_color?: string;
+      is_active?: boolean;
+      is_visible?: boolean;
+    }) => void;
   };
   HapticFeedback: {
-    impactOccurred: (style: "light" | "medium" | "heavy" | "rigid" | "soft") => void;
+    impactOccurred: (
+      style: "light" | "medium" | "heavy" | "rigid" | "soft",
+    ) => void;
     notificationOccurred: (type: "error" | "success" | "warning") => void;
     selectionChanged: () => void;
   };
   CloudStorage: {
-    setItem: (key: string, value: string, callback?: (error: Error | null, success: boolean) => void) => void;
-    getItem: (key: string, callback: (error: Error | null, value: string | null) => void) => void;
-    getItems: (keys: string[], callback: (error: Error | null, values: Record<string, string>) => void) => void;
-    removeItem: (key: string, callback?: (error: Error | null, success: boolean) => void) => void;
-    removeItems: (keys: string[], callback?: (error: Error | null, success: boolean) => void) => void;
+    setItem: (
+      key: string,
+      value: string,
+      callback?: (error: Error | null, success: boolean) => void,
+    ) => void;
+    getItem: (
+      key: string,
+      callback: (error: Error | null, value: string | null) => void,
+    ) => void;
+    getItems: (
+      keys: string[],
+      callback: (error: Error | null, values: Record<string, string>) => void,
+    ) => void;
+    removeItem: (
+      key: string,
+      callback?: (error: Error | null, success: boolean) => void,
+    ) => void;
+    removeItems: (
+      keys: string[],
+      callback?: (error: Error | null, success: boolean) => void,
+    ) => void;
     getKeys: (callback: (error: Error | null, keys: string[]) => void) => void;
   };
   ready: () => void;
@@ -82,15 +106,35 @@ interface TelegramWebApp {
   openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
   openTelegramLink: (url: string) => void;
   openInvoice: (url: string, callback?: (status: string) => void) => void;
-  showPopup: (params: { title?: string; message: string; buttons?: Array<{ id?: string; type?: "default" | "ok" | "close" | "cancel" | "destructive"; text: string }> }, callback?: (id: string) => void) => void;
+  showPopup: (
+    params: {
+      title?: string;
+      message: string;
+      buttons?: Array<{
+        id?: string;
+        type?: "default" | "ok" | "close" | "cancel" | "destructive";
+        text: string;
+      }>;
+    },
+    callback?: (id: string) => void,
+  ) => void;
   showAlert: (message: string, callback?: () => void) => void;
-  showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void;
-  showScanQrPopup: (params: { text?: string }, callback?: (data: string) => void) => void;
+  showConfirm: (
+    message: string,
+    callback?: (confirmed: boolean) => void,
+  ) => void;
+  showScanQrPopup: (
+    params: { text?: string },
+    callback?: (data: string) => void,
+  ) => void;
   closeScanQrPopup: () => void;
   readTextFromClipboard: (callback?: (text: string) => void) => void;
   requestWriteAccess: (callback?: (granted: boolean) => void) => void;
   requestContact: (callback?: (granted: boolean) => void) => void;
-  openTgLink: (path_full: string, options?: { try_instant_view?: boolean }) => void;
+  openTgLink: (
+    path_full: string,
+    options?: { try_instant_view?: boolean },
+  ) => void;
   setHeaderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
 }
@@ -115,14 +159,17 @@ export function useTelegram() {
           const tg = window.Telegram.WebApp;
           tg.ready();
           tg.expand();
-          
+
           setWebApp(tg);
           setUser(tg.initDataUnsafe?.user || null);
           setIsReady(true);
 
           // Применяем тему Telegram
           if (tg.themeParams?.bg_color) {
-            document.documentElement.style.setProperty('--background', tg.themeParams.bg_color);
+            document.documentElement.style.setProperty(
+              "--background",
+              tg.themeParams.bg_color,
+            );
           }
         } else {
           // Если Telegram Web App не доступен (запуск в обычном браузере)
@@ -140,22 +187,24 @@ export function useTelegram() {
     } else {
       // Если скрипт не загружен, пытаемся загрузить
       // Но также устанавливаем ready, чтобы приложение работало без Telegram
-      const script = document.createElement('script');
-      script.src = 'https://telegram.org/js/telegram-web-app.js';
+      const script = document.createElement("script");
+      script.src = "https://telegram.org/js/telegram-web-app.js";
       script.async = true;
       script.onload = initTelegram;
       script.onerror = () => {
         // Если скрипт не загрузился (например, не в Telegram), просто продолжаем
-        console.warn("Telegram Web App SDK не загружен. Работаем в обычном режиме.");
+        console.warn(
+          "Telegram Web App SDK не загружен. Работаем в обычном режиме.",
+        );
         setIsReady(true);
       };
       document.head.appendChild(script);
-      
+
       // Таймаут на случай, если скрипт долго грузится
       const timeoutId = setTimeout(() => {
         setIsReady(true);
       }, 1000);
-      
+
       // Очистка таймаута если компонент размонтирован
       return () => clearTimeout(timeoutId);
     }
@@ -167,4 +216,3 @@ export function useTelegram() {
     isReady,
   };
 }
-

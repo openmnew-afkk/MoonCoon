@@ -29,24 +29,24 @@ const AppContent = () => {
 
   useEffect(() => {
     enableCopyProtection();
-    
+
     // Принудительно устанавливаем темную тему
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
-    document.body.style.backgroundColor = 'hsl(217 32.6% 10%)';
-    document.body.style.color = 'hsl(210 40% 98%)';
-    
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
+    document.body.style.backgroundColor = "hsl(217 32.6% 10%)";
+    document.body.style.color = "hsl(210 40% 98%)";
+
     if (webApp) {
       // Настраиваем приложение
       webApp.expand();
       webApp.enableClosingConfirmation();
-      
+
       // Устанавливаем темный цвет заголовка и фона
       if (webApp.setHeaderColor) {
-        webApp.setHeaderColor('#0f1419');
+        webApp.setHeaderColor("#0f1419");
       }
       if (webApp.setBackgroundColor) {
-        webApp.setBackgroundColor('#0f1419');
+        webApp.setBackgroundColor("#0f1419");
       }
     }
   }, [webApp]);

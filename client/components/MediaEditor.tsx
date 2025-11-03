@@ -1,5 +1,20 @@
 import { useState, useRef, useEffect } from "react";
-import { RotateCw, Crop, Sun, Contrast as ContrastIcon, Copy, Check, Filter, Circle, Droplet, Sparkles, Move, ZoomIn, ZoomOut, X } from "lucide-react";
+import {
+  RotateCw,
+  Crop,
+  Sun,
+  Contrast as ContrastIcon,
+  Copy,
+  Check,
+  Filter,
+  Circle,
+  Droplet,
+  Sparkles,
+  Move,
+  ZoomIn,
+  ZoomOut,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MediaEditorProps {
@@ -19,7 +34,11 @@ const PRESET_FILTERS = [
   { name: "Темный", filter: "brightness(80%) contrast(110%)" },
 ];
 
-export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorProps) {
+export default function MediaEditor({
+  imageUrl,
+  onSave,
+  onCancel,
+}: MediaEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState(0);
@@ -30,7 +49,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
   const [warmth, setWarmth] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState<string>("none");
   const [saved, setSaved] = useState(false);
-  
+
   // Позиция и масштаб для перемещения
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
@@ -44,17 +63,17 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
     img.onload = () => {
       const maxWidth = 1080; // Стандартный размер для соцсетей
       const maxHeight = 1080;
-      
+
       let width = img.width;
       let height = img.height;
-      
+
       // Масштабируем до максимальных размеров, сохраняя пропорции
       if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
         width = width * ratio;
         height = height * ratio;
       }
-      
+
       setImageSize({ width, height });
     };
     img.src = imageUrl;
@@ -116,7 +135,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
       // Устанавливаем размер canvas
       const finalWidth = imageSize.width || img.width;
       const finalHeight = imageSize.height || img.height;
-      
+
       canvas.width = finalWidth;
       canvas.height = finalHeight;
 
@@ -135,20 +154,20 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
       // Применяем трансформации (центрируем)
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      
+
       ctx.translate(centerX, centerY);
       ctx.rotate((rotation * Math.PI) / 180);
-      
+
       // Применяем позицию и масштаб
       const scaledWidth = finalWidth * scale;
       const scaledHeight = finalHeight * scale;
-      
+
       ctx.drawImage(
-        img, 
-        position.x - scaledWidth / 2, 
+        img,
+        position.x - scaledWidth / 2,
         position.y - scaledHeight / 2,
         scaledWidth,
-        scaledHeight
+        scaledHeight,
       );
 
       // Восстанавливаем состояние
@@ -181,7 +200,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'filters' | 'adjust'>('filters');
+  const [activeTab, setActiveTab] = useState<"filters" | "adjust">("filters");
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
@@ -201,12 +220,12 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
           onClick={handleSave}
           className="text-primary font-semibold hover:opacity-80 transition-opacity"
         >
-          {saved ? 'Готово' : 'Применить'}
+          {saved ? "Готово" : "Применить"}
         </button>
       </div>
 
       {/* Preview с возможностью перемещения и масштабирования */}
-      <div 
+      <div
         ref={containerRef}
         className="relative bg-black flex-1 flex items-center justify-center cursor-move overflow-hidden"
         onMouseDown={handleMouseDown}
@@ -240,7 +259,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
           />
         </div>
         <canvas ref={canvasRef} className="hidden" />
-        
+
         {/* Индикаторы управления */}
         <div className="absolute bottom-4 right-4 flex gap-2">
           <button
@@ -263,19 +282,23 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
         {/* Tabs */}
         <div className="flex border-b border-white/10">
           <button
-            onClick={() => setActiveTab('filters')}
+            onClick={() => setActiveTab("filters")}
             className={cn(
               "flex-1 py-3 text-sm font-medium transition-all",
-              activeTab === 'filters' ? 'text-primary border-b-2 border-primary' : 'text-white/60'
+              activeTab === "filters"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/60",
             )}
           >
             Фильтры
           </button>
           <button
-            onClick={() => setActiveTab('adjust')}
+            onClick={() => setActiveTab("adjust")}
             className={cn(
               "flex-1 py-3 text-sm font-medium transition-all",
-              activeTab === 'adjust' ? 'text-primary border-b-2 border-primary' : 'text-white/60'
+              activeTab === "adjust"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/60",
             )}
           >
             Настройки
@@ -283,7 +306,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
         </div>
 
         {/* Filters Tab */}
-        {activeTab === 'filters' && (
+        {activeTab === "filters" && (
           <div className="p-4">
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {PRESET_FILTERS.map((preset, i) => (
@@ -295,7 +318,9 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
                   <div
                     className={cn(
                       "w-16 h-16 rounded-xl overflow-hidden border-2 transition-all",
-                      selectedFilter === preset.filter ? 'border-primary' : 'border-white/20'
+                      selectedFilter === preset.filter
+                        ? "border-primary"
+                        : "border-white/20",
                     )}
                   >
                     <img
@@ -305,10 +330,14 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
                       style={{ filter: preset.filter }}
                     />
                   </div>
-                  <span className={cn(
-                    "text-xs font-medium",
-                    selectedFilter === preset.filter ? 'text-primary' : 'text-white/60'
-                  )}>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      selectedFilter === preset.filter
+                        ? "text-primary"
+                        : "text-white/60",
+                    )}
+                  >
                     {preset.name}
                   </span>
                 </button>
@@ -318,7 +347,7 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
         )}
 
         {/* Adjust Tab */}
-        {activeTab === 'adjust' && (
+        {activeTab === "adjust" && (
           <div className="p-4 space-y-4 max-h-64 overflow-y-auto">
             {/* Brightness */}
             <div>
@@ -405,7 +434,6 @@ export default function MediaEditor({ imageUrl, onSave, onCancel }: MediaEditorP
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

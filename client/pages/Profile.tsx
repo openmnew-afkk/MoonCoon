@@ -1,4 +1,20 @@
-import { Settings, Heart, Lock, LogOut, BarChart3, Edit3, MessageCircle, Share2, Star, Sparkles, Shield, Baby, Wallet, User, X } from "lucide-react";
+import {
+  Settings,
+  Heart,
+  Lock,
+  LogOut,
+  BarChart3,
+  Edit3,
+  MessageCircle,
+  Share2,
+  Star,
+  Sparkles,
+  Shield,
+  Baby,
+  Wallet,
+  User,
+  X,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import StarsPayment from "@/components/StarsPayment";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -40,7 +56,7 @@ export default function Profile() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showAdsModal, setShowAdsModal] = useState(false);
-  const [adsType, setAdsType] = useState<'story'|'post'>('story');
+  const [adsType, setAdsType] = useState<"story" | "post">("story");
   const [adsHours, setAdsHours] = useState(1);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
@@ -73,7 +89,9 @@ export default function Profile() {
           }
 
           // Загружаем баланс звезд
-          const balanceRes = await fetch(`/api/stars/balance?userId=${user.id}`);
+          const balanceRes = await fetch(
+            `/api/stars/balance?userId=${user.id}`,
+          );
 
           // Загружаем настройки (аватар)
           const settingsRes = await fetch(`/api/users/${user.id}/settings`);
@@ -89,7 +107,7 @@ export default function Profile() {
             // Если настройки не загрузились, используем фото из Telegram
             setAvatarUrl(user.photo_url);
           }
-          
+
           if (balanceRes.ok) {
             const data = await balanceRes.json();
             setStarsBalance(data.balance || 0);
@@ -141,8 +159,14 @@ export default function Profile() {
 
   if (showPremium) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPremium(false)}>
-        <div className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        onClick={() => setShowPremium(false)}
+      >
+        <div
+          className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="sticky top-0 glass-morphism border-b border-glass-light/20 p-4 flex items-center justify-between z-10">
             <h1 className="text-xl font-bold flex items-center gap-2">
               <Sparkles className="text-yellow-400 fill-yellow-400" size={24} />
@@ -172,8 +196,14 @@ export default function Profile() {
 
   if (showStars) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowStars(false)}>
-        <div className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        onClick={() => setShowStars(false)}
+      >
+        <div
+          className="glass-card max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="sticky top-0 glass-morphism border-b border-glass-light/20 p-4 flex items-center justify-between z-10">
             <h1 className="text-xl font-bold flex items-center gap-2">
               <Star className="text-yellow-400 fill-yellow-400" size={24} />
@@ -207,13 +237,17 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          {/* Empty header */}
-        </div>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-2xl mx-auto px-4 py-4">{/* Empty header */}</div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
+      <div
+        className="max-w-2xl mx-auto px-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
+      >
         {/* Profile Header - Minimal */}
         <div className="glass-card mb-4 overflow-hidden">
           {/* Cover - Minimal */}
@@ -223,27 +257,40 @@ export default function Profile() {
           <div className="px-4 pb-4">
             {/* Avatar + Name - Centered */}
             <div className="flex flex-col items-center -mt-16 mb-4">
-              <input id="avatarInput" type="file" accept="image/*" className="hidden" onChange={async (e)=>{
-                const file = e.target.files?.[0];
-                if (!file || !user?.id) return;
-                const reader = new FileReader();
-                reader.onload = async () => {
-                  const dataUrl = reader.result as string;
-                  setAvatarUrl(dataUrl);
-                  try {
-                    await fetch(`/api/users/${user.id}/settings`,{
-                      method:'PUT',
-                      headers:{'Content-Type':'application/json'},
-                      body: JSON.stringify({ avatarUrl: dataUrl })
-                    });
-                  } catch {}
-                };
-                reader.readAsDataURL(file);
-              }} />
-              <button onClick={()=>document.getElementById('avatarInput')?.click()} className="relative group mb-3">
+              <input
+                id="avatarInput"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user?.id) return;
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const dataUrl = reader.result as string;
+                    setAvatarUrl(dataUrl);
+                    try {
+                      await fetch(`/api/users/${user.id}/settings`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ avatarUrl: dataUrl }),
+                      });
+                    } catch {}
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+              <button
+                onClick={() => document.getElementById("avatarInput")?.click()}
+                className="relative group mb-3"
+              >
                 <div className="relative">
                   <img
-                    src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
+                    src={
+                      avatarUrl ||
+                      user?.photo_url ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || "currentuser"}`
+                    }
                     alt="Avatar"
                     className="w-28 h-28 rounded-full profile-avatar-glow shadow-xl object-cover transition-all duration-300"
                   />
@@ -251,7 +298,8 @@ export default function Profile() {
                     <Edit3 size={20} className="text-white" />
                   </div>
                   {/* Premium badge on avatar */}
-                  {(premium.isPremium || (user?.id && parseInt(user.id.toString()) <= 1000)) && (
+                  {(premium.isPremium ||
+                    (user?.id && parseInt(user.id.toString()) <= 1000)) && (
                     <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1.5 shadow-lg">
                       <Sparkles size={14} className="text-white" />
                     </div>
@@ -261,10 +309,14 @@ export default function Profile() {
 
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold">{user?.first_name || 'Ваше имя'}</h2>
+                  <h2 className="text-xl font-bold">
+                    {user?.first_name || "Ваше имя"}
+                  </h2>
                   {premium.isPremium && <PremiumBadge size="sm" />}
                 </div>
-                <p className="text-sm text-muted-foreground">@{user?.username || 'yourprofile'}</p>
+                <p className="text-sm text-muted-foreground">
+                  @{user?.username || "yourprofile"}
+                </p>
               </div>
             </div>
 
@@ -298,15 +350,24 @@ export default function Profile() {
 
         {/* Quick Actions - Row 1 */}
         <div className="grid grid-cols-3 gap-2 mb-2">
-          <button onClick={() => setShowStars(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowStars(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Star className="text-primary fill-primary" size={18} />
             <span className="text-[10px] font-medium">{starsBalance} ⭐</span>
           </button>
-          <button onClick={() => setShowPremium(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowPremium(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Sparkles className="text-yellow-400 fill-yellow-400" size={18} />
             <span className="text-[10px] font-medium">Premium</span>
           </button>
-          <button onClick={() => setShowPosts(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowPosts(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Heart className="text-accent" size={18} />
             <span className="text-[10px] font-medium">Посты</span>
           </button>
@@ -314,15 +375,24 @@ export default function Profile() {
 
         {/* Row 2 */}
         <div className="grid grid-cols-3 gap-2 mb-2">
-          <button onClick={() => setShowProfileEditor(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowProfileEditor(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <User className="text-blue-400" size={18} />
             <span className="text-[10px] font-medium">Редактор</span>
           </button>
-          <button onClick={() => setShowPrivacySettings(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowPrivacySettings(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Lock className="text-green-400" size={18} />
             <span className="text-[10px] font-medium">Приватность</span>
           </button>
-          <button onClick={() => setShowContentSafety(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowContentSafety(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Shield className="text-orange-400" size={18} />
             <span className="text-[10px] font-medium">Безопасность</span>
           </button>
@@ -330,15 +400,24 @@ export default function Profile() {
 
         {/* Row 3 */}
         <div className="grid grid-cols-3 gap-2 mb-2">
-          <button onClick={() => setShowWithdraw(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowWithdraw(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Wallet className="text-emerald-400" size={18} />
             <span className="text-[10px] font-medium">Вывод</span>
           </button>
-          <button onClick={() => setShowChildMode(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowChildMode(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Baby className="text-pink-400" size={18} />
             <span className="text-[10px] font-medium">Детский</span>
           </button>
-          <button onClick={() => setShowAdsModal(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowAdsModal(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <BarChart3 className="text-purple-400" size={18} />
             <span className="text-[10px] font-medium">Реклама</span>
           </button>
@@ -346,11 +425,17 @@ export default function Profile() {
 
         {/* Row 4 */}
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <button onClick={() => setShowSupportModal(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowSupportModal(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <MessageCircle className="text-blue-400" size={18} />
             <span className="text-[10px] font-medium">Поддержка</span>
           </button>
-          <button onClick={() => setShowSettings(true)} className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="glass-card p-3 flex flex-col items-center gap-1 hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <Settings className="text-foreground/70" size={18} />
             <span className="text-[10px] font-medium">Настройки</span>
           </button>
@@ -359,11 +444,17 @@ export default function Profile() {
 
         {/* Legal Buttons - Single Row */}
         <div className="grid grid-cols-2 gap-2 mb-20">
-          <button onClick={() => setShowRulesModal(true)} className="glass-card p-3 flex items-center justify-between hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowRulesModal(true)}
+            className="glass-card p-3 flex items-center justify-between hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <span className="text-xs font-medium">Правила</span>
             <span className="text-muted-foreground text-xs">→</span>
           </button>
-          <button onClick={() => setShowPrivacyModal(true)} className="glass-card p-3 flex items-center justify-between hover:bg-glass-light/20 transition-all rounded-lg">
+          <button
+            onClick={() => setShowPrivacyModal(true)}
+            className="glass-card p-3 flex items-center justify-between hover:bg-glass-light/20 transition-all rounded-lg"
+          >
             <span className="text-xs font-medium">Политика</span>
             <span className="text-muted-foreground text-xs">→</span>
           </button>
@@ -386,28 +477,41 @@ export default function Profile() {
       </div>
 
       {/* ========== МОДАЛКИ ========== */}
-      
+
       {/* Profile Editor Modal */}
       {showProfileEditor && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowProfileEditor(false)}>
-          <div className="glass-card modal-content rounded-2xl p-4 contain-layout" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowProfileEditor(false)}
+        >
+          <div
+            className="glass-card modal-content rounded-2xl p-4 contain-layout"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Редактор профиля</h2>
-              <button onClick={()=>setShowProfileEditor(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowProfileEditor(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Имя</label>
-                <input 
-                  type="text" 
-                  defaultValue={user?.first_name || ''}
+                <input
+                  type="text"
+                  defaultValue={user?.first_name || ""}
                   className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="Ваше имя"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Биография</label>
-                <textarea 
+                <label className="block text-sm font-medium mb-2">
+                  Биография
+                </label>
+                <textarea
                   rows={3}
                   className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   placeholder="Расскажите о себе..."
@@ -415,17 +519,22 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Ссылка</label>
-                <input 
-                  type="url" 
+                <input
+                  type="url"
                   className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="https://..."
                 />
               </div>
               <div className="flex gap-2 pt-4">
-                <button onClick={()=>setShowProfileEditor(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
-                <button 
-                  onClick={()=>{
-                    alert('Профиль сохранен!');
+                <button
+                  onClick={() => setShowProfileEditor(false)}
+                  className="flex-1 glass-button py-2.5 rounded-xl text-sm"
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={() => {
+                    alert("Профиль сохранен!");
                     setShowProfileEditor(false);
                   }}
                   className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
@@ -440,11 +549,22 @@ export default function Profile() {
 
       {/* Privacy Settings Modal */}
       {showPrivacySettings && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacySettings(false)}>
-          <div className="glass-card modal-content rounded-2xl p-4 contain-layout" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowPrivacySettings(false)}
+        >
+          <div
+            className="glass-card modal-content rounded-2xl p-4 contain-layout"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Приватность</h2>
-              <button onClick={()=>setShowPrivacySettings(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowPrivacySettings(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="space-y-3">
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
@@ -456,7 +576,9 @@ export default function Profile() {
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
-                <span className="text-sm font-medium">Показывать онлайн статус</span>
+                <span className="text-sm font-medium">
+                  Показывать онлайн статус
+                </span>
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
@@ -464,9 +586,9 @@ export default function Profile() {
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
             </div>
-            <button 
-              onClick={()=>{
-                alert('Настройки приватности сохранены!');
+            <button
+              onClick={() => {
+                alert("Настройки приватности сохранены!");
                 setShowPrivacySettings(false);
               }}
               className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold mt-4"
@@ -479,19 +601,34 @@ export default function Profile() {
 
       {/* Content Safety Modal */}
       {showContentSafety && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowContentSafety(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowContentSafety(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Безопасность</h2>
-              <button onClick={()=>setShowContentSafety(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowContentSafety(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="space-y-3">
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
-                <span className="text-sm font-medium">Размытие контента 18+</span>
+                <span className="text-sm font-medium">
+                  Размытие контента 18+
+                </span>
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
-                <span className="text-sm font-medium">Скрыть подозрительный контент</span>
+                <span className="text-sm font-medium">
+                  Скрыть подозрительный контент
+                </span>
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
@@ -499,9 +636,11 @@ export default function Profile() {
                 <input type="checkbox" defaultChecked className="w-4 h-4" />
               </label>
               <div className="glass-card p-3 rounded-xl">
-                <p className="text-xs text-muted-foreground mb-2">Блокировать пользователей</p>
-                <input 
-                  type="text" 
+                <p className="text-xs text-muted-foreground mb-2">
+                  Блокировать пользователей
+                </p>
+                <input
+                  type="text"
                   placeholder="@username или ID"
                   className="w-full glass-morphism rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/50"
                 />
@@ -510,9 +649,9 @@ export default function Profile() {
                 </button>
               </div>
             </div>
-            <button 
-              onClick={()=>{
-                alert('Настройки безопасности сохранены!');
+            <button
+              onClick={() => {
+                alert("Настройки безопасности сохранены!");
                 setShowContentSafety(false);
               }}
               className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold mt-4"
@@ -525,22 +664,37 @@ export default function Profile() {
 
       {/* Withdraw Modal */}
       {showWithdraw && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowWithdraw(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowWithdraw(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Вывод средств</h2>
-              <button onClick={()=>setShowWithdraw(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowWithdraw(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="text-center mb-4">
               <p className="text-2xl font-bold mb-1">{starsBalance} ⭐</p>
-              <p className="text-xs text-muted-foreground">Доступно для вывода</p>
+              <p className="text-xs text-muted-foreground">
+                Доступно для вывода
+              </p>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-2">Сумма (звёзды)</label>
-                <input 
-                  type="number" 
-                  min="100" 
+                <label className="block text-sm font-medium mb-2">
+                  Сумма (звёзды)
+                </label>
+                <input
+                  type="number"
+                  min="100"
                   max={starsBalance}
                   defaultValue="100"
                   className="w-full glass-morphism rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
@@ -548,7 +702,9 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Способ вывода</label>
+                <label className="block text-sm font-medium mb-2">
+                  Способ вывода
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button className="glass-button py-2 rounded-xl text-sm bg-primary/20 text-primary border border-primary">
                     Telegram
@@ -563,10 +719,15 @@ export default function Profile() {
               </p>
             </div>
             <div className="flex gap-2 pt-4">
-              <button onClick={()=>setShowWithdraw(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
-              <button 
-                onClick={()=>{
-                  alert('Заявка на вывод отправлена! Ожидайте обработки.');
+              <button
+                onClick={() => setShowWithdraw(false)}
+                className="flex-1 glass-button py-2.5 rounded-xl text-sm"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => {
+                  alert("Заявка на вывод отправлена! Ожидайте обработки.");
                   setShowWithdraw(false);
                 }}
                 className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
@@ -580,27 +741,45 @@ export default function Profile() {
 
       {/* Child Mode Modal */}
       {showChildMode && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowChildMode(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowChildMode(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Детский режим</h2>
-              <button onClick={()=>setShowChildMode(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowChildMode(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="space-y-4">
               <div className="glass-card p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <p className="text-sm text-blue-300 mb-2">🛡️ Защищённый режим</p>
+                <p className="text-sm text-blue-300 mb-2">
+                  🛡️ Защищённый режим
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Блокирует весь контент 18+, включает строгую модерацию и ограничивает функции.
+                  Блокирует весь контент 18+, включает строгую модерацию и
+                  ограничивает функции.
                 </p>
               </div>
               <label className="glass-card flex items-center justify-between p-3 cursor-pointer rounded-xl hover:bg-glass-light/50 transition-all">
-                <span className="text-sm font-medium">Включить детский режим</span>
+                <span className="text-sm font-medium">
+                  Включить детский режим
+                </span>
                 <input type="checkbox" className="w-4 h-4" />
               </label>
               <div className="glass-card p-3 rounded-xl">
-                <p className="text-sm font-medium mb-2">PIN-код для отключения</p>
-                <input 
-                  type="password" 
+                <p className="text-sm font-medium mb-2">
+                  PIN-код для отключения
+                </p>
+                <input
+                  type="password"
                   maxLength={4}
                   className="w-full glass-morphism rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 text-center tracking-widest"
                   placeholder="••••"
@@ -611,10 +790,17 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex gap-2 pt-4">
-              <button onClick={()=>setShowChildMode(false)} className="flex-1 glass-button py-2.5 rounded-xl text-sm">Отмена</button>
-              <button 
-                onClick={()=>{
-                  alert('Детский режим включен! Для отключения потребуется PIN-код.');
+              <button
+                onClick={() => setShowChildMode(false)}
+                className="flex-1 glass-button py-2.5 rounded-xl text-sm"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => {
+                  alert(
+                    "Детский режим включен! Для отключения потребуется PIN-код.",
+                  );
                   setShowChildMode(false);
                 }}
                 className="flex-1 glass-button bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 py-2.5 rounded-xl text-sm font-semibold"
@@ -628,16 +814,34 @@ export default function Profile() {
 
       {/* Posts Modal */}
       {showPosts && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPosts(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowPosts(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Мои посты</h2>
-              <button onClick={()=>setShowPosts(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowPosts(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {profilePosts.map((post) => (
-                <div key={post.id} className="aspect-square rounded-lg overflow-hidden cursor-pointer group relative bg-glass-light/30">
-                  <img src={post.image} alt={post.id} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                <div
+                  key={post.id}
+                  className="aspect-square rounded-lg overflow-hidden cursor-pointer group relative bg-glass-light/30"
+                >
+                  <img
+                    src={post.image}
+                    alt={post.id}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-2 text-white text-xs opacity-0 group-hover:opacity-100">
                     <span>❤️ {post.likes}</span>
                     <span>💬 {post.comments}</span>
@@ -651,17 +855,32 @@ export default function Profile() {
 
       {/* Rules Modal */}
       {showRulesModal && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowRulesModal(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowRulesModal(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Правила платформы</h2>
-              <button onClick={()=>setShowRulesModal(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowRulesModal(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="text-sm text-muted-foreground space-y-3">
-              <p className="font-semibold text-foreground">Платформа соблюдает законодательство РФ</p>
-              
+              <p className="font-semibold text-foreground">
+                Платформа соблюдает законодательство РФ
+              </p>
+
               <div>
-                <p className="font-medium text-foreground mb-1">Запрещённый контент:</p>
+                <p className="font-medium text-foreground mb-1">
+                  Запрещённый контент:
+                </p>
                 <ul className="list-disc pl-5 space-y-1 text-xs">
                   <li>Порнография и контент 18+ (ст. 242 УК РФ)</li>
                   <li>Разжигание ненависти, экстремизм (ст. 282 УК РФ)</li>
@@ -675,7 +894,9 @@ export default function Profile() {
               </div>
 
               <div>
-                <p className="font-medium text-foreground mb-1">Разрешённый контент:</p>
+                <p className="font-medium text-foreground mb-1">
+                  Разрешённый контент:
+                </p>
                 <ul className="list-disc pl-5 space-y-1 text-xs">
                   <li>Личные фото и видео</li>
                   <li>Творчество, искусство</li>
@@ -697,7 +918,9 @@ export default function Profile() {
               </div>
 
               <div>
-                <p className="font-medium text-foreground mb-1">Передача данных:</p>
+                <p className="font-medium text-foreground mb-1">
+                  Передача данных:
+                </p>
                 <ul className="list-disc pl-5 space-y-1 text-xs">
                   <li>По запросу ФСБ, МВД, прокуратуры (152-ФЗ)</li>
                   <li>По решению суда</li>
@@ -706,7 +929,10 @@ export default function Profile() {
                 </ul>
               </div>
 
-              <p className="text-xs italic">Нарушение правил влечёт блокировку аккаунта без возможности восстановления.</p>
+              <p className="text-xs italic">
+                Нарушение правил влечёт блокировку аккаунта без возможности
+                восстановления.
+              </p>
             </div>
           </div>
         </div>
@@ -714,14 +940,28 @@ export default function Profile() {
 
       {/* Privacy Modal */}
       {showPrivacyModal && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowPrivacyModal(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowPrivacyModal(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Политика конфиденциальности</h2>
-              <button onClick={()=>setShowPrivacyModal(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="text-sm text-muted-foreground space-y-3">
-              <p>Мы заботимся о вашей конфиденциальности. Данные используются для обеспечения работы сервиса.</p>
+              <p>
+                Мы заботимся о вашей конфиденциальности. Данные используются для
+                обеспечения работы сервиса.
+              </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Безопасное хранение и обработка</li>
                 <li>Минимально необходимый сбор данных</li>
@@ -736,26 +976,45 @@ export default function Profile() {
 
       {/* Support Modal */}
       {showSupportModal && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowSupportModal(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-5" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowSupportModal(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Поддержка</h2>
-              <button onClick={()=>setShowSupportModal(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowSupportModal(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Свяжитесь с нами по любым вопросам:</p>
+              <p className="text-sm text-muted-foreground">
+                Свяжитесь с нами по любым вопросам:
+              </p>
               <button
-                onClick={()=>window.open('https://t.me/MoonCoonSupport', '_blank')}
+                onClick={() =>
+                  window.open("https://t.me/MoonCoonSupport", "_blank")
+                }
                 className="w-full glass-card p-4 flex items-center gap-3 hover:bg-glass-light/40 transition-all rounded-xl"
               >
                 <MessageCircle className="text-primary" size={24} />
                 <div className="text-left">
                   <p className="text-sm font-semibold">Telegram поддержка</p>
-                  <p className="text-xs text-muted-foreground">@MoonCoonSupport</p>
+                  <p className="text-xs text-muted-foreground">
+                    @MoonCoonSupport
+                  </p>
                 </div>
               </button>
               <div className="glass-card p-4 rounded-xl">
-                <p className="text-xs text-muted-foreground mb-2">Частые вопросы:</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Частые вопросы:
+                </p>
                 <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
                   <li>Как купить Premium?</li>
                   <li>Как закрепить пост/сторис?</li>
@@ -770,19 +1029,34 @@ export default function Profile() {
 
       {/* Ads Modal */}
       {showAdsModal && (
-        <div className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={()=>setShowAdsModal(false)}>
-          <div className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <div
+          className="modal-fixed bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowAdsModal(false)}
+        >
+          <div
+            className="glass-card max-w-sm w-full rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Реклама</h2>
-              <button onClick={()=>setShowAdsModal(false)} className="glass-button p-2 rounded-full hover:bg-glass-light/40">✕</button>
+              <button
+                onClick={() => setShowAdsModal(false)}
+                className="glass-button p-2 rounded-full hover:bg-glass-light/40"
+              >
+                ✕
+              </button>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">Закрепите свой контент на первом месте</p>
-            
+            <p className="text-sm text-muted-foreground mb-4">
+              Закрепите свой контент на первом месте
+            </p>
+
             <div className="grid grid-cols-2 gap-2 mb-4">
               <button
-                onClick={()=>setAdsType('story')}
+                onClick={() => setAdsType("story")}
                 className={`p-3 rounded-xl text-sm font-medium transition-all ${
-                  adsType === 'story' ? 'bg-primary/20 text-primary border-2 border-primary' : 'glass-button'
+                  adsType === "story"
+                    ? "bg-primary/20 text-primary border-2 border-primary"
+                    : "glass-button"
                 }`}
               >
                 <div className="text-center">
@@ -792,9 +1066,11 @@ export default function Profile() {
                 </div>
               </button>
               <button
-                onClick={()=>setAdsType('post')}
+                onClick={() => setAdsType("post")}
                 className={`p-3 rounded-xl text-sm font-medium transition-all ${
-                  adsType === 'post' ? 'bg-primary/20 text-primary border-2 border-primary' : 'glass-button'
+                  adsType === "post"
+                    ? "bg-primary/20 text-primary border-2 border-primary"
+                    : "glass-button"
                 }`}
               >
                 <div className="text-center">
@@ -806,14 +1082,18 @@ export default function Profile() {
             </div>
 
             <div className="mb-4">
-              <label className="text-sm font-medium block mb-2">Количество часов</label>
+              <label className="text-sm font-medium block mb-2">
+                Количество часов
+              </label>
               <div className="flex gap-2">
-                {[1, 3, 6, 12, 24].map(h => (
+                {[1, 3, 6, 12, 24].map((h) => (
                   <button
                     key={h}
-                    onClick={()=>setAdsHours(h)}
+                    onClick={() => setAdsHours(h)}
                     className={`flex-1 glass-button py-2 text-sm rounded-xl ${
-                      adsHours === h ? 'bg-primary/20 text-primary border border-primary' : ''
+                      adsHours === h
+                        ? "bg-primary/20 text-primary border border-primary"
+                        : ""
                     }`}
                   >
                     {h}ч
@@ -824,54 +1104,75 @@ export default function Profile() {
 
             <div className="glass-morphism rounded-xl p-3 mb-4 text-center">
               <div className="text-sm text-muted-foreground mb-1">Итого</div>
-              <div className="text-2xl font-bold">{(adsType === 'story' ? 300 : 200) * adsHours} ⭐</div>
+              <div className="text-2xl font-bold">
+                {(adsType === "story" ? 300 : 200) * adsHours} ⭐
+              </div>
             </div>
 
             <div className="flex gap-2">
               <button
-                onClick={()=>setShowAdsModal(false)}
+                onClick={() => setShowAdsModal(false)}
                 className="flex-1 glass-button py-2.5 rounded-xl text-sm"
-              >Отмена</button>
+              >
+                Отмена
+              </button>
               <button
-                onClick={async ()=>{
+                onClick={async () => {
                   // Проверяем сеть перед отправкой
                   if (!navigator.onLine) {
-                    alert('❌ Нет интернет-соединения. Проверьте подключение к сети.');
+                    alert(
+                      "❌ Нет интернет-соединения. Проверьте подключение к сети.",
+                    );
                     return;
                   }
 
                   try {
-                    const endpoint = adsType === 'story' ? '/api/ads/story' : '/api/ads/post';
+                    const endpoint =
+                      adsType === "story" ? "/api/ads/story" : "/api/ads/post";
                     const res = await fetch(endpoint, {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({ userId: user?.id?.toString(), hours: adsHours })
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        userId: user?.id?.toString(),
+                        hours: adsHours,
+                      }),
                     });
-                    
+
                     if (!res.ok) {
                       if (res.status === 0 || !res.status) {
-                        throw new Error('Нет соединения с сервером');
+                        throw new Error("Нет соединения с сервером");
                       }
                     }
-                    
+
                     const data = await res.json();
                     if (res.ok) {
-                      alert(`✅ Закреплено до ${new Date(data.pinnedUntil).toLocaleString('ru-RU')}`);
+                      alert(
+                        `✅ Закреплено до ${new Date(data.pinnedUntil).toLocaleString("ru-RU")}`,
+                      );
                       setShowAdsModal(false);
                     } else {
-                      alert(`❌ ${data.error || 'Ошибка покупки рекламы'}`);
+                      alert(`❌ ${data.error || "Ошибка покупки рекламы"}`);
                     }
                   } catch (error: any) {
-                    console.error('Ошибка запроса рекламы:', error);
-                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                      alert('❌ Нет сети: Проверьте интернет-соединение и попробуйте снова');
+                    console.error("Ошибка запроса рекламы:", error);
+                    if (
+                      error.name === "TypeError" &&
+                      error.message.includes("fetch")
+                    ) {
+                      alert(
+                        "❌ Нет сети: Проверьте интернет-соединение и попробуйте снова",
+                      );
                     } else {
-                      alert(`❌ Ошибка сети: ${error.message || 'Не удалось подключиться к серверу'}`);
+                      alert(
+                        `❌ Ошибка сети: ${error.message || "Не удалось подключиться к серверу"}`,
+                      );
                     }
                   }
                 }}
                 className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2.5 rounded-xl text-sm font-semibold"
-              >Купить</button>
+              >
+                Купить
+              </button>
             </div>
           </div>
         </div>
@@ -888,7 +1189,7 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  
+
   // Безопасность и возрастные ограничения
   const [blurAdultContent, setBlurAdultContent] = useState(true);
   const [allowAdultReveal, setAllowAdultReveal] = useState(true);
@@ -901,7 +1202,7 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
   // Модальные окна для политик
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  
+
   // Админ вывод
   const [adminWithdrawAmount, setAdminWithdrawAmount] = useState<number>(100);
 
@@ -981,10 +1282,11 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="max-w-2xl mx-auto pt-20 px-4">
-
         {/* Danger Zone */}
         <div>
-          <p className="text-xs font-semibold text-red-500 uppercase mb-3">Опасная зона</p>
+          <p className="text-xs font-semibold text-red-500 uppercase mb-3">
+            Опасная зона
+          </p>
           <div className="space-y-2">
             <button
               onClick={async () => {
@@ -1000,10 +1302,16 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
             </button>
             <button
               onClick={async () => {
-                if (confirm("Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить!")) {
+                if (
+                  confirm(
+                    "Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить!",
+                  )
+                ) {
                   if (user?.id) {
                     try {
-                      const response = await fetch(`/api/users/${user.id}`, { method: "DELETE" });
+                      const response = await fetch(`/api/users/${user.id}`, {
+                        method: "DELETE",
+                      });
                       if (response.ok) {
                         alert("Аккаунт удален");
                         window.location.reload();
@@ -1020,9 +1328,7 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
-

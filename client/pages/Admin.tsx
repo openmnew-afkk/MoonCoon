@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
-import { BarChart3, Users, Heart, MessageSquare, TrendingUp, Shield, Ban, UserCheck, Search, X } from "lucide-react";
+import {
+  BarChart3,
+  Users,
+  Heart,
+  MessageSquare,
+  TrendingUp,
+  Shield,
+  Ban,
+  UserCheck,
+  Search,
+  X,
+} from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 
 interface StatCard {
@@ -69,13 +80,13 @@ export default function Admin() {
         // Проверяем статус админа по userId и username
         const params = new URLSearchParams({ userId: user.id.toString() });
         if (user.username) {
-          params.append('username', user.username);
+          params.append("username", user.username);
         }
-        
+
         const response = await fetch(`/api/admin/check?${params}`);
         if (response.ok) {
           const data = await response.json();
-          console.log('🔑 Admin check result:', data);
+          console.log("🔑 Admin check result:", data);
           if (data.isAdmin) {
             setIsAdmin(true);
             localStorage.setItem("admin_session", `admin_${user.id}`);
@@ -83,7 +94,7 @@ export default function Admin() {
           }
         }
       } catch (error) {
-        console.error('Ошибка проверки прав:', error);
+        console.error("Ошибка проверки прав:", error);
       } finally {
         setAuthChecked(true);
       }
@@ -164,13 +175,16 @@ export default function Admin() {
     (u) =>
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.id.includes(searchQuery)
+      u.id.includes(searchQuery),
   );
 
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -178,13 +192,18 @@ export default function Admin() {
                 <BarChart3 className="text-primary" size={28} />
                 Панель администратора
               </h1>
-              <p className="text-sm text-muted-foreground">Управление приложением</p>
+              <p className="text-sm text-muted-foreground">
+                Управление приложением
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 7rem)' }}>
+      <div
+        className="max-w-6xl mx-auto px-4 py-6"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 7rem)" }}
+      >
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (
@@ -216,7 +235,10 @@ export default function Admin() {
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
             <input
               type="text"
               value={searchQuery}
@@ -238,12 +260,16 @@ export default function Admin() {
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-              <p className="text-sm text-muted-foreground mt-4">Загрузка пользователей...</p>
+              <p className="text-sm text-muted-foreground mt-4">
+                Загрузка пользователей...
+              </p>
             </div>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredUsers.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">Пользователи не найдены</p>
+                <p className="text-center py-8 text-muted-foreground">
+                  Пользователи не найдены
+                </p>
               ) : (
                 filteredUsers.map((userItem) => (
                   <div
@@ -252,15 +278,25 @@ export default function Admin() {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-sm truncate">{userItem.name}</p>
+                        <p className="font-semibold text-sm truncate">
+                          {userItem.name}
+                        </p>
                         {userItem.isAdmin && (
-                          <Shield className="text-primary flex-shrink-0" size={14} />
+                          <Shield
+                            className="text-primary flex-shrink-0"
+                            size={14}
+                          />
                         )}
                         {userItem.isBanned && (
-                          <Ban className="text-red-500 flex-shrink-0" size={14} />
+                          <Ban
+                            className="text-red-500 flex-shrink-0"
+                            size={14}
+                          />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{userItem.username}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {userItem.username}
+                      </p>
                       <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                         <span>Посты: {userItem.posts}</span>
                         <span>Подписчики: {userItem.followers}</span>
@@ -301,7 +337,9 @@ export default function Admin() {
               <div className="space-y-3 mb-4">
                 <div>
                   <p className="font-semibold">{selectedUser.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedUser.username}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUser.username}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
@@ -320,7 +358,9 @@ export default function Admin() {
 
               <div className="space-y-3 border-t border-glass-light/10 pt-4">
                 <button
-                  onClick={() => handleSetAdmin(selectedUser.id, !selectedUser.isAdmin)}
+                  onClick={() =>
+                    handleSetAdmin(selectedUser.id, !selectedUser.isAdmin)
+                  }
                   className={`w-full glass-button rounded-xl py-2.5 flex items-center justify-center gap-2 ${
                     selectedUser.isAdmin
                       ? "bg-red-500/20 text-red-500 hover:bg-red-500/30"

@@ -55,7 +55,11 @@ export const handleStarsWithdraw: RequestHandler = async (req, res) => {
     const isAdmin = ADMIN_USER_ID && userId?.toString() === ADMIN_USER_ID;
 
     if (!userId || !amount || (!isAdmin && amount < 100)) {
-      return res.status(400).json({ error: isAdmin ? "Неверная сумма" : "Минимальная сумма вывода: 100 звезд" });
+      return res.status(400).json({
+        error: isAdmin
+          ? "Неверная сумма"
+          : "Минимальная сумма вывода: 100 звезд",
+      });
     }
 
     const currentBalance = userStars[userId] || 0;
@@ -104,23 +108,26 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
 
     // Проверяем наличие BOT_TOKEN для интеграции с Telegram Stars API
     const BOT_TOKEN = process.env.BOT_TOKEN;
-    
+
     if (BOT_TOKEN) {
       try {
         // Пытаемся получить реальный баланс из Telegram Stars API
-        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getStarTransactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            user_id: parseInt(userId), 
-            offset: 0, 
-            limit: 100 
-          })
-        });
-        
+        const response = await fetch(
+          `https://api.telegram.org/bot${BOT_TOKEN}/getStarTransactions`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: parseInt(userId),
+              offset: 0,
+              limit: 100,
+            }),
+          },
+        );
+
         if (response.ok) {
           const data = await response.json();
-          
+
           if (data.ok && data.result?.transactions) {
             // Рассчитываем баланс из транзакций
             let balance = 0;
@@ -129,19 +136,22 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
                 balance += tx.amount;
               }
             }
-            
+
             // Сохраняем в локальном хранилище для кэширования
             userStars[userId] = balance;
-            
+
             return res.json({
               success: true,
               balance: balance,
-              source: 'telegram'
+              source: "telegram",
             });
           }
         }
       } catch (telegramError) {
-        console.warn('Не удалось получить баланс из Telegram API:', telegramError);
+        console.warn(
+          "Не удалось получить баланс из Telegram API:",
+          telegramError,
+        );
       }
     }
 
@@ -151,7 +161,7 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       balance: balance,
-      source: 'local'
+      source: "local",
     });
   } catch (error) {
     console.error("Ошибка при получении баланса:", error);
@@ -187,7 +197,7 @@ export const handleSendStar: RequestHandler = async (req, res) => {
 
     // Списываем звезды у отправителя
     userStars[fromUserId] = currentBalance - amount;
-    
+
     // Добавляем звезды получателю (автору поста)
     // В реальном приложении нужно получить userId автора поста из БД
     // const postAuthorId = getPostAuthor(toPostId);

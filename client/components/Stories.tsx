@@ -26,13 +26,13 @@ export default function Stories({ onStoryClick }: StoriesProps) {
 
   // Загружаем сторис с сервера
   useEffect(() => {
-    fetch('/api/stories')
-      .then(res => res.json())
-      .then(data => {
+    fetch("/api/stories")
+      .then((res) => res.json())
+      .then((data) => {
         if (data.stories && Array.isArray(data.stories)) {
           // Фильтруем не истекшие сторис
-          const activeStories = data.stories.filter((s: Story) => 
-            new Date(s.expiresAt).getTime() > Date.now()
+          const activeStories = data.stories.filter(
+            (s: Story) => new Date(s.expiresAt).getTime() > Date.now(),
           );
           setStories(activeStories);
         }
@@ -46,7 +46,10 @@ export default function Stories({ onStoryClick }: StoriesProps) {
 
     const checkScroll = () => {
       setCanScrollLeft(container.scrollLeft > 0);
-      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+      setCanScrollRight(
+        container.scrollLeft <
+          container.scrollWidth - container.clientWidth - 10,
+      );
     };
 
     checkScroll();
@@ -56,7 +59,10 @@ export default function Stories({ onStoryClick }: StoriesProps) {
     let scrollInterval: NodeJS.Timeout;
     const startAutoScroll = () => {
       scrollInterval = setInterval(() => {
-        if (container.scrollLeft < container.scrollWidth - container.clientWidth) {
+        if (
+          container.scrollLeft <
+          container.scrollWidth - container.clientWidth
+        ) {
           container.scrollLeft += 1;
         }
       }, 50);
@@ -87,7 +93,7 @@ export default function Stories({ onStoryClick }: StoriesProps) {
     return (
       <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
         <div className="relative w-full max-w-sm h-full max-h-[600px] rounded-3xl overflow-hidden bg-black">
-          {story.mediaType === 'video' ? (
+          {story.mediaType === "video" ? (
             <video
               src={story.media}
               className="w-full h-full object-cover"
@@ -113,7 +119,9 @@ export default function Stories({ onStoryClick }: StoriesProps) {
                   alt="User"
                   className="w-10 h-10 rounded-full border-2 border-white"
                 />
-                <span className="text-white font-semibold">@user{story.userId}</span>
+                <span className="text-white font-semibold">
+                  @user{story.userId}
+                </span>
               </div>
               <button
                 onClick={() => setSelectedStory(null)}
@@ -154,8 +162,8 @@ export default function Stories({ onStoryClick }: StoriesProps) {
           `}</style>
 
           {/* Add Story Button */}
-          <button 
-            onClick={() => navigate('/create')}
+          <button
+            onClick={() => navigate("/create")}
             className="flex flex-col items-center gap-2 flex-shrink-0 group/story hover:opacity-80 transition-opacity"
           >
             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/40 via-accent/40 to-primary/40 flex items-center justify-center glass-morphism hover:shadow-lg hover:shadow-primary/40 transition-all duration-300">

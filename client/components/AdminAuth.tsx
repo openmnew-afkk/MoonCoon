@@ -73,7 +73,9 @@ export default function AdminAuth({ onSuccess, onCancel }: AdminAuthProps) {
         {loading ? (
           <div className="text-center py-8">
             <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-            <p className="text-sm text-muted-foreground">Проверка прав доступа...</p>
+            <p className="text-sm text-muted-foreground">
+              Проверка прав доступа...
+            </p>
           </div>
         ) : error ? (
           <div className="space-y-4">
@@ -112,4 +114,3 @@ export default function AdminAuth({ onSuccess, onCancel }: AdminAuthProps) {
     </div>
   );
 }
-

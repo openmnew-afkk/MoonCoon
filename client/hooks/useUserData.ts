@@ -36,9 +36,12 @@ export function useUserData() {
           // Пока используем данные из Telegram
           const userProfile: UserProfile = {
             id: user.id.toString(),
-            name: user.first_name + (user.last_name ? ` ${user.last_name}` : ""),
+            name:
+              user.first_name + (user.last_name ? ` ${user.last_name}` : ""),
             username: user.username || `user_${user.id}`,
-            avatar: user.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+            avatar:
+              user.photo_url ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
             bio: "📱 Telegram Mini App | 🎨 Дизайнер | ✨ Создатель",
             stats: defaultStats,
             isAdmin: false, // В реальном приложении проверяется через API
@@ -83,4 +86,3 @@ export function useUserData() {
 
   return { profile, loading, setProfile };
 }
-

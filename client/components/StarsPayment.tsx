@@ -9,7 +9,11 @@ interface StarsPaymentProps {
   onSuccess?: () => void;
 }
 
-export default function StarsPayment({ userId, currentStars = 0, onSuccess }: StarsPaymentProps) {
+export default function StarsPayment({
+  userId,
+  currentStars = 0,
+  onSuccess,
+}: StarsPaymentProps) {
   const { webApp } = useTelegram();
   const [amount, setAmount] = useState<number>(100);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -29,7 +33,9 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
       if (response.ok) {
         const data = await response.json();
         if (webApp) {
-          webApp.showAlert(`Успешно добавлено ${amount} ⭐\nНовый баланс: ${data.balance} ⭐`);
+          webApp.showAlert(
+            `Успешно добавлено ${amount} ⭐\nНовый баланс: ${data.balance} ⭐`,
+          );
         } else {
           alert(`Успешно добавлено ${amount} ⭐`);
         }
@@ -80,7 +86,7 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
       if (response.ok) {
         const data = await response.json();
         webApp?.showAlert(
-          `Запрос на вывод ${data.amount} звезд отправлен. Комиссия: ${data.commission} звезд (${data.commissionPercentage}%)`
+          `Запрос на вывод ${data.amount} звезд отправлен. Комиссия: ${data.commission} звезд (${data.commissionPercentage}%)`,
         );
         setShowWithdraw(false);
         onSuccess?.();
@@ -101,7 +107,9 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
       <div className="relative glass-card p-6 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/20 opacity-50"></div>
         <div className="relative">
-          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Ваш баланс</p>
+          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+            Ваш баланс
+          </p>
           <div className="flex items-center justify-center gap-3 mb-2">
             <Star className="text-primary fill-primary" size={32} />
             <p className="text-4xl font-bold text-primary">{currentStars}</p>
@@ -127,7 +135,7 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
                     "glass-button py-3 text-sm font-medium transition-all rounded-xl",
                     amount === pkg
                       ? "bg-primary/20 text-primary border-2 border-primary shadow-lg shadow-primary/30"
-                      : "hover:bg-glass-light/40"
+                      : "hover:bg-glass-light/40",
                   )}
                 >
                   {pkg}
@@ -179,11 +187,17 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
                 <div className="glass-morphism rounded-xl p-3 text-sm space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">К получению:</span>
-                    <span className="font-semibold text-primary">{Math.floor(withdrawAmount * 0.9)} ⭐</span>
+                    <span className="font-semibold text-primary">
+                      {Math.floor(withdrawAmount * 0.9)} ⭐
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Комиссия (10%):</span>
-                    <span className="text-muted-foreground">{Math.floor(withdrawAmount * 0.1)} ⭐</span>
+                    <span className="text-muted-foreground">
+                      Комиссия (10%):
+                    </span>
+                    <span className="text-muted-foreground">
+                      {Math.floor(withdrawAmount * 0.1)} ⭐
+                    </span>
                   </div>
                 </div>
               )}
@@ -209,4 +223,3 @@ export default function StarsPayment({ userId, currentStars = 0, onSuccess }: St
     </div>
   );
 }
-

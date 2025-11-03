@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import {
-  Home,
-  Compass,
-  Plus,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { Home, Compass, Plus, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
@@ -34,9 +28,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-24">
-        {children}
-      </div>
+      <div className="flex-1 overflow-y-auto pb-24">{children}</div>
 
       {/* Bottom Navigation - iOS 26 Style */}
       <nav className="fixed bottom-0 left-0 right-0 glass-morphism border-t border-glass-light/20 ios-shadow">
@@ -53,14 +45,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   "flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-2xl transition-all duration-200",
                   active
                     ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon
                   size={24}
                   className={cn(
                     "transition-transform duration-200",
-                    active && "scale-110"
+                    active && "scale-110",
                   )}
                 />
                 <span className="text-xs font-medium">{item.label}</span>

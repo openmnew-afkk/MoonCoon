@@ -6,26 +6,26 @@
 @tailwind utilities;
 
 /* Custom slider styles */
-input[type='range'] {
+input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
   cursor: pointer;
 }
 
-input[type='range']::-webkit-slider-track {
+input[type="range"]::-webkit-slider-track {
   background: hsl(var(--muted) / 0.3);
   height: 0.5rem;
   border-radius: 0.5rem;
 }
 
-input[type='range']::-moz-range-track {
+input[type="range"]::-moz-range-track {
   background: hsl(var(--muted) / 0.3);
   height: 0.5rem;
   border-radius: 0.5rem;
 }
 
-input[type='range']::-webkit-slider-thumb {
+input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   height: 1.25rem;
@@ -38,12 +38,12 @@ input[type='range']::-webkit-slider-thumb {
   transition: all 0.2s;
 }
 
-input[type='range']::-webkit-slider-thumb:hover {
+input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-input[type='range']::-moz-range-thumb {
+input[type="range"]::-moz-range-thumb {
   height: 1.25rem;
   width: 1.25rem;
   background: hsl(var(--primary));
@@ -53,7 +53,7 @@ input[type='range']::-moz-range-thumb {
   transition: all 0.2s;
 }
 
-input[type='range']::-moz-range-thumb:hover {
+input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
@@ -65,7 +65,7 @@ input[type='range']::-moz-range-thumb:hover {
   */
   :root {
     color-scheme: dark;
-    
+
     /* Dark iOS 26 base colors */
     --background: 217 32.6% 10%;
     --foreground: 210 40% 98%;
@@ -126,7 +126,8 @@ input[type='range']::-moz-range-thumb:hover {
   body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -207,11 +208,13 @@ input[type='range']::-moz-range-thumb:hover {
 
   /* Profile Avatar Glow Effect */
   .profile-avatar-glow {
-    background: linear-gradient(135deg, 
-      rgba(147, 51, 234, 0.3) 0%, 
-      rgba(168, 85, 247, 0.4) 50%, 
-      rgba(196, 181, 253, 0.3) 100%);
-    box-shadow: 
+    background: linear-gradient(
+      135deg,
+      rgba(147, 51, 234, 0.3) 0%,
+      rgba(168, 85, 247, 0.4) 50%,
+      rgba(196, 181, 253, 0.3) 100%
+    );
+    box-shadow:
       0 0 20px rgba(147, 51, 234, 0.4),
       0 0 40px rgba(147, 51, 234, 0.2),
       0 0 60px rgba(147, 51, 234, 0.1),
@@ -220,7 +223,7 @@ input[type='range']::-moz-range-thumb:hover {
   }
 
   .profile-avatar-glow:hover {
-    box-shadow: 
+    box-shadow:
       0 0 25px rgba(147, 51, 234, 0.6),
       0 0 50px rgba(147, 51, 234, 0.3),
       0 0 75px rgba(147, 51, 234, 0.15),

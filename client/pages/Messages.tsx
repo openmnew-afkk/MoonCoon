@@ -61,10 +61,13 @@ interface Message {
 
 export default function Messages() {
   const { user } = useTelegram();
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<
+    string | null
+  >(null);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] =
+    useState<Conversation[]>(mockConversations);
   const [messages, setMessages] = useState<Message[]>([]);
   const [notifications, setNotifications] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -73,15 +76,15 @@ export default function Messages() {
   useEffect(() => {
     if (selectedConversation && user?.id) {
       fetch(`/api/messages/${selectedConversation}?userId=${user.id}`)
-        .then(res => res.json())
-        .then(data => setMessages(data.messages || []))
+        .then((res) => res.json())
+        .then((data) => setMessages(data.messages || []))
         .catch(console.error);
     }
   }, [selectedConversation, user]);
 
   // Автоскролл к последнему сообщению
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // Проверка новых уведомлений
@@ -89,8 +92,8 @@ export default function Messages() {
     if (!user?.id) return;
     const interval = setInterval(() => {
       fetch(`/api/messages/notifications?userId=${user.id}`)
-        .then(res => res.json())
-        .then(data => setNotifications(data.count || 0))
+        .then((res) => res.json())
+        .then((data) => setNotifications(data.count || 0))
         .catch(console.error);
     }, 5000); // Проверяем каждые 5 секунд
     return () => clearInterval(interval);
@@ -98,11 +101,11 @@ export default function Messages() {
 
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedConversation || !user?.id) return;
-    
+
     try {
-      const response = await fetch('/api/messages/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fromUserId: user.id.toString(),
           toUserId: selectedConversation,
@@ -112,41 +115,47 @@ export default function Messages() {
 
       if (response.ok) {
         const data = await response.json();
-        setMessages(prev => [...prev, data.message]);
-        setMessage('');
-        
+        setMessages((prev) => [...prev, data.message]);
+        setMessage("");
+
         // Показываем уведомление отправителю
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Сообщение отправлено', {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Сообщение отправлено", {
             body: message.substring(0, 50),
-            icon: '/logo.png'
+            icon: "/logo.png",
           });
         }
       }
     } catch (error) {
-      console.error('Ошибка отправки сообщения:', error);
-      alert('Не удалось отправить сообщение');
+      console.error("Ошибка отправки сообщения:", error);
+      alert("Не удалось отправить сообщение");
     }
   };
 
   // Запрос разрешения на уведомления
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
+    if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
 
-  const filteredConversations = conversations.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter((c) =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
             <input
               type="text"
               value={searchQuery}
@@ -174,7 +183,10 @@ export default function Messages() {
               {mockConversations
                 .filter((c) => c.id === selectedConversation)
                 .map((conversation) => (
-                  <div key={conversation.id} className="flex items-center gap-3">
+                  <div
+                    key={conversation.id}
+                    className="flex items-center gap-3"
+                  >
                     <div className="relative">
                       <img
                         src={conversation.avatar}
@@ -205,23 +217,39 @@ export default function Messages() {
             <div className="flex-1 overflow-y-auto space-y-3 px-4 mb-4">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <MessageCircle className="text-muted-foreground mb-2" size={48} />
+                  <MessageCircle
+                    className="text-muted-foreground mb-2"
+                    size={48}
+                  />
                   <p className="text-muted-foreground">Нет сообщений</p>
-                  <p className="text-xs text-muted-foreground">Начните диалог!</p>
+                  <p className="text-xs text-muted-foreground">
+                    Начните диалог!
+                  </p>
                 </div>
               ) : (
                 messages.map((msg) => (
-                  <div key={msg.id} className={cn(
-                    "flex",
-                    msg.senderId === user?.id?.toString() ? "justify-end" : "justify-start"
-                  )}>
-                    <div className={cn(
-                      "glass-card max-w-xs",
-                      msg.senderId === user?.id?.toString() && "bg-primary/20 text-primary"
-                    )}>
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex",
+                      msg.senderId === user?.id?.toString()
+                        ? "justify-end"
+                        : "justify-start",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "glass-card max-w-xs",
+                        msg.senderId === user?.id?.toString() &&
+                          "bg-primary/20 text-primary",
+                      )}
+                    >
                       <p className="text-sm">{msg.text}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(msg.timestamp).toLocaleTimeString("ru-RU", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                   </div>
@@ -236,11 +264,11 @@ export default function Messages() {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 placeholder="Напишите сообщение..."
                 className="flex-1 glass-morphism rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <button 
+              <button
                 onClick={handleSendMessage}
                 className="glass-button rounded-full p-2.5 bg-primary/20 text-primary hover:bg-primary/30 transition-all active:scale-95"
               >
@@ -254,46 +282,47 @@ export default function Messages() {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Диалоги не найдены</p>
               </div>
-            ) : 
+            ) : (
               filteredConversations.map((conversation) => (
-              <button
-                key={conversation.id}
-                onClick={() => setSelectedConversation(conversation.id)}
-                className="w-full glass-card flex items-center gap-3 hover:bg-glass-light/40 transition-all"
-              >
-                <div className="relative">
-                  <img
-                    src={conversation.avatar}
-                    alt={conversation.name}
-                    className="w-12 h-12 rounded-full"
-                  />
-                  {conversation.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
-                  )}
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center justify-between">
-                    <p
-                      className={cn(
-                        "font-semibold",
-                        conversation.unread && "text-primary"
-                      )}
-                    >
-                      {conversation.name}
-                    </p>
-                    <span className="text-xs text-muted-foreground">
-                      {conversation.timestamp}
-                    </span>
+                <button
+                  key={conversation.id}
+                  onClick={() => setSelectedConversation(conversation.id)}
+                  className="w-full glass-card flex items-center gap-3 hover:bg-glass-light/40 transition-all"
+                >
+                  <div className="relative">
+                    <img
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    {conversation.online && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {conversation.lastMessage}
-                  </p>
-                </div>
-                {conversation.unread && (
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                )}
-              </button>
-            ))}
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center justify-between">
+                      <p
+                        className={cn(
+                          "font-semibold",
+                          conversation.unread && "text-primary",
+                        )}
+                      >
+                        {conversation.name}
+                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {conversation.timestamp}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {conversation.lastMessage}
+                    </p>
+                  </div>
+                  {conversation.unread && (
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  )}
+                </button>
+              ))
+            )}
           </div>
         )}
       </div>

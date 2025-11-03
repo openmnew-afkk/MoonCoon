@@ -13,8 +13,8 @@ if (process.env.ADMIN_USER_ID) {
 // Хранилище username админов
 const adminUsernames: Set<string> = new Set();
 if (process.env.ADMIN_USERNAME) {
-  adminUsernames.add(process.env.ADMIN_USERNAME.toLowerCase().replace('@', ''));
-  console.log('✅ Admin username:', process.env.ADMIN_USERNAME);
+  adminUsernames.add(process.env.ADMIN_USERNAME.toLowerCase().replace("@", ""));
+  console.log("✅ Admin username:", process.env.ADMIN_USERNAME);
 }
 
 interface AdminAuthRequest {
@@ -36,7 +36,7 @@ export const handleAdminAuth: RequestHandler = async (req, res) => {
     if (isAdmin) {
       const sessionToken = `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       adminSessions.add(sessionToken);
-      
+
       res.json({
         success: true,
         sessionToken,
@@ -70,9 +70,11 @@ export const handleAdminCheck: RequestHandler = async (req, res) => {
 
     // Проверка по username
     if (!isAdmin && username) {
-      const cleanUsername = username.toLowerCase().replace('@', '');
+      const cleanUsername = username.toLowerCase().replace("@", "");
       isAdmin = adminUsernames.has(cleanUsername);
-      console.log(`🔍 Проверка username: ${cleanUsername}, isAdmin: ${isAdmin}`);
+      console.log(
+        `🔍 Проверка username: ${cleanUsername}, isAdmin: ${isAdmin}`,
+      );
     }
 
     // Если есть Authorization header - проверяем сессию
@@ -80,7 +82,9 @@ export const handleAdminCheck: RequestHandler = async (req, res) => {
     if (!isAdmin && authHeader && authHeader.startsWith("Bearer ")) {
       const sessionToken = authHeader.substring(7);
       isAdmin = adminSessions.has(sessionToken);
-      console.log(`🔍 Проверка session: ${sessionToken.substring(0, 20)}..., isAdmin: ${isAdmin}`);
+      console.log(
+        `🔍 Проверка session: ${sessionToken.substring(0, 20)}..., isAdmin: ${isAdmin}`,
+      );
     }
 
     res.json({
@@ -101,7 +105,7 @@ export const handleGetUsers: RequestHandler = async (req, res) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Не авторизован" });
     }
-    
+
     const sessionToken = authHeader.substring(7);
     if (!adminSessions.has(sessionToken)) {
       return res.status(403).json({ error: "Недостаточно прав" });
@@ -116,7 +120,9 @@ export const handleGetUsers: RequestHandler = async (req, res) => {
       isBanned: bannedUsers.has(`user_${i + 1}`),
       posts: Math.floor(Math.random() * 100),
       followers: Math.floor(Math.random() * 1000),
-      createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(
+        Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
     }));
 
     res.json({ users });
@@ -132,7 +138,7 @@ export const handleSetAdmin: RequestHandler = async (req, res) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Не авторизован" });
     }
-    
+
     const sessionToken = authHeader.substring(7);
     if (!adminSessions.has(sessionToken)) {
       return res.status(403).json({ error: "Недостаточно прав" });
@@ -150,7 +156,10 @@ export const handleSetAdmin: RequestHandler = async (req, res) => {
       adminUsers.delete(userId.toString());
     }
 
-    res.json({ success: true, message: `Права администратора ${isAdmin ? "выданы" : "отозваны"}` });
+    res.json({
+      success: true,
+      message: `Права администратора ${isAdmin ? "выданы" : "отозваны"}`,
+    });
   } catch (error) {
     console.error("Ошибка изменения прав:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -163,7 +172,7 @@ export const handleBanUser: RequestHandler = async (req, res) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Не авторизован" });
     }
-    
+
     const sessionToken = authHeader.substring(7);
     if (!adminSessions.has(sessionToken)) {
       return res.status(403).json({ error: "Недостаточно прав" });
@@ -181,8 +190,8 @@ export const handleBanUser: RequestHandler = async (req, res) => {
       bannedUsers.delete(userId.toString());
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: `Пользователь ${isBanned ? "забанен" : "разбанен"}`,
       reason: reason || null,
     });
@@ -191,4 +200,3 @@ export const handleBanUser: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
-

@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Send, Brain, Image as ImageIcon, MessageSquare, Wand2, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  Brain,
+  Image as ImageIcon,
+  MessageSquare,
+  Wand2,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 
 interface Message {
@@ -17,7 +26,8 @@ export default function AI() {
     {
       id: "1",
       type: "ai",
-      content: "👋 Привет! Я ваш AI помощник на базе OpenAI GPT-3.5.\n\nЯ могу помочь вам:\n✨ Создавать описания для постов\n🎨 Генерировать идеи контента\n🏷️ Подбирать хештеги\n📊 Анализировать тренды\n💡 Улучшать тексты\n\nПереключитесь на NanoBonano для редактирования фото!",
+      content:
+        "👋 Привет! Я ваш AI помощник на базе OpenAI GPT-3.5.\n\nЯ могу помочь вам:\n✨ Создавать описания для постов\n🎨 Генерировать идеи контента\n🏷️ Подбирать хештеги\n📊 Анализировать тренды\n💡 Улучшать тексты\n\nПереключитесь на NanoBonano для редактирования фото!",
       timestamp: "Сейчас",
     },
   ]);
@@ -46,7 +56,10 @@ export default function AI() {
       id: Date.now().toString(),
       type: "user",
       content: message || "Обработать изображение",
-      timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+      timestamp: new Date().toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       image: image || undefined,
     };
 
@@ -65,22 +78,25 @@ export default function AI() {
   const callOpenAIAPI = async (prompt: string, image?: string) => {
     try {
       // Реальный вызов к серверу
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt })
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: prompt }),
       });
 
       if (!response.ok) {
-        throw new Error('AI недоступен');
+        throw new Error("AI недоступен");
       }
 
       const data = await response.json();
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content: data.reply || 'Извините, не могу ответить',
-        timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+        content: data.reply || "Извините, не могу ответить",
+        timestamp: new Date().toLocaleTimeString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
@@ -91,7 +107,10 @@ export default function AI() {
         id: (Date.now() + 1).toString(),
         type: "ai",
         content: `❌ Ошибка подключения к OpenAI.\n\nПроверьте API ключ в .env файле.\n\nДля OpenAI нужен ключ формата: sk-...`,
-        timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+        timestamp: new Date().toLocaleTimeString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
@@ -114,8 +133,12 @@ export default function AI() {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           type: "ai",
-          content: "✅ Фото обработано с помощью NanoBonano!\n\nПрименены улучшения:\n✨ Автокоррекция экспозиции\n🎨 Улучшение цветов\n📐 Выравнивание горизонта\n🔍 Умное кадрирование",
-          timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+          content:
+            "✅ Фото обработано с помощью NanoBonano!\n\nПрименены улучшения:\n✨ Автокоррекция экспозиции\n🎨 Улучшение цветов\n📐 Выравнивание горизонта\n🔍 Умное кадрирование",
+          timestamp: new Date().toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
           image: imageUrl, // Обработанное изображение
         };
         setMessages((prev) => [...prev, aiResponse]);
@@ -202,7 +225,10 @@ export default function AI() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-4">
           {/* Mode Toggle - Centered */}
           <div className="flex items-center justify-center gap-2">
@@ -226,7 +252,10 @@ export default function AI() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
+      <div
+        className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
+      >
         {/* В разработке */}
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
@@ -234,9 +263,13 @@ export default function AI() {
               <Sparkles className="text-primary" size={40} />
             </div>
             <h2 className="text-2xl font-bold mb-2">AI в разработке</h2>
-            <p className="text-muted-foreground mb-4">Скоро здесь появится мощный AI-ассистент</p>
+            <p className="text-muted-foreground mb-4">
+              Скоро здесь появится мощный AI-ассистент
+            </p>
             <div className="glass-card p-4 max-w-sm mx-auto">
-              <p className="text-sm text-muted-foreground">Функции в разработке:</p>
+              <p className="text-sm text-muted-foreground">
+                Функции в разработке:
+              </p>
               <ul className="text-sm text-left mt-2 space-y-1">
                 <li>✨ Генерация контента</li>
                 <li>🎨 Улучшение фото</li>
@@ -246,53 +279,58 @@ export default function AI() {
             </div>
           </div>
         </div>
-        
+
         {/* Старый код закомментирован */}
         {false && (
-        <div className="flex-1 overflow-y-auto space-y-4 px-4 py-4" style={{ display: 'none' }}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-            >
+          <div
+            className="flex-1 overflow-y-auto space-y-4 px-4 py-4"
+            style={{ display: "none" }}
+          >
+            {messages.map((message) => (
               <div
-                className={`glass-card max-w-[85%] ${
-                  message.type === "user"
-                    ? "bg-primary/20 text-primary"
-                    : "bg-glass-light/40"
-                }`}
+                key={message.id}
+                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
               >
-                {message.image && (
-                  <div className="mb-3 rounded-xl overflow-hidden">
-                    <img
-                      src={message.image}
-                      alt="Processed"
-                      className="w-full h-auto max-h-64 object-contain"
-                    />
-                  </div>
-                )}
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {message.timestamp}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="glass-card bg-glass-light/40">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
+                <div
+                  className={`glass-card max-w-[85%] ${
+                    message.type === "user"
+                      ? "bg-primary/20 text-primary"
+                      : "bg-glass-light/40"
+                  }`}
+                >
+                  {message.image && (
+                    <div className="mb-3 rounded-xl overflow-hidden">
+                      <img
+                        src={message.image}
+                        alt="Processed"
+                        className="w-full h-auto max-h-64 object-contain"
+                      />
+                    </div>
+                  )}
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {message.timestamp}
+                  </p>
                 </div>
               </div>
-            </div>
-          )}
+            ))}
 
-          <div ref={messagesEndRef} />
-        </div>
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="glass-card bg-glass-light/40">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
         )}
         {/* Конец закомментированного кода */}
 

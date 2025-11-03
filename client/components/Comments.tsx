@@ -75,8 +75,8 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               liked: !comment.liked,
               likes: comment.liked ? comment.likes - 1 : comment.likes + 1,
             }
-          : comment
-      )
+          : comment,
+      ),
     );
   };
 
@@ -110,7 +110,9 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold">{comment.author}</p>
-                  <p className="text-xs text-muted-foreground">{comment.timestamp}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {comment.timestamp}
+                  </p>
                 </div>
               </div>
               <p className="text-sm mt-1 text-foreground">{comment.text}</p>

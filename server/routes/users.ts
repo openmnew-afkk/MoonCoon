@@ -2,7 +2,10 @@ import { RequestHandler } from "express";
 import crypto from "node:crypto";
 
 // В реальном приложении здесь должна быть работа с БД
-const userStats: Record<string, { posts: number; followers: number; following: number }> = {};
+const userStats: Record<
+  string,
+  { posts: number; followers: number; following: number }
+> = {};
 const userSettings: Record<string, any> = {};
 
 export const handleUserStats: RequestHandler = async (req, res) => {
@@ -82,7 +85,10 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
       const current = userSettings[userId] || {};
 
       // Установка PIN: сохраняем hash
-      if (typeof body.setChildModePin === "string" && body.setChildModePin.length >= 4) {
+      if (
+        typeof body.setChildModePin === "string" &&
+        body.setChildModePin.length >= 4
+      ) {
         const pin = body.setChildModePin;
         const hash = crypto.createHash("sha256").update(pin).digest("hex");
         current.childModePinHash = hash;
@@ -93,9 +99,14 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
       // Проверка PIN при выключении детского режима
       if (current.childModePinHash && body.childMode === false) {
         if (typeof body.verifyChildModePin !== "string") {
-          return res.status(400).json({ error: "Требуется PIN для отключения детского режима" });
+          return res
+            .status(400)
+            .json({ error: "Требуется PIN для отключения детского режима" });
         }
-        const checkHash = crypto.createHash("sha256").update(body.verifyChildModePin).digest("hex");
+        const checkHash = crypto
+          .createHash("sha256")
+          .update(body.verifyChildModePin)
+          .digest("hex");
         if (checkHash !== current.childModePinHash) {
           return res.status(403).json({ error: "Неверный PIN" });
         }

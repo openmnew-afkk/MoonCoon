@@ -1,20 +1,35 @@
-import { Settings as SettingsIcon, Bell, Lock, Palette, Globe, LogOut } from "lucide-react";
+import {
+  Settings as SettingsIcon,
+  Bell,
+  Lock,
+  Palette,
+  Globe,
+  LogOut,
+} from "lucide-react";
 
 export default function Settings() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <SettingsIcon className="text-primary" size={28} />
             Настройки
           </h1>
-          <p className="text-sm text-muted-foreground">Настройте ваше приложение</p>
+          <p className="text-sm text-muted-foreground">
+            Настройте ваше приложение
+          </p>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 7rem)' }}>
+      <div
+        className="max-w-2xl mx-auto px-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 7rem)" }}
+      >
         {/* Account Settings */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Account</h3>
@@ -142,7 +157,9 @@ export default function Settings() {
 
         {/* Danger Zone */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 text-red-500">Danger Zone</h3>
+          <h3 className="text-lg font-semibold mb-3 text-red-500">
+            Danger Zone
+          </h3>
           <div className="space-y-2">
             <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium">
               Download Your Data

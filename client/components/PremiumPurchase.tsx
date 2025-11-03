@@ -11,7 +11,11 @@ interface PremiumPurchaseProps {
 
 type PremiumType = "standard" | "blogger";
 
-export default function PremiumPurchase({ userId, currentStars, onSuccess }: PremiumPurchaseProps) {
+export default function PremiumPurchase({
+  userId,
+  currentStars,
+  onSuccess,
+}: PremiumPurchaseProps) {
   const { webApp } = useTelegram();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -53,7 +57,9 @@ export default function PremiumPurchase({ userId, currentStars, onSuccess }: Pre
 
   const handlePurchase = async (planType: PremiumType, price: number) => {
     if (currentStars < price) {
-      webApp?.showAlert(`Недостаточно звезд. Нужно ${price} ⭐ для ${planType === "standard" ? "Premium" : "Premium Blogger"} на месяц`);
+      webApp?.showAlert(
+        `Недостаточно звезд. Нужно ${price} ⭐ для ${planType === "standard" ? "Premium" : "Premium Blogger"} на месяц`,
+      );
       return;
     }
 
@@ -75,7 +81,9 @@ export default function PremiumPurchase({ userId, currentStars, onSuccess }: Pre
         onSuccess?.();
       } else {
         const error = await response.json();
-        webApp?.showAlert(error.error || "Ошибка при покупке Premium. Попробуйте позже.");
+        webApp?.showAlert(
+          error.error || "Ошибка при покупке Premium. Попробуйте позже.",
+        );
       }
     } catch (error) {
       console.error("Ошибка:", error);
@@ -93,7 +101,9 @@ export default function PremiumPurchase({ userId, currentStars, onSuccess }: Pre
           <div
             key={plan.type}
             className={`glass-card p-6 rounded-xl relative ${
-              plan.popular ? "border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-orange-500/10" : ""
+              plan.popular
+                ? "border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-orange-500/10"
+                : ""
             }`}
           >
             {plan.popular && (
@@ -112,7 +122,9 @@ export default function PremiumPurchase({ userId, currentStars, onSuccess }: Pre
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <Star className="text-yellow-400 fill-yellow-400" size={24} />
-                  <span className="text-3xl font-bold text-primary">{plan.price}</span>
+                  <span className="text-3xl font-bold text-primary">
+                    {plan.price}
+                  </span>
                   <span className="text-muted-foreground">⭐/месяц</span>
                 </div>
               </div>
@@ -141,7 +153,9 @@ export default function PremiumPurchase({ userId, currentStars, onSuccess }: Pre
                 {plan.benefits.map((benefit, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="text-green-500 flex-shrink-0" size={16} />
-                    <span className="text-xs text-muted-foreground">{benefit}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {benefit}
+                    </span>
                   </div>
                 ))}
               </div>

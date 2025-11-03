@@ -1,5 +1,14 @@
 import { useState, useRef } from "react";
-import { Plus, X, Share2, Zap, Video, AlertCircle, Clock, Sparkles } from "lucide-react";
+import {
+  Plus,
+  X,
+  Share2,
+  Zap,
+  Video,
+  AlertCircle,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 import MediaEditor from "@/components/MediaEditor";
 import { usePremium } from "@/hooks/usePremium";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -21,7 +30,9 @@ export default function Create() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { premium } = usePremium();
   const { user } = useTelegram();
-  const [visibility, setVisibility] = useState<'public' | 'followers'>('public');
+  const [visibility, setVisibility] = useState<"public" | "followers">(
+    "public",
+  );
   const [allowReactions, setAllowReactions] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [showAiStyles, setShowAiStyles] = useState(false);
@@ -52,7 +63,7 @@ export default function Create() {
     setVideoDuration(null);
     setEditedImage(null);
     setShowEditor(false);
-    setVisibility('public');
+    setVisibility("public");
     setAllowReactions(true);
   };
 
@@ -61,18 +72,20 @@ export default function Create() {
       const videoUrl = URL.createObjectURL(file);
       setSelectedVideo(videoUrl);
       setSelectedImage(null);
-      
+
       // Проверяем длительность видео
       const video = document.createElement("video");
       video.preload = "metadata";
       video.onloadedmetadata = () => {
         const duration = Math.floor(video.duration);
         setVideoDuration(duration);
-        
+
         if (duration > maxVideoDuration) {
           URL.revokeObjectURL(videoUrl);
           const maxMinutes = Math.floor(maxVideoDuration / 60);
-          alert(`Видео слишком длинное. Максимальная длительность: ${maxMinutes} ${maxMinutes === 1 ? "минута" : "минут"}.`);
+          alert(
+            `Видео слишком длинное. Максимальная длительность: ${maxMinutes} ${maxMinutes === 1 ? "минута" : "минут"}.`,
+          );
           setSelectedVideo(null);
           setVideoDuration(null);
         }
@@ -93,25 +106,29 @@ export default function Create() {
   const displayImage = editedImage || selectedImage;
   const hasMedia = displayImage || selectedVideo;
 
-  const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string) || '');
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+  const blobToBase64 = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string) || "");
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
-  const getMediaPayload = async (): Promise<{ media: string; mediaType: 'image' | 'video' } | null> => {
+  const getMediaPayload = async (): Promise<{
+    media: string;
+    mediaType: "image" | "video";
+  } | null> => {
     if (displayImage) {
-      return { media: displayImage, mediaType: 'image' };
+      return { media: displayImage, mediaType: "image" };
     }
     if (selectedVideo) {
       try {
         const resp = await fetch(selectedVideo);
         const blob = await resp.blob();
         const b64 = await blobToBase64(blob);
-        return { media: b64, mediaType: 'video' };
+        return { media: b64, mediaType: "video" };
       } catch (e) {
-        alert('Не удалось подготовить видео для загрузки');
+        alert("Не удалось подготовить видео для загрузки");
         return null;
       }
     }
@@ -120,131 +137,131 @@ export default function Create() {
 
   const publishPost = async () => {
     if (!hasMedia) {
-      alert('Добавьте фото или видео');
+      alert("Добавьте фото или видео");
       return;
     }
 
     if (!user?.id) {
-      alert('Необходима авторизация в Telegram');
+      alert("Необходима авторизация в Telegram");
       return;
     }
 
     const mediaPayload = await getMediaPayload();
     if (!mediaPayload) {
-      alert('Не удалось подготовить медиа');
+      alert("Не удалось подготовить медиа");
       return;
     }
     try {
       const payload = {
         userId: user.id.toString(),
-        caption: caption || '',
-        visibility: visibility || 'public',
+        caption: caption || "",
+        visibility: visibility || "public",
         media: mediaPayload.media,
         mediaType: mediaPayload.mediaType,
       };
 
-      console.log('Публикация поста...', { 
-        userId: payload.userId, 
+      console.log("Публикация поста...", {
+        userId: payload.userId,
         captionLength: payload.caption.length,
         visibility: payload.visibility,
         mediaType: payload.mediaType,
-        mediaSize: payload.media.length 
+        mediaSize: payload.media.length,
       });
 
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log('Ответ сервера:', res.status, res.statusText);
+      console.log("Ответ сервера:", res.status, res.statusText);
 
       if (res.ok) {
         const data = await res.json();
-        console.log('Пост опубликован:', data);
+        console.log("Пост опубликован:", data);
         resetForm();
-        alert('✅ Пост успешно опубликован!');
+        alert("✅ Пост успешно опубликован!");
       } else {
         const errorText = await res.text();
-        console.error('Ошибка сервера:', errorText);
-        
-        let errorMessage = 'Неизвестная ошибка';
+        console.error("Ошибка сервера:", errorText);
+
+        let errorMessage = "Неизвестная ошибка";
         try {
           const err = JSON.parse(errorText);
           errorMessage = err.error || err.message || errorMessage;
         } catch {
           errorMessage = errorText || errorMessage;
         }
-        
+
         alert(`❌ Ошибка публикации (${res.status}):\n${errorMessage}`);
       }
     } catch (e: any) {
-      console.error('Ошибка сети:', e);
-      alert(`❌ Ошибка сети:\n${e.message || 'Проверьте интернет-соединение'}`);
+      console.error("Ошибка сети:", e);
+      alert(`❌ Ошибка сети:\n${e.message || "Проверьте интернет-соединение"}`);
     }
   };
 
   const publishStory = async () => {
     if (!hasMedia) {
-      alert('Добавьте фото или видео');
+      alert("Добавьте фото или видео");
       return;
     }
 
     if (!user?.id) {
-      alert('Необходима авторизация в Telegram');
+      alert("Необходима авторизация в Telegram");
       return;
     }
 
     const mediaPayload = await getMediaPayload();
     if (!mediaPayload) {
-      alert('Не удалось подготовить медиа');
+      alert("Не удалось подготовить медиа");
       return;
     }
     try {
       const payload = {
         userId: user.id.toString(),
-        type: 'story',
+        type: "story",
         media: mediaPayload.media,
         mediaType: mediaPayload.mediaType,
-        caption: caption || '',
+        caption: caption || "",
       };
 
-      console.log('Публикация сторис...', { 
+      console.log("Публикация сторис...", {
         userId: payload.userId,
         mediaType: payload.mediaType,
-        mediaSize: payload.media.length 
+        mediaSize: payload.media.length,
       });
 
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      console.log('Ответ сервера:', res.status, res.statusText);
+      console.log("Ответ сервера:", res.status, res.statusText);
 
       if (res.ok) {
         const data = await res.json();
-        console.log('Сторис опубликована:', data);
+        console.log("Сторис опубликована:", data);
         resetForm();
-        alert('✅ История успешно опубликована!');
+        alert("✅ История успешно опубликована!");
       } else {
         const errorText = await res.text();
-        console.error('Ошибка сервера:', errorText);
-        
-        let errorMessage = 'Неизвестная ошибка';
+        console.error("Ошибка сервера:", errorText);
+
+        let errorMessage = "Неизвестная ошибка";
         try {
           const err = JSON.parse(errorText);
           errorMessage = err.error || err.message || errorMessage;
         } catch {
           errorMessage = errorText || errorMessage;
         }
-        
+
         alert(`❌ Ошибка публикации (${res.status}):\n${errorMessage}`);
       }
     } catch (e: any) {
-      console.error('Ошибка сети:', e);
-      alert(`❌ Ошибка сети:\n${e.message || 'Проверьте интернет-соединение'}`);
+      console.error("Ошибка сети:", e);
+      alert(`❌ Ошибка сети:\n${e.message || "Проверьте интернет-соединение"}`);
     }
   };
 
@@ -271,13 +288,17 @@ export default function Create() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          {/* Empty header */}
-        </div>
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-2xl mx-auto px-4 py-4">{/* Empty header */}</div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6.5rem)' }}>
+      <div
+        className="max-w-2xl mx-auto px-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
+      >
         {/* Mode Selector */}
         <div className="flex gap-2 mb-6">
           <button
@@ -355,18 +376,25 @@ export default function Create() {
                 {videoDuration && (
                   <div className="absolute top-2 right-2 glass-morphism px-2 py-1 rounded-lg text-xs flex items-center gap-1">
                     <Clock size={12} />
-                    {Math.floor(videoDuration / 60)}:{(videoDuration % 60).toString().padStart(2, "0")}
+                    {Math.floor(videoDuration / 60)}:
+                    {(videoDuration % 60).toString().padStart(2, "0")}
                   </div>
                 )}
                 {videoDuration && videoDuration > maxVideoDuration && (
                   <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
                     <div className="glass-card p-4 text-center">
-                      <AlertCircle className="text-red-500 mx-auto mb-2" size={24} />
+                      <AlertCircle
+                        className="text-red-500 mx-auto mb-2"
+                        size={24}
+                      />
                       <p className="text-sm font-semibold text-red-500">
                         Видео слишком длинное
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Максимум: {maxVideoDuration >= 60 ? `${Math.floor(maxVideoDuration / 60)} минут` : `${maxVideoDuration} секунд`}
+                        Максимум:{" "}
+                        {maxVideoDuration >= 60
+                          ? `${Math.floor(maxVideoDuration / 60)} минут`
+                          : `${maxVideoDuration} секунд`}
                       </p>
                     </div>
                   </div>
@@ -385,15 +413,16 @@ export default function Create() {
               <label className="flex flex-col items-center justify-center gap-4 p-12 glass-morphism rounded-2xl cursor-pointer hover:bg-glass-light/40 transition-all">
                 <Plus size={40} className="text-primary" />
                 <span className="text-center">
-                  <p className="font-semibold">
-                    Добавить фото или видео
-                  </p>
+                  <p className="font-semibold">Добавить фото или видео</p>
                   <p className="text-sm text-muted-foreground">
                     Нажмите для выбора с вашего устройства
                   </p>
                   <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
                     <Video size={14} />
-                    Видео до {maxVideoDuration >= 60 ? `${Math.floor(maxVideoDuration / 60)} мин` : `${maxVideoDuration} сек`}
+                    Видео до{" "}
+                    {maxVideoDuration >= 60
+                      ? `${Math.floor(maxVideoDuration / 60)} мин`
+                      : `${maxVideoDuration} сек`}
                   </p>
                 </span>
                 <input
@@ -415,7 +444,9 @@ export default function Create() {
           {mode === "post" && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-2">Описание</label>
+                <label className="block text-sm font-medium mb-2">
+                  Описание
+                </label>
                 <textarea
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
@@ -429,23 +460,23 @@ export default function Create() {
               <div className="space-y-2">
                 <p className="text-sm font-medium">Теги</p>
                 <div className="flex flex-wrap gap-2">
-                  {caption
-                    .match(/#[\w]+/g)
-                    ?.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="glass-button text-accent text-sm flex items-center gap-1"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  {caption.match(/#[\w]+/g)?.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="glass-button text-accent text-sm flex items-center gap-1"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
 
               {/* Settings */}
               <div className="space-y-3 border-t border-glass-light/10 pt-4">
                 <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
-                  <span className="text-sm font-medium">Разрешить комментарии</span>
+                  <span className="text-sm font-medium">
+                    Разрешить комментарии
+                  </span>
                   <input type="checkbox" defaultChecked className="w-4 h-4" />
                 </label>
                 <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
@@ -453,16 +484,20 @@ export default function Create() {
                   <input type="checkbox" defaultChecked className="w-4 h-4" />
                 </label>
                 <div className="p-3 bg-glass-light/30 rounded-xl">
-                  <label className="block text-sm font-medium mb-2">Видимость</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Видимость
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {([
-                      { key: 'public', label: 'Всем' },
-                      { key: 'followers', label: 'Подписчикам' },
-                    ] as const).map(opt => (
+                    {(
+                      [
+                        { key: "public", label: "Всем" },
+                        { key: "followers", label: "Подписчикам" },
+                      ] as const
+                    ).map((opt) => (
                       <button
                         key={opt.key}
                         onClick={() => setVisibility(opt.key)}
-                        className={`glass-button py-2 rounded-xl text-sm ${visibility === opt.key ? 'bg-primary/20 text-primary' : ''}`}
+                        className={`glass-button py-2 rounded-xl text-sm ${visibility === opt.key ? "bg-primary/20 text-primary" : ""}`}
                       >
                         {opt.label}
                       </button>
@@ -496,14 +531,21 @@ export default function Create() {
                 </label>
                 <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
                   <span className="text-sm font-medium">Разрешить реакции</span>
-                  <input type="checkbox" className="w-4 h-4" checked={allowReactions} onChange={(e)=>setAllowReactions(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4"
+                    checked={allowReactions}
+                    onChange={(e) => setAllowReactions(e.target.checked)}
+                  />
                 </label>
               </div>
 
               {/* Story Preview */}
               {hasMedia && (
                 <div className="p-4 bg-glass-light/30 rounded-2xl">
-                  <p className="text-xs text-muted-foreground mb-2">Предпросмотр</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Предпросмотр
+                  </p>
                   <div className="w-24 h-44 rounded-2xl overflow-hidden mx-auto relative">
                     {displayImage ? (
                       <img
@@ -519,7 +561,15 @@ export default function Create() {
                         playsInline
                       />
                     ) : null}
-                    <div className="pointer-events-none absolute inset-0" style={{ WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.15))', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.15))' }}></div>
+                    <div
+                      className="pointer-events-none absolute inset-0"
+                      style={{
+                        WebkitMaskImage:
+                          "linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.15))",
+                        maskImage:
+                          "linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0.15))",
+                      }}
+                    ></div>
                   </div>
                 </div>
               )}

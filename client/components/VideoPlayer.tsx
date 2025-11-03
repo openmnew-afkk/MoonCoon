@@ -56,7 +56,7 @@ export default function VideoPlayer({ src, thumbnail }: VideoPlayerProps) {
 
   const toggleFullscreen = () => {
     if (!videoRef.current) return;
-    
+
     if (!document.fullscreenElement) {
       videoRef.current.requestFullscreen().catch((err) => {
         console.error("Ошибка при переходе в полноэкранный режим:", err);

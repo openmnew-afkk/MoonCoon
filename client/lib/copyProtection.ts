@@ -8,7 +8,10 @@ export function enableCopyProtection() {
 
   // Disable keyboard shortcuts for copy/cut
   document.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === "c" || e.key === "x" || e.key === "a")) {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (e.key === "c" || e.key === "x" || e.key === "a")
+    ) {
       e.preventDefault();
     }
   });

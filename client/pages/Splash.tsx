@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Sparkles } from "lucide-react";
 
 export default function Splash({ onComplete }: { onComplete: () => void }) {
   const [fadeOut, setFadeOut] = useState(false);
@@ -16,9 +16,9 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#0a0e1a] via-[#0f1419] to-[#1a1f2e] overflow-hidden transition-opacity duration-500 ${
-        fadeOut ? 'opacity-0' : 'opacity-100'
+        fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
       {/* Анимированные частицы фона */}
@@ -39,13 +39,16 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
 
       {/* Градиентные круги на фоне */}
       <div className="absolute inset-0 opacity-20">
-        <div 
+        <div
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary rounded-full blur-[120px]"
-          style={{ animation: 'pulse 4s ease-in-out infinite' }}
+          style={{ animation: "pulse 4s ease-in-out infinite" }}
         />
-        <div 
+        <div
           className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent rounded-full blur-[120px]"
-          style={{ animation: 'pulse 4s ease-in-out infinite', animationDelay: '2s' }}
+          style={{
+            animation: "pulse 4s ease-in-out infinite",
+            animationDelay: "2s",
+          }}
         />
       </div>
 
@@ -57,27 +60,27 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
           <div className="absolute inset-0 -m-8">
             <div className="w-48 h-48 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-2xl animate-pulse" />
           </div>
-          
+
           {/* Луна */}
-          <div 
+          <div
             className="relative w-32 h-32 rounded-full bg-gradient-to-br from-primary via-primary/80 to-accent shadow-2xl"
-            style={{ animation: 'float 3s ease-in-out infinite' }}
+            style={{ animation: "float 3s ease-in-out infinite" }}
           >
             {/* Кратеры */}
             <div className="absolute top-4 left-6 w-4 h-4 rounded-full bg-primary-foreground/10" />
             <div className="absolute top-8 right-8 w-6 h-6 rounded-full bg-primary-foreground/10" />
             <div className="absolute bottom-6 left-10 w-3 h-3 rounded-full bg-primary-foreground/10" />
-            
+
             {/* Блеск */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
-            
+
             {/* Звездочки вокруг */}
             {[...Array(8)].map((_, i) => {
               const angle = (i / 8) * 360;
               const radius = 80;
               const x = Math.cos((angle * Math.PI) / 180) * radius;
               const y = Math.sin((angle * Math.PI) / 180) * radius;
-              
+
               return (
                 <Sparkles
                   key={i}
@@ -86,8 +89,8 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
                   style={{
                     left: `calc(50% + ${x}px)`,
                     top: `calc(50% + ${y}px)`,
-                    transform: 'translate(-50%, -50%)',
-                    animation: `twinkle ${1.5 + (i * 0.2)}s ease-in-out infinite`,
+                    transform: "translate(-50%, -50%)",
+                    animation: `twinkle ${1.5 + i * 0.2}s ease-in-out infinite`,
                     animationDelay: `${i * 0.2}s`,
                   }}
                 />
@@ -98,24 +101,24 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
 
         {/* Название приложения */}
         <div className="text-center mb-6">
-          <h1 
+          <h1
             className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent"
-            style={{ animation: 'fadeInUp 0.8s ease-out' }}
+            style={{ animation: "fadeInUp 0.8s ease-out" }}
           >
             MoonCoon
           </h1>
-          <p 
+          <p
             className="text-sm text-muted-foreground tracking-wider"
-            style={{ animation: 'fadeInUp 0.8s ease-out 0.2s both' }}
+            style={{ animation: "fadeInUp 0.8s ease-out 0.2s both" }}
           >
             Социальная сеть нового поколения
           </p>
         </div>
 
         {/* Анимированные точки загрузки */}
-        <div 
+        <div
           className="flex gap-2"
-          style={{ animation: 'fadeInUp 0.8s ease-out 0.4s both' }}
+          style={{ animation: "fadeInUp 0.8s ease-out 0.4s both" }}
         >
           {[0, 1, 2].map((i) => (
             <div
@@ -175,4 +178,3 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
-

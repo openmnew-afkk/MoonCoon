@@ -10,23 +10,37 @@ interface PremiumPurchaseRequest {
 // В реальном приложении здесь должна быть работа с БД
 const premiumUsers: Record<
   string,
-  { expiresAt: Date; isTrial: boolean; createdAt: Date; type: "standard" | "blogger"; videoDuration: number }
+  {
+    expiresAt: Date;
+    isTrial: boolean;
+    createdAt: Date;
+    type: "standard" | "blogger";
+    videoDuration: number;
+  }
 > = {};
 
 export const handlePremiumPurchase: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount, duration, type = "standard" }: PremiumPurchaseRequest = req.body;
+    const {
+      userId,
+      amount,
+      duration,
+      type = "standard",
+    }: PremiumPurchaseRequest = req.body;
 
     // Проверяем валидность суммы
     const validAmounts = [120, 180]; // standard: 120, blogger: 180
     if (!userId || !validAmounts.includes(amount)) {
-      return res.status(400).json({ error: "Неверные параметры запроса. Допустимые суммы: 120 или 180 звезд" });
+      return res.status(400).json({
+        error:
+          "Неверные параметры запроса. Допустимые суммы: 120 или 180 звезд",
+      });
     }
 
     // Импортируем функции из stars.ts
     // В реальном приложении это должно быть через общую БД с транзакциями
     const { getUserBalance, deductStars } = require("./stars");
-    
+
     // Проверяем баланс
     const currentBalance = getUserBalance(userId);
     if (currentBalance < amount) {
@@ -39,10 +53,10 @@ export const handlePremiumPurchase: RequestHandler = async (req, res) => {
     // Активируем Premium
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + duration);
-    
+
     const premiumType = amount === 180 ? "blogger" : "standard";
     const videoDuration = premiumType === "blogger" ? 18 * 60 : 5 * 60; // в секундах
-    
+
     premiumUsers[userId] = {
       expiresAt,
       isTrial: false,
@@ -84,7 +98,7 @@ export const handlePremiumStatus: RequestHandler = async (req, res) => {
       // Для демо: если пользователя нет в premiumUsers, даем неделю бесплатно
       const trialExpiresAt = new Date();
       trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
-      
+
       premiumUsers[userId] = {
         expiresAt: trialExpiresAt,
         isTrial: true,
@@ -126,4 +140,3 @@ export const handlePremiumStatus: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
-
