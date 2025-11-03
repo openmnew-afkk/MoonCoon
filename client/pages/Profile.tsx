@@ -236,18 +236,21 @@ export default function Profile() {
                 reader.readAsDataURL(file);
               }} />
               <button onClick={()=>document.getElementById('avatarInput')?.click()} className="relative group mb-3">
-                {/* Purple glow effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 blur-xl opacity-60 animate-pulse"></div>
                 <div className="relative">
                   <img
                     src={avatarUrl || user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'currentuser'}`}
                     alt="Avatar"
-                    className="w-28 h-28 rounded-full border-4 border-purple-500/50 shadow-2xl object-cover relative z-10"
-                    style={{ boxShadow: '0 0 30px rgba(168, 85, 247, 0.4)' }}
+                    className="w-28 h-28 rounded-full border-4 border-background shadow-xl object-cover"
                   />
                   <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                     <Edit3 size={20} className="text-white" />
                   </div>
+                  {/* Premium badge on avatar */}
+                  {premium.isPremium && (
+                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1.5 shadow-lg">
+                      <Sparkles size={14} className="text-white" />
+                    </div>
+                  )}
                 </div>
               </button>
 
@@ -277,24 +280,12 @@ export default function Profile() {
             </div>
 
             {/* Actions - Single Row */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <button
-                onClick={()=>{
-                  setIsFollowing((prev)=>!prev);
-                  setStats((s)=>({ ...s, followers: (s.followers || 0) + (isFollowing ? -1 : 1) }));
-                }}
-                className={`glass-button rounded-lg py-2 text-xs font-medium ${isFollowing ? 'bg-glass-light/40' : 'bg-primary/10'}`}
+                onClick={() => setShowSettings(true)}
+                className="glass-button rounded-lg py-2 text-xs font-medium bg-primary/10"
               >
-                {isFollowing ? 'Отписаться' : 'Подписаться'}
-              </button>
-              <button
-                onClick={()=>{
-                  if (user?.username) window.open(`https://t.me/${user.username}`, '_blank');
-                  else alert('Нет username');
-                }}
-                className="glass-button rounded-lg py-2 text-xs font-medium bg-glass-light/20"
-              >
-                Сообщение
+                Редактировать профиль
               </button>
             </div>
           </div>

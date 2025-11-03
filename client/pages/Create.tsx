@@ -189,32 +189,58 @@ export default function Create() {
       alert('Добавьте фото или видео');
       return;
     }
+
+    if (!user?.id) {
+      alert('Необходима авторизация в Telegram');
+      return;
+    }
+
     const mediaPayload = await getMediaPayload();
     if (!mediaPayload) {
       alert('Не удалось подготовить медиа');
       return;
     }
     try {
-      console.log('Публикация сторис...', { allowReactions, mediaType: mediaPayload.mediaType });
-      const res = await fetch('/api/stories', {
+      const payload = {
+        userId: user.id.toString(),
+        type: 'story',
+        media: mediaPayload.media,
+        mediaType: mediaPayload.mediaType,
+        caption: caption || '',
+      };
+
+      console.log('Публикация сторис...', { 
+        userId: payload.userId,
+        mediaType: payload.mediaType,
+        mediaSize: payload.media.length 
+      });
+
+      const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 'self',
-          allowReactions,
-          ...mediaPayload,
-        }),
+        body: JSON.stringify(payload),
       });
+
       console.log('Ответ сервера:', res.status, res.statusText);
+
       if (res.ok) {
         const data = await res.json();
         console.log('Сторис опубликована:', data);
         resetForm();
         alert('✅ История успешно опубликована!');
       } else {
-        const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }));
-        console.error('Ошибка публикации сторис:', err);
-        alert(`❌ Ошибка публикации:\n${err.error || 'Проверьте консоль'}`);
+        const errorText = await res.text();
+        console.error('Ошибка сервера:', errorText);
+        
+        let errorMessage = 'Неизвестная ошибка';
+        try {
+          const err = JSON.parse(errorText);
+          errorMessage = err.error || err.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        alert(`❌ Ошибка публикации (${res.status}):\n${errorMessage}`);
       }
     } catch (e: any) {
       console.error('Ошибка сети:', e);

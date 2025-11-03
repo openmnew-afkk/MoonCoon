@@ -142,7 +142,6 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
         }
       } catch (telegramError) {
         console.warn('Не удалось получить баланс из Telegram API:', telegramError);
-        // Продолжаем с локальным хранилищем
       }
     }
 
