@@ -16,7 +16,7 @@
   ],
   "functions": {
     "api/serverless.ts": {
-      "runtime": "nodejs22.x"
+      "runtime": "nodejs20.x"
     }
   }
 }
