@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
       - name: Checkout code
@@ -36,10 +36,10 @@ jobs:
         run: pnpm typecheck
 
       - name: Run linter
-        run: pnpm run lint || echo "Linter not configured"
+        run: pnpm run lint
 
       - name: Run tests
-        run: pnpm test || echo "Tests not configured"
+        run: pnpm test
 
   build:
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
           cache: "pnpm"
 
       - name: Install dependencies
