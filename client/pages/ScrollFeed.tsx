@@ -342,10 +342,10 @@ export default function ScrollFeed() {
         style={{ scrollBehavior: 'smooth' }}
       >
         {videos.map((video, index) => (
-        <div
-          key={video.id}
-          className="video-container h-screen w-full snap-start relative flex items-center justify-center bg-black"
-        >
+          <div
+            key={video.id}
+            className="video-container h-screen w-full snap-start relative flex items-center justify-center bg-black"
+          >
           {/* Video */}
           <video
             ref={(el) => (videoRefs.current[index] = el)}
