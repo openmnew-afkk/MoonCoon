@@ -346,181 +346,182 @@ export default function ScrollFeed() {
             key={video.id}
             className="video-container h-screen w-full snap-start relative flex items-center justify-center bg-black"
           >
-          {/* Video */}
-          <video
-            ref={(el) => (videoRefs.current[index] = el)}
-            src={video.video}
-            className="w-full h-full object-cover"
-            loop
-            muted
-            playsInline
-            poster={video.thumbnail}
-            autoPlay={index === 0} // Автопроигрывание первого видео
-            onClick={() => toggleVideoPlay(index)}
-          />
+            {/* Video */}
+            <video
+              ref={(el) => (videoRefs.current[index] = el)}
+              src={video.video}
+              className="w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              poster={video.thumbnail}
+              autoPlay={index === 0} // Автопроигрывание первого видео
+              onClick={() => toggleVideoPlay(index)}
+            />
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
 
-          {/* Play/Pause Button */}
-          <button
-            onClick={() => toggleVideoPlay(index)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-          >
-            <Play className="text-white" size={32} />
-          </button>
+            {/* Play/Pause Button */}
+            <button
+              onClick={() => toggleVideoPlay(index)}
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+            >
+              <Play className="text-white" size={32} />
+            </button>
 
-          {/* Video Info */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-end justify-between">
-              {/* Author Info & Caption */}
-              <div className="flex-1 mr-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={video.author.avatar}
-                    alt={video.author.name}
-                    className="w-12 h-12 rounded-full flex-shrink-0"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold">{video.author.name}</p>
-                      {video.author.verified && (
-                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white">✓</span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm opacity-80">@{video.author.username}</p>
-                  </div>
-                </div>
-
-                <p className="text-sm leading-relaxed mb-3 line-clamp-3">
-                  {video.caption}
-                </p>
-
-                {/* Hashtags */}
-                <div className="flex flex-wrap gap-2">
-                  {video.caption.match(/#[^\s]+/g)?.slice(0, 3).map((tag, i) => (
-                    <span key={i} className="text-sm opacity-80">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-col items-center gap-4">
-                {/* Like */}
-                <button
-                  onClick={() => toggleLike(video.id)}
-                  className="flex flex-col items-center gap-1 group"
-                >
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-all",
-                    video.liked
-                      ? "bg-red-500"
-                      : "bg-black/50 group-hover:bg-black/70"
-                  )}>
-                    <Heart
-                      size={24}
-                      className={cn(
-                        "transition-all",
-                        video.liked ? "fill-white text-white scale-110" : "text-white"
-                      )}
+            {/* Video Info */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <div className="flex items-end justify-between">
+                {/* Author Info & Caption */}
+                <div className="flex-1 mr-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <img
+                      src={video.author.avatar}
+                      alt={video.author.name}
+                      className="w-12 h-12 rounded-full flex-shrink-0"
                     />
-                  </div>
-                  <span className="text-xs font-medium">{video.likes}</span>
-                </button>
-
-                {/* Comments */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
-                    <MessageCircle size={24} className="text-white" />
-                  </div>
-                  <span className="text-xs font-medium">{video.comments}</span>
-                </div>
-
-                {/* Stars */}
-                <button
-                  onClick={() => setShowStarModal(video.id)}
-                  className="flex flex-col items-center gap-1 group"
-                >
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-all",
-                    video.starred
-                      ? "bg-yellow-500"
-                      : "bg-black/50 group-hover:bg-black/70"
-                  )}>
-                    <Star
-                      size={24}
-                      className={cn(
-                        "transition-all",
-                        video.starred ? "fill-white text-white scale-110" : "text-white"
-                      )}
-                    />
-                  </div>
-                  <span className="text-xs font-medium">{video.stars}</span>
-                </button>
-
-                {/* Share */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
-                    <Share2 size={24} className="text-white" />
-                  </div>
-                  <span className="text-xs font-medium">Share</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Star Modal */}
-          {showStarModal === video.id && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="glass-card max-w-sm w-full p-6 bg-black/90 border-white/20">
-                <h3 className="text-lg font-bold mb-4 text-white">
-                  Отправить звезду
-                </h3>
-                <div className="mb-4">
-                  <p className="text-sm text-white/80 mb-2">
-                    Ваш баланс: {starsBalance} ⭐
-                  </p>
-                  <div className="flex gap-2">
-                    {[1, 5, 10, 50].map((amt) => (
-                      <button
-                        key={amt}
-                        onClick={() => setStarAmount(amt)}
-                        className={cn(
-                          "glass-button px-4 py-2 text-sm font-medium transition-all",
-                          starAmount === amt &&
-                            "bg-primary/20 text-primary border-2 border-primary",
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold">{video.author.name}</p>
+                        {video.author.verified && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white">✓</span>
+                          </div>
                         )}
-                        disabled={starsBalance < amt}
-                      >
-                        {amt} ⭐
-                      </button>
+                      </div>
+                      <p className="text-sm opacity-80">@{video.author.username}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-sm leading-relaxed mb-3 line-clamp-3">
+                    {video.caption}
+                  </p>
+
+                  {/* Hashtags */}
+                  <div className="flex flex-wrap gap-2">
+                    {video.caption.match(/#[^\s]+/g)?.slice(0, 3).map((tag, i) => (
+                      <span key={i} className="text-sm opacity-80">
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-2">
+
+                {/* Actions */}
+                <div className="flex flex-col items-center gap-4">
+                  {/* Like */}
                   <button
-                    onClick={() => setShowStarModal(null)}
-                    className="flex-1 glass-button py-2 text-sm bg-white/10 text-white"
+                    onClick={() => toggleLike(video.id)}
+                    className="flex flex-col items-center gap-1 group"
                   >
-                    Отмена
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                      video.liked
+                        ? "bg-red-500"
+                        : "bg-black/50 group-hover:bg-black/70"
+                    )}>
+                      <Heart
+                        size={24}
+                        className={cn(
+                          "transition-all",
+                          video.liked ? "fill-white text-white scale-110" : "text-white"
+                        )}
+                      />
+                    </div>
+                    <span className="text-xs font-medium">{video.likes}</span>
                   </button>
+
+                  {/* Comments */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
+                      <MessageCircle size={24} className="text-white" />
+                    </div>
+                    <span className="text-xs font-medium">{video.comments}</span>
+                  </div>
+
+                  {/* Stars */}
                   <button
-                    onClick={() => handleSendStar(video.id)}
-                    disabled={starsBalance < starAmount}
-                    className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2 text-sm font-semibold disabled:opacity-50"
+                    onClick={() => setShowStarModal(video.id)}
+                    className="flex flex-col items-center gap-1 group"
                   >
-                    Отправить {starAmount} ⭐
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                      video.starred
+                        ? "bg-yellow-500"
+                        : "bg-black/50 group-hover:bg-black/70"
+                    )}>
+                      <Star
+                        size={24}
+                        className={cn(
+                          "transition-all",
+                          video.starred ? "fill-white text-white scale-110" : "text-white"
+                        )}
+                      />
+                    </div>
+                    <span className="text-xs font-medium">{video.stars}</span>
                   </button>
+
+                  {/* Share */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
+                      <Share2 size={24} className="text-white" />
+                    </div>
+                    <span className="text-xs font-medium">Share</span>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      ))}
+
+            {/* Star Modal */}
+            {showStarModal === video.id && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="glass-card max-w-sm w-full p-6 bg-black/90 border-white/20">
+                  <h3 className="text-lg font-bold mb-4 text-white">
+                    Отправить звезду
+                  </h3>
+                  <div className="mb-4">
+                    <p className="text-sm text-white/80 mb-2">
+                      Ваш баланс: {starsBalance} ⭐
+                    </p>
+                    <div className="flex gap-2">
+                      {[1, 5, 10, 50].map((amt) => (
+                        <button
+                          key={amt}
+                          onClick={() => setStarAmount(amt)}
+                          className={cn(
+                            "glass-button px-4 py-2 text-sm font-medium transition-all",
+                            starAmount === amt &&
+                              "bg-primary/20 text-primary border-2 border-primary",
+                          )}
+                          disabled={starsBalance < amt}
+                        >
+                          {amt} ⭐
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowStarModal(null)}
+                      className="flex-1 glass-button py-2 text-sm bg-white/10 text-white"
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      onClick={() => handleSendStar(video.id)}
+                      disabled={starsBalance < starAmount}
+                      className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-2 text-sm font-semibold disabled:opacity-50"
+                    >
+                      Отправить {starAmount} ⭐
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
