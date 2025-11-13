@@ -318,12 +318,30 @@ export default function ScrollFeed() {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-screen bg-background snap-y snap-mandatory overflow-y-scroll"
-      style={{ scrollBehavior: 'smooth' }}
-    >
-      {videos.map((video, index) => (
+    <div className="min-h-screen bg-background">
+      {/* Header with back button */}
+      <div
+        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.history.back()}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:bg-glass-light/20 flex items-center gap-2"
+            >
+              ← Лента
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        ref={containerRef}
+        className="min-h-screen bg-background snap-y snap-mandatory overflow-y-scroll pt-20"
+        style={{ scrollBehavior: 'smooth' }}
+      >
+        {videos.map((video, index) => (
         <div
           key={video.id}
           className="video-container h-screen w-full snap-start relative flex items-center justify-center bg-black"
@@ -337,6 +355,7 @@ export default function ScrollFeed() {
             muted
             playsInline
             poster={video.thumbnail}
+            autoPlay={index === 0} // Автопроигрывание первого видео
             onClick={() => toggleVideoPlay(index)}
           />
 

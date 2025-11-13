@@ -363,7 +363,7 @@ export default function Feed() {
         className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFeedMode("feed")}
