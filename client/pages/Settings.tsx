@@ -60,16 +60,19 @@ export default function Settings() {
       const response = await fetch(`/api/users/${user.id}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings }),
+        body: JSON.stringify(settings), // Убираем лишний обертку { settings }
       });
 
       if (response.ok) {
         console.log('Настройки сохранены');
+        alert('Настройки успешно сохранены!');
       } else {
         console.error('Ошибка сохранения настроек на сервер');
+        alert('Ошибка сохранения настроек на сервер');
       }
     } catch (error) {
       console.error('Ошибка сохранения настроек:', error);
+      alert('Ошибка сохранения настроек');
     } finally {
       setSaving(false);
     }
@@ -323,11 +326,38 @@ export default function Settings() {
                   <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium">
                     Download Your Data
                   </button>
-                  <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium flex items-center justify-between">
+                  <button
+                    onClick={() => {
+                      if (confirm('Вы уверены, что хотите выйти?')) {
+                        localStorage.removeItem('mooncoon_settings');
+                        window.location.reload();
+                      }
+                    }}
+                    className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium flex items-center justify-between"
+                  >
                     <span>Logout</span>
                     <LogOut size={18} />
                   </button>
-                  <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium">
+                  <button
+                    onClick={async () => {
+                      if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить!')) {
+                        if (user?.id) {
+                          try {
+                            const response = await fetch(`/api/users/${user.id}`, {
+                              method: 'DELETE',
+                            });
+                            if (response.ok) {
+                              alert('Аккаунт удален');
+                              window.location.reload();
+                            }
+                          } catch (error) {
+                            console.error('Ошибка удаления:', error);
+                          }
+                        }
+                      }
+                    }}
+                    className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium"
+                  >
                     Delete Account
                   </button>
                 </div>

@@ -26,7 +26,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background" style={{ marginTop: '2rem' }}>
+    <div className="flex flex-col h-screen bg-background" style={{ marginTop: '2.5rem' }}>
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto pb-24">{children}</div>
 

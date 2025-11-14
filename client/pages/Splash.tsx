@@ -1,133 +1,99 @@
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Moon, Star, Heart } from "lucide-react";
 
 export default function Splash({ onComplete }: { onComplete: () => void }) {
   const [fadeOut, setFadeOut] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = [
+    { icon: Moon, text: "Добро пожаловать" },
+    { icon: Star, text: "Создаём магию" },
+    { icon: Heart, text: "Погружайтесь" },
+  ];
 
   useEffect(() => {
-    // Запускаем fade out через 2.5 секунды
+    const stepInterval = setInterval(() => {
+      setCurrentStep((prev) => (prev + 1) % steps.length);
+    }, 800);
+
+    // Запускаем fade out через 3 секунды
     const timer = setTimeout(() => {
+      clearInterval(stepInterval);
       setFadeOut(true);
       // Завершаем через 0.5 секунд после начала fade out
       setTimeout(() => onComplete(), 500);
-    }, 2500);
+    }, 3000);
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(stepInterval);
+    };
+  }, [onComplete, steps.length]);
+
+  const CurrentIcon = steps[currentStep].icon;
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#0a0e1a] via-[#0f1419] to-[#1a1f2e] overflow-hidden transition-opacity duration-500 ${
-        fadeOut ? "opacity-0" : "opacity-100"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden transition-all duration-500 ${
+        fadeOut ? "opacity-0 scale-105" : "opacity-100 scale-100"
       }`}
     >
-      {/* Анимированные частицы фона */}
+      {/* Динамический градиентный фон */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-500/20 to-blue-500/20 animate-pulse" />
+
+      {/* Плавающие формы */}
       <div className="absolute inset-0">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full"
+            className="absolute rounded-full bg-white/10 backdrop-blur-sm"
             style={{
+              width: `${20 + Math.random() * 40}px`,
+              height: `${20 + Math.random() * 40}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animation: `twinkle ${2 + Math.random() * 3}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`,
+              animation: `drift ${10 + Math.random() * 20}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`,
             }}
           />
         ))}
       </div>
 
-      {/* Градиентные круги на фоне */}
-      <div className="absolute inset-0 opacity-20">
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary rounded-full blur-[120px]"
-          style={{ animation: "pulse 4s ease-in-out infinite" }}
-        />
-        <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent rounded-full blur-[120px]"
-          style={{
-            animation: "pulse 4s ease-in-out infinite",
-            animationDelay: "2s",
-          }}
-        />
-      </div>
-
-      {/* Главный контент */}
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Луна с анимацией */}
+      {/* Центральный контент */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6">
+        {/* Иконка с анимацией */}
         <div className="relative mb-8">
-          {/* Внешнее свечение */}
-          <div className="absolute inset-0 -m-8">
-            <div className="w-48 h-48 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-2xl animate-pulse" />
-          </div>
-
-          {/* Луна */}
-          <div
-            className="relative w-32 h-32 rounded-full bg-gradient-to-br from-primary via-primary/80 to-accent shadow-2xl"
-            style={{ animation: "float 3s ease-in-out infinite" }}
-          >
-            {/* Кратеры */}
-            <div className="absolute top-4 left-6 w-4 h-4 rounded-full bg-primary-foreground/10" />
-            <div className="absolute top-8 right-8 w-6 h-6 rounded-full bg-primary-foreground/10" />
-            <div className="absolute bottom-6 left-10 w-3 h-3 rounded-full bg-primary-foreground/10" />
-
-            {/* Блеск */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
-
-            {/* Звездочки вокруг */}
-            {[...Array(8)].map((_, i) => {
-              const angle = (i / 8) * 360;
-              const radius = 80;
-              const x = Math.cos((angle * Math.PI) / 180) * radius;
-              const y = Math.sin((angle * Math.PI) / 180) * radius;
-
-              return (
-                <Sparkles
-                  key={i}
-                  size={16}
-                  className="absolute text-primary/60"
-                  style={{
-                    left: `calc(50% + ${x}px)`,
-                    top: `calc(50% + ${y}px)`,
-                    transform: "translate(-50%, -50%)",
-                    animation: `twinkle ${1.5 + i * 0.2}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.2}s`,
-                  }}
-                />
-              );
-            })}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 blur-xl opacity-50 animate-ping" />
+          <div className="relative p-6 rounded-full bg-gradient-to-br from-pink-400 via-purple-500 to-blue-500 shadow-2xl">
+            <CurrentIcon size={60} className="text-white animate-spin" style={{ animationDuration: '3s' }} />
           </div>
         </div>
 
         {/* Название приложения */}
-        <div className="text-center mb-6">
-          <h1
-            className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent"
-            style={{ animation: "fadeInUp 0.8s ease-out" }}
-          >
-            MoonCoon
-          </h1>
-          <p
-            className="text-sm text-muted-foreground tracking-wider"
-            style={{ animation: "fadeInUp 0.8s ease-out 0.2s both" }}
-          >
-            Социальная сеть нового поколения
-          </p>
+        <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-white via-pink-200 to-purple-200 bg-clip-text text-transparent animate-pulse">
+          MoonCoon
+        </h1>
+
+        {/* Текстовое сообщение с анимацией */}
+        <p className="text-xl text-white/90 mb-8 font-light tracking-wide animate-fade-in">
+          {steps[currentStep].text}
+        </p>
+
+        {/* Прогресс бар */}
+        <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden mb-8">
+          <div
+            className="h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          />
         </div>
 
-        {/* Анимированные точки загрузки */}
-        <div
-          className="flex gap-2"
-          style={{ animation: "fadeInUp 0.8s ease-out 0.4s both" }}
-        >
-          {[0, 1, 2].map((i) => (
+        {/* Украшения */}
+        <div className="flex gap-4">
+          {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="w-2 h-2 rounded-full bg-primary"
-              style={{
-                animation: `bounce 1.4s ease-in-out infinite`,
-                animationDelay: `${i * 0.2}s`,
-              }}
+              className="w-2 h-2 rounded-full bg-white/60 animate-pulse"
+              style={{ animationDelay: `${i * 0.2}s` }}
             />
           ))}
         </div>
@@ -135,44 +101,28 @@ export default function Splash({ onComplete }: { onComplete: () => void }) {
 
       {/* CSS анимации */}
       <style>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) scale(1);
+        @keyframes drift {
+          0% {
+            transform: translateY(0px) translateX(0px) rotate(0deg);
           }
-          50% {
-            transform: translateY(-15px) scale(1.05);
+          33% {
+            transform: translateY(-20px) translateX(15px) rotate(120deg);
           }
-        }
-        
-        @keyframes twinkle {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
+          66% {
+            transform: translateY(10px) translateX(-10px) rotate(240deg);
           }
-          50% {
-            opacity: 1;
-            transform: scale(1.5);
+          100% {
+            transform: translateY(0px) translateX(0px) rotate(360deg);
           }
         }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
-        @keyframes bounce {
-          0%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-10px);
-          }
+
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
         }
       `}</style>
     </div>

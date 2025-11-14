@@ -185,10 +185,50 @@ export default function Explore() {
           </div>
         ) : null}
 
-        {/* Pinterest-Style Grid */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => (
+        {/* Search Functionality */}
+        <div className="mb-6">
+          {searchQuery && (
+            <div className="text-sm text-muted-foreground mb-4">
+              Поиск по запросу: "{searchQuery}"
+            </div>
+          )}
+          {selectedCategory && selectedCategory !== "Все" && (
+            <div className="text-sm text-muted-foreground mb-4">
+              Категория: {selectedCategory}
+            </div>
+          )}
+        </div>
+
+        {/* Results or Empty State */}
+        {filteredItems.length > 0 ? (
+          <div className="text-sm text-muted-foreground mb-4">
+            Найдено результатов: {filteredItems.length}
+          </div>
+        ) : searchQuery || selectedCategory ? (
+          <div className="py-12 text-center">
+            <Search className="mx-auto text-muted-foreground mb-4" size={48} />
+            <p className="text-muted-foreground font-medium mb-2">
+              Результатов не найдено
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Попробуйте изменить запрос или выбрать другую категорию
+            </p>
+          </div>
+        ) : (
+          /* Default state with trending content */
+          <div className="text-center py-12">
+            <Sparkles className="mx-auto text-primary mb-4" size={48} />
+            <p className="text-xl font-semibold mb-2">Начните поиск</p>
+            <p className="text-muted-foreground">
+              Используйте поисковую строку или выберите категорию выше
+            </p>
+          </div>
+        )}
+
+        {/* Pinterest-Style Grid - only show if there are items */}
+        {filteredItems.length > 0 && (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+            {filteredItems.map((item) => (
               <div
                 key={item.id}
                 className="break-inside-avoid mb-4 group cursor-pointer"
@@ -223,22 +263,9 @@ export default function Explore() {
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full py-12 text-center">
-              <Sparkles
-                className="mx-auto text-muted-foreground mb-4"
-                size={40}
-              />
-              <p className="text-muted-foreground font-medium mb-2">
-                Ничего не найдено
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Попробуйте другой поисковый запрос или категорию
-              </p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
