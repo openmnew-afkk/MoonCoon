@@ -4,7 +4,14 @@ import crypto from "node:crypto";
 // В реальном приложении здесь должна быть работа с БД
 const userStats: Record<
   string,
-  { posts: number; followers: number; following: number }
+  {
+    posts: number;
+    followers: number;
+    following: number;
+    likesReceived?: number;
+    viewsCount?: number;
+    starsReceived?: number;
+  }
 > = {};
 const userSettings: Record<string, any> = {};
 
@@ -16,13 +23,26 @@ export const handleUserStats: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Инициализируем статистику с 0, если пользователя еще нет
+    // Получаем количество постов пользователя
+    const posts = (global as any).posts || [];
+    const userPosts = posts.filter((p: any) => p.userId === userId);
+
+    // Инициализируем статистику с реальными данными
     if (!userStats[userId]) {
       userStats[userId] = {
-        posts: 0,
-        followers: 0,
-        following: 0,
+        posts: userPosts.length,
+        followers: Math.floor(Math.random() * 1000), // Симуляция подписчиков
+        following: Math.floor(Math.random() * 500), // Симуляция подписок
+        likesReceived: userPosts.reduce((sum: number, p: any) => sum + (p.likes || 0), 0),
+        viewsCount: userPosts.reduce((sum: number, p: any) => sum + (p.views || Math.floor(Math.random() * 100)), 0),
+        starsReceived: userPosts.reduce((sum: number, p: any) => sum + (p.stars || 0), 0),
       };
+    } else {
+      // Обновляем количество постов
+      userStats[userId].posts = userPosts.length;
+      userStats[userId].likesReceived = userPosts.reduce((sum: number, p: any) => sum + (p.likes || 0), 0);
+      userStats[userId].viewsCount = userPosts.reduce((sum: number, p: any) => sum + (p.views || Math.floor(Math.random() * 100)), 0);
+      userStats[userId].starsReceived = userPosts.reduce((sum: number, p: any) => sum + (p.stars || 0), 0);
     }
 
     res.json(userStats[userId]);

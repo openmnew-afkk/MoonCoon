@@ -104,6 +104,14 @@ export function createServer() {
         if (userData.verified !== undefined) profile.verified = userData.verified;
       }
 
+      // Если это текущий пользователь Telegram, используем его данные
+      if (req.headers['x-telegram-user-id'] === userId) {
+        const telegramUser = JSON.parse(req.headers['x-telegram-user'] as string || '{}');
+        if (telegramUser.first_name) profile.name = telegramUser.first_name;
+        if (telegramUser.username) profile.username = `@${telegramUser.username}`;
+        if (telegramUser.photo_url) profile.avatarUrl = telegramUser.photo_url;
+      }
+
       res.json(profile);
     } catch (error) {
       console.error("Ошибка получения профиля:", error);

@@ -117,7 +117,7 @@ export default function ScrollFeed() {
                     caption: post.caption || "",
                     likes: post.likes || 0,
                     comments: post.comments || 0,
-                    stars: 0,
+                    stars: post.stars || 0,
                     liked: false,
                     starred: false,
                     timestamp: new Date(post.createdAt).toLocaleDateString("ru-RU"),
