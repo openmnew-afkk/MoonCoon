@@ -31,21 +31,47 @@ export default function Settings() {
   const { user } = useTelegram();
   const { profile, setProfile } = useUserData();
 
-  // Загружаем настройки из localStorage или API при открытии
+  // Загружаем настройки из API или localStorage при открытии
   useEffect(() => {
-    const loadSettings = () => {
-      const savedSettings = localStorage.getItem('mooncoon_settings');
-      if (savedSettings) {
-        try {
-          const parsed = JSON.parse(savedSettings);
-          setSettings(prev => ({ ...prev, ...parsed }));
-        } catch (error) {
-          console.error('Ошибка загрузки настроек:', error);
+    const loadSettings = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Сначала пробуем загрузить с сервера
+        const response = await fetch(`/api/users/${user.id}/settings`);
+        if (response.ok) {
+          const serverSettings = await response.json();
+          setSettings(prev => ({ ...prev, ...serverSettings }));
+          // Сохраняем в localStorage для оффлайн доступа
+          localStorage.setItem('mooncoon_settings', JSON.stringify({ ...settings, ...serverSettings }));
+        } else {
+          // Если сервер недоступен, грузим из localStorage
+          const savedSettings = localStorage.getItem('mooncoon_settings');
+          if (savedSettings) {
+            try {
+              const parsed = JSON.parse(savedSettings);
+              setSettings(prev => ({ ...prev, ...parsed }));
+            } catch (error) {
+              console.error('Ошибка загрузки настроек из localStorage:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки настроек с сервера:', error);
+        // Fallback to localStorage
+        const savedSettings = localStorage.getItem('mooncoon_settings');
+        if (savedSettings) {
+          try {
+            const parsed = JSON.parse(savedSettings);
+            setSettings(prev => ({ ...prev, ...parsed }));
+          } catch (localError) {
+            console.error('Ошибка загрузки настроек из localStorage:', localError);
+          }
         }
       }
     };
     loadSettings();
-  }, []);
+  }, [user?.id]);
 
   // Сохраняем настройки в localStorage и на сервер
   const saveSettings = async () => {
@@ -60,19 +86,20 @@ export default function Settings() {
       const response = await fetch(`/api/users/${user.id}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings), // Убираем лишний обертку { settings }
+        body: JSON.stringify(settings),
       });
 
       if (response.ok) {
         console.log('Настройки сохранены');
         alert('Настройки успешно сохранены!');
       } else {
-        console.error('Ошибка сохранения настроек на сервер');
-        alert('Ошибка сохранения настроек на сервер');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Ошибка сохранения настроек на сервер:', errorData);
+        alert('Ошибка сохранения настроек на сервер: ' + (errorData.error || 'Неизвестная ошибка'));
       }
     } catch (error) {
       console.error('Ошибка сохранения настроек:', error);
-      alert('Ошибка сохранения настроек');
+      alert('Ошибка сохранения настроек: ' + (error.message || 'Неизвестная ошибка'));
     } finally {
       setSaving(false);
     }
