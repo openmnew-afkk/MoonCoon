@@ -369,9 +369,7 @@ export default function Feed() {
               onClick={() => setFeedMode("feed")}
               className={cn(
                 "px-4 py-2 rounded-xl text-sm font-medium transition-all",
-                feedMode === "feed"
-                  ? "bg-primary/20 text-primary"
-                  : "hover:bg-glass-light/20"
+                "bg-primary/20 text-primary"
               )}
             >
               Лента
@@ -380,9 +378,7 @@ export default function Feed() {
               onClick={() => setFeedMode("scroll")}
               className={cn(
                 "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
-                feedMode === "scroll"
-                  ? "bg-primary/20 text-primary"
-                  : "hover:bg-glass-light/20"
+                "hover:bg-glass-light/20"
               )}
             >
               <Play size={16} />

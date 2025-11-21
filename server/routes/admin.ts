@@ -1,27 +1,8 @@
 import { RequestHandler } from "express";
+import User from "../models/User";
 
-// Хранилище данных (в продакшене - БД)
+// Хранилище сессий (в продакшене лучше использовать Redis или БД)
 const adminSessions: Set<string> = new Set();
-const adminUsers: Set<string> = new Set(); // userId админов
-const bannedUsers: Set<string> = new Set(); // userId забаненных
-
-// Автоматически делаем пользователя админом (можно настроить через .env)
-if (process.env.ADMIN_USER_ID) {
-  adminUsers.add(process.env.ADMIN_USER_ID);
-  console.log("✅ Admin userId из env:", process.env.ADMIN_USER_ID);
-}
-
-// Хранилище username админов
-const adminUsernames: Set<string> = new Set();
-if (process.env.ADMIN_USERNAME) {
-  adminUsernames.add(process.env.ADMIN_USERNAME.toLowerCase().replace("@", ""));
-  console.log("✅ Admin username из env:", process.env.ADMIN_USERNAME);
-}
-
-// Добавляем тестовых админов для разработки (убрать в продакшене)
-adminUsers.add("1234567890"); // ID из тестового случая
-adminUsernames.add("testuser"); // username для теста
-console.log("🧪 Добавлены тестовые админы для разработки");
 
 interface AdminAuthRequest {
   userId: string;
@@ -29,78 +10,81 @@ interface AdminAuthRequest {
 
 export const handleAdminAuth: RequestHandler = async (req, res) => {
   try {
-    const { userId }: AdminAuthRequest = req.body;
+    const { userId, username } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Проверяем, является ли пользователь админом
-    // В продакшене это должно проверяться через Telegram Bot API или БД
-    const isAdmin = adminUsers.has(userId.toString());
+    // Check if user is admin in DB
+    const user = await User.findOne({ telegramId: userId });
 
-    if (isAdmin) {
-      const sessionToken = `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (user && user.isAdmin) {
+      const sessionToken = `admin_${userId}_${Date.now()}`;
       adminSessions.add(sessionToken);
-
-      res.json({
-        success: true,
-        sessionToken,
-        message: "Успешная авторизация",
-      });
-    } else {
-      res.status(403).json({
-        success: false,
-        error: "У вас нет прав администратора",
-      });
+      return res.json({ success: true, token: sessionToken });
     }
+
+    // Auto-admin for first user if no admins exist
+    const adminCount = await User.countDocuments({ isAdmin: true });
+    if (adminCount === 0) {
+      if (user) {
+        user.isAdmin = true;
+        await user.save();
+      } else {
+        // Create new admin user
+        await User.create({
+          telegramId: userId,
+          name: "Admin",
+          username: username,
+          isAdmin: true,
+          verified: true
+        });
+      }
+
+      const sessionToken = `admin_${userId}_${Date.now()}`;
+      adminSessions.add(sessionToken);
+      return res.json({ success: true, token: sessionToken, message: "Вы назначены первым администратором" });
+    }
+
+    res.status(403).json({ error: "Доступ запрещен" });
   } catch (error) {
-    console.error("Ошибка авторизации администратора:", error);
-    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    console.error("Admin auth error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const handleAdminCheck: RequestHandler = async (req, res) => {
   try {
-    // Проверяем по userId или username из query
     const userId = req.query.userId as string;
-    const username = req.query.username as string;
 
     let isAdmin = false;
 
-    // AUTO-ADMIN: Если список админов пуст, делаем текущего пользователя админом
-    // Это позволяет первому пользователю получить доступ к панели
-    if (adminUsers.size === 0 && userId) {
-      console.log(`👑 Первый пользователь ${userId} автоматически назначен админом`);
-      adminUsers.add(userId.toString());
-      if (username) {
-        adminUsernames.add(username.toLowerCase().replace("@", ""));
-      }
-    }
-
-    // Проверка по userId
     if (userId) {
-      isAdmin = adminUsers.has(userId.toString());
-      console.log(`🔍 Проверка userId: ${userId}, isAdmin: ${isAdmin}`);
+      const user = await User.findOne({ telegramId: userId });
+      if (user && user.isAdmin) isAdmin = true;
     }
 
-    // Проверка по username
-    if (!isAdmin && username) {
-      const cleanUsername = username.toLowerCase().replace("@", "");
-      isAdmin = adminUsernames.has(cleanUsername);
-      console.log(
-        `🔍 Проверка username: ${cleanUsername}, isAdmin: ${isAdmin}`,
-      );
-    }
-
-    // Если есть Authorization header - проверяем сессию
+    // Check session
     const authHeader = req.headers.authorization;
     if (!isAdmin && authHeader && authHeader.startsWith("Bearer ")) {
       const sessionToken = authHeader.substring(7);
-      isAdmin = adminSessions.has(sessionToken);
-      console.log(
-        `🔍 Проверка session: ${sessionToken.substring(0, 20)}..., isAdmin: ${isAdmin}`,
-      );
+      if (adminSessions.has(sessionToken)) {
+        isAdmin = true;
+      }
+    }
+
+    // Auto-admin check (same logic as auth)
+    if (!isAdmin && userId) {
+      const adminCount = await User.countDocuments({ isAdmin: true });
+      if (adminCount === 0) {
+        const user = await User.findOne({ telegramId: userId });
+        if (user) {
+          user.isAdmin = true;
+          await user.save();
+          isAdmin = true;
+        }
+      }
     }
 
     res.json({
@@ -113,35 +97,32 @@ export const handleAdminCheck: RequestHandler = async (req, res) => {
   }
 };
 
-// Управление пользователями
 export const handleGetUsers: RequestHandler = async (req, res) => {
   try {
-    // Проверка прав администратора
+    // Authorization check
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Не авторизован" });
     }
-
     const sessionToken = authHeader.substring(7);
     if (!adminSessions.has(sessionToken)) {
       return res.status(403).json({ error: "Недостаточно прав" });
     }
 
-    // В продакшене здесь будет запрос к БД
-    const users = Array.from({ length: 50 }, (_, i) => ({
-      id: `user_${i + 1}`,
-      name: `User ${i + 1}`,
-      username: `@user${i + 1}`,
-      isAdmin: adminUsers.has(`user_${i + 1}`),
-      isBanned: bannedUsers.has(`user_${i + 1}`),
-      posts: Math.floor(Math.random() * 100),
-      followers: Math.floor(Math.random() * 1000),
-      createdAt: new Date(
-        Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
+    const users = await User.find().sort({ createdAt: -1 });
+
+    const usersList = users.map(u => ({
+      id: u.telegramId,
+      name: u.name,
+      username: u.username ? `@${u.username}` : "Нет ника",
+      isAdmin: u.isAdmin,
+      isBanned: u.isBanned,
+      posts: u.stats?.posts || 0,
+      stars: u.starsBalance || 0,
+      joinedAt: u.createdAt ? u.createdAt.toLocaleDateString() : "N/A"
     }));
 
-    res.json({ users });
+    res.json({ users: usersList });
   } catch (error) {
     console.error("Ошибка получения пользователей:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -150,11 +131,11 @@ export const handleGetUsers: RequestHandler = async (req, res) => {
 
 export const handleSetAdmin: RequestHandler = async (req, res) => {
   try {
+    // Authorization check
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Не авторизован" });
     }
-
     const sessionToken = authHeader.substring(7);
     if (!adminSessions.has(sessionToken)) {
       return res.status(403).json({ error: "Недостаточно прав" });
@@ -166,16 +147,9 @@ export const handleSetAdmin: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Неверные параметры" });
     }
 
-    if (isAdmin) {
-      adminUsers.add(userId.toString());
-    } else {
-      adminUsers.delete(userId.toString());
-    }
+    await User.updateOne({ telegramId: userId }, { isAdmin });
 
-    res.json({
-      success: true,
-      message: `Права администратора ${isAdmin ? "выданы" : "отозваны"}`,
-    });
+    res.json({ success: true, message: `Права администратора ${isAdmin ? "выданы" : "отозваны"}` });
   } catch (error) {
     console.error("Ошибка изменения прав:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -200,11 +174,7 @@ export const handleBanUser: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Неверные параметры" });
     }
 
-    if (isBanned) {
-      bannedUsers.add(userId.toString());
-    } else {
-      bannedUsers.delete(userId.toString());
-    }
+    await User.updateOne({ telegramId: userId }, { isBanned });
 
     res.json({
       success: true,
@@ -216,3 +186,4 @@ export const handleBanUser: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
+

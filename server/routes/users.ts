@@ -1,19 +1,6 @@
 import { RequestHandler } from "express";
-import crypto from "node:crypto";
-
-// В реальном приложении здесь должна быть работа с БД
-const userStats: Record<
-  string,
-  {
-    posts: number;
-    followers: number;
-    following: number;
-    likesReceived?: number;
-    viewsCount?: number;
-    starsReceived?: number;
-  }
-> = {};
-const userSettings: Record<string, any> = {};
+import User from "../models/User";
+import Post from "../models/Post";
 
 export const handleUserStats: RequestHandler = async (req, res) => {
   try {
@@ -23,40 +10,30 @@ export const handleUserStats: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Получаем количество постов пользователя
-    const posts = (global as any).posts || [];
-    const userPosts = posts.filter((p: any) => p.userId === userId);
+    const user = await User.findOne({ telegramId: userId });
 
-    // Инициализируем статистику с реальными данными
-    if (!userStats[userId]) {
-      userStats[userId] = {
-        posts: userPosts.length,
-        followers: Math.floor(Math.random() * 1000), // Симуляция подписчиков
-        following: Math.floor(Math.random() * 500), // Симуляция подписок
-        likesReceived: userPosts.reduce((sum: number, p: any) => sum + (p.likes || 0), 0),
-        viewsCount: userPosts.reduce((sum: number, p: any) => sum + (p.views || Math.floor(Math.random() * 100)), 0),
-        starsReceived: userPosts.reduce((sum: number, p: any) => sum + (p.stars || 0), 0),
-      };
-    } else {
-      // Обновляем количество постов
-      userStats[userId].posts = userPosts.length;
-      userStats[userId].likesReceived = userPosts.reduce((sum: number, p: any) => sum + (p.likes || 0), 0);
-      userStats[userId].viewsCount = userPosts.reduce((sum: number, p: any) => sum + (p.views || Math.floor(Math.random() * 100)), 0);
-      userStats[userId].starsReceived = userPosts.reduce((sum: number, p: any) => sum + (p.stars || 0), 0);
+    if (!user) {
+      // If user doesn't exist, return default stats (or 404, but frontend might expect defaults)
+      return res.json({
+        posts: 0,
+        followers: 0,
+        following: 0,
+        likesReceived: 0,
+        viewsCount: 0,
+        starsReceived: 0
+      });
     }
 
-    // Добавляем дополнительные поля статистики если их нет
-    if (userStats[userId].likesReceived === undefined) {
-      userStats[userId].likesReceived = userPosts.reduce((sum: number, p: any) => sum + (p.likes || 0), 0);
-    }
-    if (userStats[userId].viewsCount === undefined) {
-      userStats[userId].viewsCount = userPosts.reduce((sum: number, p: any) => sum + (p.views || Math.floor(Math.random() * 100)), 0);
-    }
-    if (userStats[userId].starsReceived === undefined) {
-      userStats[userId].starsReceived = userPosts.reduce((sum: number, p: any) => sum + (p.stars || 0), 0);
-    }
+    // Recalculate stats from posts if needed, or trust the stored stats
+    // For robustness, let's trust stored stats but ensure they exist
+    // Optionally, we could aggregate from Posts collection for accuracy:
+    // const postStats = await Post.aggregate([
+    //   { $match: { userId: userId } },
+    //   { $group: { _id: null, totalLikes: { $sum: "$likes" }, totalStars: { $sum: "$stars" }, count: { $sum: 1 } } }
+    // ]);
 
-    res.json(userStats[userId]);
+    // For now, return the stats stored in the User document
+    res.json(user.stats);
   } catch (error) {
     console.error("Ошибка получения статистики пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -66,23 +43,31 @@ export const handleUserStats: RequestHandler = async (req, res) => {
 export const handleUpdateUserStats: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { posts, followers, following } = req.body;
+    const updates = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    if (!userStats[userId]) {
-      userStats[userId] = { posts: 0, followers: 0, following: 0 };
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
     }
 
-    if (posts !== undefined) userStats[userId].posts = posts;
-    if (followers !== undefined) userStats[userId].followers = followers;
-    if (following !== undefined) userStats[userId].following = following;
+    // Merge updates into stats
+    // Only allow specific fields to be updated via this endpoint if needed
+    if (updates.posts !== undefined) user.stats.posts = updates.posts;
+    if (updates.followers !== undefined) user.stats.followers = updates.followers;
+    if (updates.following !== undefined) user.stats.following = updates.following;
+    if (updates.likesReceived !== undefined) user.stats.likesReceived = updates.likesReceived;
+    if (updates.viewsCount !== undefined) user.stats.viewsCount = updates.viewsCount;
+    if (updates.starsReceived !== undefined) user.stats.starsReceived = updates.starsReceived;
+
+    await user.save();
 
     res.json({
       success: true,
-      stats: userStats[userId],
+      stats: user.stats,
     });
   } catch (error) {
     console.error("Ошибка обновления статистики:", error);
@@ -98,9 +83,10 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    if (req.method === "GET") {
-      // Получить настройки
-      const raw = userSettings[userId] || {
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      // Return defaults if user not found
+      return res.json({
         privateAccount: false,
         allowDMs: true,
         showOnlineStatus: true,
@@ -113,106 +99,21 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
         accessibilityMode: false,
         theme: 'dark',
         email: "",
-        username: "",
         bio: "",
-      };
-      // Не возвращаем hash PIN на клиент
-      const { childModePinHash, ...settings } = raw;
-      res.json(settings);
-    } else if (req.method === "PUT") {
-      const body = req.body || {};
-      const current = userSettings[userId] || {};
-
-      // Установка PIN: сохраняем hash
-      if (
-        typeof body.setChildModePin === "string" &&
-        body.setChildModePin.length >= 4
-      ) {
-        const pin = body.setChildModePin;
-        const hash = crypto.createHash("sha256").update(pin).digest("hex");
-        current.childModePinHash = hash;
-        current.childMode = true;
-        delete body.setChildModePin;
-      }
-
-      // Проверка PIN при выключении детского режима
-      if (current.childModePinHash && body.childMode === false) {
-        if (typeof body.verifyChildModePin !== "string") {
-          return res
-            .status(400)
-            .json({ error: "Требуется PIN для отключения детского режима" });
-        }
-        const checkHash = crypto
-          .createHash("sha256")
-          .update(body.verifyChildModePin)
-          .digest("hex");
-        if (checkHash !== current.childModePinHash) {
-          return res.status(403).json({ error: "Неверный PIN" });
-        }
-        // PIN верный, можно отключить
-        delete body.verifyChildModePin;
-      }
-
-      // Обновляем остальные настройки
-      userSettings[userId] = {
-        ...current,
-        ...body,
-      };
-
-      const { childModePinHash, ...safe } = userSettings[userId];
-      res.json({
-        success: true,
-        settings: safe,
       });
     }
+
+    // Return settings merged with some profile info that might be needed
+    res.json({
+      ...user.settings,
+      // Add these if the frontend expects them in settings
+      username: user.username,
+      bio: user.settings.bio // explicitly ensuring bio is there
+    });
   } catch (error) {
-    console.error("Ошибка работы с настройками:", error);
+    console.error("Ошибка получения настроек:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
-};
-
-export const initializeUserStats = (userId: string) => {
-  if (!userStats[userId]) {
-    userStats[userId] = {
-      posts: 0,
-      followers: Math.floor(Math.random() * 1000),
-      following: Math.floor(Math.random() * 500),
-      likesReceived: 0,
-      viewsCount: 0,
-      starsReceived: 0,
-    };
-  }
-
-  if (!userSettings[userId]) {
-    userSettings[userId] = {
-      privateAccount: false,
-      allowDMs: true,
-      showOnlineStatus: true,
-      activityStatus: true,
-      postsFromFollowers: true,
-      likesAndComments: true,
-      directMessages: true,
-      followSuggestions: false,
-      reduceMotion: false,
-      accessibilityMode: false,
-      theme: 'dark',
-      email: "",
-      username: "",
-      bio: "",
-    };
-  }
-
-  return {
-    stats: userStats[userId],
-    settings: userSettings[userId]
-  };
-};
-
-export const handleAuth: RequestHandler = async (req, res) => {
-  // This is now handled in index.ts to access the users map, 
-  // but we keep this for compatibility if needed or just remove it.
-  // For now, let's just return success.
-  res.json({ success: true });
 };
 
 export const handleDeleteUser: RequestHandler = async (req, res) => {
@@ -223,16 +124,13 @@ export const handleDeleteUser: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // В реальном приложении здесь должна быть удаление из БД
-    delete userStats[userId];
-    delete userSettings[userId];
+    await User.deleteOne({ telegramId: userId });
+    await Post.deleteMany({ userId });
 
-    res.json({
-      success: true,
-      message: "Пользователь удален",
-    });
+    res.json({ success: true });
   } catch (error) {
     console.error("Ошибка удаления пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
+
