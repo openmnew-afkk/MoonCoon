@@ -68,6 +68,16 @@ export const handleAdminCheck: RequestHandler = async (req, res) => {
 
     let isAdmin = false;
 
+    // AUTO-ADMIN: Если список админов пуст, делаем текущего пользователя админом
+    // Это позволяет первому пользователю получить доступ к панели
+    if (adminUsers.size === 0 && userId) {
+      console.log(`👑 Первый пользователь ${userId} автоматически назначен админом`);
+      adminUsers.add(userId.toString());
+      if (username) {
+        adminUsernames.add(username.toLowerCase().replace("@", ""));
+      }
+    }
+
     // Проверка по userId
     if (userId) {
       isAdmin = adminUsers.has(userId.toString());

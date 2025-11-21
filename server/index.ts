@@ -20,6 +20,7 @@ import {
   handleUpdateUserStats,
   handleUserSettings,
   handleDeleteUser,
+  initializeUserStats,
 } from "./routes/users";
 import { handlePremiumPurchase, handlePremiumStatus } from "./routes/premium";
 
@@ -75,6 +76,46 @@ export function createServer() {
   app.post("/api/admin/ban-user", handleBanUser);
 
   // Users API routes
+  app.post("/api/auth/login", (req, res) => {
+    try {
+      const { id, first_name, last_name, username, photo_url } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      const userId = id.toString();
+
+      // Update user profile in memory
+      users.set(userId, {
+        id: userId,
+        name: [first_name, last_name].filter(Boolean).join(" "),
+        username: username ? `@${username}` : undefined,
+        avatarUrl: photo_url,
+        verified: false
+      });
+
+      // Initialize stats and settings
+      const { stats } = initializeUserStats(userId);
+
+      console.log(`✅ User authenticated: ${userId} (${first_name})`);
+
+      res.json({
+        success: true,
+        user: {
+          id: userId,
+          name: [first_name, last_name].filter(Boolean).join(" "),
+          username: username,
+          avatarUrl: photo_url,
+          stats
+        }
+      });
+    } catch (error) {
+      console.error("Auth error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/users/:userId/stats", handleUserStats);
   app.put("/api/users/:userId/stats", handleUpdateUserStats);
   app.get("/api/users/:userId/settings", handleUserSettings);

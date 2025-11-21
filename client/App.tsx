@@ -48,8 +48,19 @@ const AppContent = () => {
       if (webApp.setBackgroundColor) {
         webApp.setBackgroundColor("#0f1419");
       }
+
+      // Auth with backend to initialize stats
+      if (user) {
+        fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user),
+        }).catch(console.error);
+      }
     }
-  }, [webApp]);
+  }, [webApp, user]);
 
   if (showSplash) {
     return <Splash onComplete={() => setShowSplash(false)} />;

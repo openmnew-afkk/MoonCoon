@@ -171,6 +171,50 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
   }
 };
 
+export const initializeUserStats = (userId: string) => {
+  if (!userStats[userId]) {
+    userStats[userId] = {
+      posts: 0,
+      followers: Math.floor(Math.random() * 1000),
+      following: Math.floor(Math.random() * 500),
+      likesReceived: 0,
+      viewsCount: 0,
+      starsReceived: 0,
+    };
+  }
+
+  if (!userSettings[userId]) {
+    userSettings[userId] = {
+      privateAccount: false,
+      allowDMs: true,
+      showOnlineStatus: true,
+      activityStatus: true,
+      postsFromFollowers: true,
+      likesAndComments: true,
+      directMessages: true,
+      followSuggestions: false,
+      reduceMotion: false,
+      accessibilityMode: false,
+      theme: 'dark',
+      email: "",
+      username: "",
+      bio: "",
+    };
+  }
+
+  return {
+    stats: userStats[userId],
+    settings: userSettings[userId]
+  };
+};
+
+export const handleAuth: RequestHandler = async (req, res) => {
+  // This is now handled in index.ts to access the users map, 
+  // but we keep this for compatibility if needed or just remove it.
+  // For now, let's just return success.
+  res.json({ success: true });
+};
+
 export const handleDeleteUser: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
