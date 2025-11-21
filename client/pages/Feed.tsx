@@ -334,10 +334,10 @@ export default function Feed() {
           posts.map((post) =>
             post.id === postId
               ? {
-                  ...post,
-                  starred: true,
-                  stars: post.stars + starAmount,
-                }
+                ...post,
+                starred: true,
+                stars: post.stars + starAmount,
+              }
               : post,
           ),
         );
@@ -353,7 +353,7 @@ export default function Feed() {
   };
 
   if (feedMode === "scroll") {
-    return <ScrollFeed />;
+    return <ScrollFeed onBack={() => setFeedMode("feed")} />;
   }
 
   return (
@@ -361,7 +361,7 @@ export default function Feed() {
       {/* Header */}
       <div
         className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-center">
           <div className="flex items-center gap-2">
@@ -515,36 +515,36 @@ export default function Feed() {
                         draggable={false}
                         onContextMenu={(e) => e.preventDefault()}
                         onClick={() => {
-                        // Открыть полноэкранный просмотр в рамке
-                        const modal = document.createElement("div");
-                        modal.className =
-                          "fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4";
-                        modal.onclick = () =>
-                          document.body.removeChild(modal);
+                          // Открыть полноэкранный просмотр в рамке
+                          const modal = document.createElement("div");
+                          modal.className =
+                            "fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4";
+                          modal.onclick = () =>
+                            document.body.removeChild(modal);
 
-                        const modalContent = document.createElement("div");
-                        modalContent.className =
-                          "relative glass-card rounded-2xl p-4 max-w-4xl max-h-[90vh] overflow-hidden";
-                        modalContent.onclick = (e) => e.stopPropagation();
+                          const modalContent = document.createElement("div");
+                          modalContent.className =
+                            "relative glass-card rounded-2xl p-4 max-w-4xl max-h-[90vh] overflow-hidden";
+                          modalContent.onclick = (e) => e.stopPropagation();
 
-                        const img = document.createElement("img");
-                        img.src = post.image!;
-                        img.className =
-                          "w-full h-auto max-h-[80vh] object-contain rounded-xl";
-                        img.onclick = (e) => e.stopPropagation();
+                          const img = document.createElement("img");
+                          img.src = post.image!;
+                          img.className =
+                            "w-full h-auto max-h-[80vh] object-contain rounded-xl";
+                          img.onclick = (e) => e.stopPropagation();
 
-                        const closeBtn = document.createElement("button");
-                        closeBtn.innerHTML = "✕";
-                        closeBtn.className =
-                          "absolute -top-2 -right-2 text-white text-2xl bg-black/80 hover:bg-black rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-lg";
-                        closeBtn.onclick = () =>
-                          document.body.removeChild(modal);
+                          const closeBtn = document.createElement("button");
+                          closeBtn.innerHTML = "✕";
+                          closeBtn.className =
+                            "absolute -top-2 -right-2 text-white text-2xl bg-black/80 hover:bg-black rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-lg";
+                          closeBtn.onclick = () =>
+                            document.body.removeChild(modal);
 
-                        modalContent.appendChild(img);
-                        modalContent.appendChild(closeBtn);
-                        modal.appendChild(modalContent);
-                        document.body.appendChild(modal);
-                      }}
+                          modalContent.appendChild(img);
+                          modalContent.appendChild(closeBtn);
+                          modal.appendChild(modalContent);
+                          document.body.appendChild(modal);
+                        }}
                       />
                     </div>
                   )}
@@ -650,7 +650,7 @@ export default function Feed() {
                               className={cn(
                                 "glass-button px-4 py-2 text-sm font-medium transition-all",
                                 starAmount === amt &&
-                                  "bg-primary/20 text-primary border-2 border-primary",
+                                "bg-primary/20 text-primary border-2 border-primary",
                               )}
                               disabled={starsBalance < amt}
                             >

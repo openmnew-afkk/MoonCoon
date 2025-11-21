@@ -18,6 +18,11 @@ import {
   Globe,
   Lock,
   Share2,
+  Eye,
+  Film,
+  Droplet,
+  Layers,
+  MessageCircle,
 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { usePremium } from "@/hooks/usePremium";
@@ -58,32 +63,36 @@ const FILTERS: Filter[] = [
 export default function CreateInstagram() {
   const { user } = useTelegram();
   const { premium } = usePremium();
-  
+
   const [stage, setStage] = useState<CreateStage>("select");
   const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState("none");
   const [caption, setCaption] = useState("");
-  const [isStory, setIsStory] = useState(false);
+  const [postType, setPostType] = useState<"post" | "story" | "scroll">("post");
   const [visibility, setVisibility] = useState<"public" | "followers">("public");
   const [uploading, setUploading] = useState(false);
-  
+  const [showPreview, setShowPreview] = useState(false);
+
   // Editing states
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
+  const [blur, setBlur] = useState(0);
+  const [sepia, setSepia] = useState(0);
+  const [hue, setHue] = useState(0);
   const [rotation, setRotation] = useState(0);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleMediaSelect = useCallback((files: FileList) => {
     const mediaFiles: MediaFile[] = [];
-    
+
     Array.from(files).forEach((file) => {
       if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
         const url = URL.createObjectURL(file);
         const type = file.type.startsWith('image/') ? 'image' : 'video';
-        
+
         // For videos, check duration
         if (type === 'video') {
           const video = document.createElement('video');
@@ -98,16 +107,20 @@ export default function CreateInstagram() {
           };
           video.src = url;
         } else {
+          if (postType === 'scroll') {
+            alert('В раздел Scroll можно загружать только видео');
+            return;
+          }
           mediaFiles.push({ file, url, type });
         }
       }
     });
-    
+
     setSelectedMedia(mediaFiles);
     if (mediaFiles.length > 0) {
       setStage("edit");
     }
-  }, [premium.isPremium]);
+  }, [premium.isPremium, postType]);
 
   const handleFileSelect = useCallback(() => {
     fileInputRef.current?.click();
@@ -123,12 +136,12 @@ export default function CreateInstagram() {
 
     try {
       const currentMedia = selectedMedia[currentIndex];
-      
+
       // Convert file to base64
       const reader = new FileReader();
       reader.onload = async (e) => {
         const mediaData = e.target?.result as string;
-        
+
         const response = await fetch('/api/posts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -138,12 +151,13 @@ export default function CreateInstagram() {
             visibility,
             media: mediaData,
             mediaType: currentMedia.type,
-            type: isStory ? 'story' : 'post',
+            type: postType,
           }),
         });
 
         if (response.ok) {
-          alert(isStory ? 'История опубликована!' : 'Пост опубликован!');
+          const typeName = postType === 'story' ? 'История' : postType === 'scroll' ? 'Scroll' : 'Пост';
+          alert(`${typeName} опубликован!`);
           // Reset form
           setSelectedMedia([]);
           setCurrentIndex(0);
@@ -153,7 +167,7 @@ export default function CreateInstagram() {
           alert('Ошибка при публикации');
         }
       };
-      
+
       reader.readAsDataURL(currentMedia.file);
     } catch (error) {
       console.error('Error publishing:', error);
@@ -164,10 +178,11 @@ export default function CreateInstagram() {
   };
 
   const getCurrentFilter = () => {
+    const base = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px) sepia(${sepia}%) hue-rotate(${hue}deg)`;
     if (selectedFilter === "none") {
-      return `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+      return base;
     }
-    return `${selectedFilter} brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+    return `${selectedFilter} ${base}`;
   };
 
   const renderSelectStage = () => (
@@ -177,21 +192,35 @@ export default function CreateInstagram() {
           <ImageIcon size={32} className="text-primary" />
         </div>
       </div>
-      
+
       <h2 className="text-2xl font-bold mb-2">Создать публикацию</h2>
       <p className="text-muted-foreground text-center mb-8 max-w-sm">
         Выберите фото или видео для создания поста или истории
       </p>
-      
+
       <div className="space-y-4 w-full max-w-xs">
         <button
-          onClick={handleFileSelect}
+          onClick={() => {
+            setPostType("post");
+            handleFileSelect();
+          }}
           className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-4 rounded-2xl font-semibold flex items-center justify-center gap-3"
         >
           <ImageIcon size={20} />
           Выбрать из галереи
         </button>
-        
+
+        <button
+          onClick={() => {
+            setPostType("scroll");
+            handleFileSelect();
+          }}
+          className="w-full glass-button bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 py-4 rounded-2xl font-semibold flex items-center justify-center gap-3"
+        >
+          <Film size={20} />
+          Создать Scroll
+        </button>
+
         {navigator.mediaDevices && (
           <button className="w-full glass-button py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 opacity-50 cursor-not-allowed">
             <Video size={20} />
@@ -199,7 +228,7 @@ export default function CreateInstagram() {
           </button>
         )}
       </div>
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -213,9 +242,9 @@ export default function CreateInstagram() {
 
   const renderEditStage = () => {
     if (selectedMedia.length === 0) return null;
-    
+
     const currentMedia = selectedMedia[currentIndex];
-    
+
     return (
       <div className="flex-1 flex flex-col">
         {/* Media Preview */}
@@ -241,7 +270,7 @@ export default function CreateInstagram() {
               controls
             />
           )}
-          
+
           {/* Multiple media navigation */}
           {selectedMedia.length > 1 && (
             <>
@@ -259,7 +288,7 @@ export default function CreateInstagram() {
               >
                 <ArrowRight size={20} />
               </button>
-              
+
               {/* Indicators */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                 {selectedMedia.map((_, i) => (
@@ -275,7 +304,7 @@ export default function CreateInstagram() {
             </>
           )}
         </div>
-        
+
         {/* Editing Tools */}
         <div className="glass-card m-4 p-4 rounded-2xl">
           <div className="flex gap-4 mb-4">
@@ -291,9 +320,10 @@ export default function CreateInstagram() {
               <span className="text-sm">Обрезать</span>
             </button>
           </div>
-          
+
           {/* Adjustment Sliders */}
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+            {/* Brightness */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -311,7 +341,8 @@ export default function CreateInstagram() {
                 className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
-            
+
+            {/* Contrast */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -329,7 +360,8 @@ export default function CreateInstagram() {
                 className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
-            
+
+            {/* Saturation */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -347,6 +379,64 @@ export default function CreateInstagram() {
                 className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
+
+            {/* Blur */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Droplet size={16} className="text-primary" />
+                  <span className="text-sm font-medium">Размытие</span>
+                </div>
+                <span className="text-xs text-primary">{blur}px</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.5"
+                value={blur}
+                onChange={(e) => setBlur(parseFloat(e.target.value))}
+                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            {/* Sepia */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Layers size={16} className="text-primary" />
+                  <span className="text-sm font-medium">Сепия</span>
+                </div>
+                <span className="text-xs text-primary">{sepia}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sepia}
+                onChange={(e) => setSepia(parseInt(e.target.value))}
+                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            {/* Hue */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Palette size={16} className="text-primary" />
+                  <span className="text-sm font-medium">Оттенок</span>
+                </div>
+                <span className="text-xs text-primary">{hue}°</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={hue}
+                onChange={(e) => setHue(parseInt(e.target.value))}
+                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -355,9 +445,9 @@ export default function CreateInstagram() {
 
   const renderFiltersStage = () => {
     if (selectedMedia.length === 0) return null;
-    
+
     const currentMedia = selectedMedia[currentIndex];
-    
+
     return (
       <div className="flex-1 flex flex-col">
         {/* Media Preview */}
@@ -386,14 +476,14 @@ export default function CreateInstagram() {
             />
           )}
         </div>
-        
+
         {/* Filters */}
         <div className="glass-card m-4 p-4 rounded-2xl">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Sparkles size={18} className="text-primary" />
             Фильтры
           </h3>
-          
+
           <div className="flex gap-3 overflow-x-auto pb-2">
             {FILTERS.map((filter, i) => (
               <button
@@ -444,7 +534,7 @@ export default function CreateInstagram() {
             <p className="text-xs text-muted-foreground">{user?.username ? `@${user.username}` : `@user${user?.id}`}</p>
           </div>
         </div>
-        
+
         {selectedMedia.length > 0 && (
           <div className="w-full h-40 rounded-xl overflow-hidden mb-3">
             {selectedMedia[currentIndex].type === 'image' ? (
@@ -471,7 +561,7 @@ export default function CreateInstagram() {
           </div>
         )}
       </div>
-      
+
       {/* Caption Input */}
       <div className="glass-card p-4 rounded-2xl mb-4">
         <textarea
@@ -492,41 +582,137 @@ export default function CreateInstagram() {
           </div>
         </div>
       </div>
-      
+
       {/* Post Type */}
       <div className="glass-card p-4 rounded-2xl mb-4">
         <h3 className="font-semibold mb-3">Тип публикации</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button
-            onClick={() => setIsStory(false)}
+            onClick={() => setPostType("post")}
             className={cn(
-              "p-4 rounded-xl transition-all flex flex-col items-center gap-2",
-              !isStory ? "bg-primary/20 border-2 border-primary" : "glass-button"
+              "p-3 rounded-xl transition-all flex flex-col items-center gap-2",
+              postType === "post" ? "bg-primary/20 border-2 border-primary" : "glass-button"
             )}
           >
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <ImageIcon size={16} className="text-primary" />
+            <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+              <ImageIcon size={14} className="text-primary" />
             </div>
-            <span className="text-sm font-medium">Пост</span>
-            <span className="text-xs text-muted-foreground">Постоянный</span>
+            <span className="text-xs font-medium">Пост</span>
           </button>
-          
+
           <button
-            onClick={() => setIsStory(true)}
+            onClick={() => setPostType("story")}
             className={cn(
-              "p-4 rounded-xl transition-all flex flex-col items-center gap-2",
-              isStory ? "bg-primary/20 border-2 border-primary" : "glass-button"
+              "p-3 rounded-xl transition-all flex flex-col items-center gap-2",
+              postType === "story" ? "bg-primary/20 border-2 border-primary" : "glass-button"
             )}
           >
-            <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-              <Sparkles size={16} className="text-accent" />
+            <div className="w-6 h-6 rounded-lg bg-accent/20 flex items-center justify-center">
+              <Sparkles size={14} className="text-accent" />
             </div>
-            <span className="text-sm font-medium">История</span>
-            <span className="text-xs text-muted-foreground">24 часа</span>
+            <span className="text-xs font-medium">История</span>
+          </button>
+
+          <button
+            onClick={() => setPostType("scroll")}
+            className={cn(
+              "p-3 rounded-xl transition-all flex flex-col items-center gap-2",
+              postType === "scroll" ? "bg-primary/20 border-2 border-primary" : "glass-button"
+            )}
+          >
+            <div className="w-6 h-6 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <Film size={14} className="text-purple-400" />
+            </div>
+            <span className="text-xs font-medium">Scroll</span>
           </button>
         </div>
       </div>
-      
+
+      {/* Preview Button */}
+      <button
+        onClick={() => setShowPreview(true)}
+        className="w-full glass-button mb-4 py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 text-primary"
+      >
+        <Eye size={20} />
+        Предпросмотр
+      </button>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+          <div className="w-full max-w-md glass-card rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <h3 className="font-bold">Предпросмотр</h3>
+              <button onClick={() => setShowPreview(false)} className="p-2 hover:bg-white/10 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-4">
+              {/* Mock Post Card */}
+              <div className="glass-card rounded-2xl overflow-hidden">
+                <div className="p-3 flex items-center gap-3">
+                  <img
+                    src={user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
+                    className="w-8 h-8 rounded-full"
+                    alt="Avatar"
+                  />
+                  <span className="font-semibold text-sm">{user?.first_name || "Вы"}</span>
+                </div>
+
+                <div className="aspect-square bg-black/50 relative overflow-hidden">
+                  {selectedMedia[currentIndex].type === 'image' ? (
+                    <img
+                      src={selectedMedia[currentIndex].url}
+                      className="w-full h-full object-cover"
+                      style={{
+                        filter: getCurrentFilter(),
+                        transform: `rotate(${rotation}deg)`,
+                      }}
+                      alt="Preview"
+                    />
+                  ) : (
+                    <video
+                      src={selectedMedia[currentIndex].url}
+                      className="w-full h-full object-cover"
+                      style={{
+                        filter: getCurrentFilter(),
+                        transform: `rotate(${rotation}deg)`,
+                      }}
+                      controls
+                    />
+                  )}
+                </div>
+
+                <div className="p-3">
+                  <div className="flex gap-4 mb-2">
+                    <Heart size={20} />
+                    <MessageCircle size={20} /> {/* Note: MessageCircle needs to be imported if not already available in scope, but it's not in the import list I edited. I should check if it's imported. It is NOT imported in the original file. I need to add it to imports or remove it. I'll remove it to be safe or use Share2 which is imported. */}
+                    <Share2 size={20} />
+                  </div>
+                  <p className="text-sm">
+                    <span className="font-semibold mr-2">{user?.first_name || "Вы"}</span>
+                    {caption}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-white/10">
+              <button
+                onClick={() => {
+                  setShowPreview(false);
+                  handlePublish();
+                }}
+                className="w-full bg-primary text-white py-3 rounded-xl font-semibold"
+              >
+                Опубликовать сейчас
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Privacy Settings */}
       <div className="glass-card p-4 rounded-2xl">
         <h3 className="font-semibold mb-3">Кто может видеть</h3>
@@ -544,7 +730,7 @@ export default function CreateInstagram() {
               <div className="text-xs text-muted-foreground">Публично</div>
             </div>
           </button>
-          
+
           <button
             onClick={() => setVisibility("followers")}
             className={cn(
@@ -588,14 +774,14 @@ export default function CreateInstagram() {
           >
             {stage === "select" ? <X size={24} /> : <ArrowLeft size={24} />}
           </button>
-          
+
           <h1 className="text-lg font-bold">
             {stage === "select" && "Новая публикация"}
             {stage === "edit" && "Редактировать"}
             {stage === "filters" && "Фильтры"}
             {stage === "caption" && "Новый пост"}
           </h1>
-          
+
           <button
             onClick={() => {
               if (stage === "edit") {

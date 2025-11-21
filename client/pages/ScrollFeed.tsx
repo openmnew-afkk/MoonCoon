@@ -33,7 +33,7 @@ interface ScrollVideo {
   timestamp: string;
 }
 
-export default function ScrollFeed() {
+export default function ScrollFeed({ onBack }: { onBack?: () => void }) {
   const [videos, setVideos] = useState<ScrollVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -267,10 +267,10 @@ export default function ScrollFeed() {
           videos.map((v) =>
             v.id === videoId
               ? {
-                  ...v,
-                  starred: true,
-                  stars: v.stars + starAmount,
-                }
+                ...v,
+                starred: true,
+                stars: v.stars + starAmount,
+              }
               : v,
           ),
         );
@@ -327,7 +327,7 @@ export default function ScrollFeed() {
         <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => window.history.back()}
+              onClick={() => onBack ? onBack() : window.history.back()}
               className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:bg-glass-light/20 flex items-center gap-2"
             >
               ← Лента
@@ -492,7 +492,7 @@ export default function ScrollFeed() {
                           className={cn(
                             "glass-button px-4 py-2 text-sm font-medium transition-all",
                             starAmount === amt &&
-                              "bg-primary/20 text-primary border-2 border-primary",
+                            "bg-primary/20 text-primary border-2 border-primary",
                           )}
                           disabled={starsBalance < amt}
                         >
