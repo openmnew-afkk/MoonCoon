@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build:prod",
+  "buildCommand": "pnpm run build:prod",
   "outputDirectory": "dist/spa",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "rewrites": [
     {
       "source": "/api/(.*)",
