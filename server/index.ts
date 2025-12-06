@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import connectDB, { ensureDB } from "./db";
+import User from "./models/User";
 import { handleDemo } from "./routes/demo";
 import {
   handleStarsAdd,
@@ -14,44 +16,44 @@ import {
   handleGetUsers,
   handleSetAdmin,
   handleBanUser,
+  handleAdminStats,
 } from "./routes/admin";
 import {
   handleUserStats,
+  handleUserProfile,
   handleUpdateUserStats,
   handleUserSettings,
   handleDeleteUser,
 } from "./routes/users";
 import { handlePremiumPurchase, handlePremiumStatus } from "./routes/premium";
+import {
+  handleGetPosts,
+  handleCreatePost,
+  handleLikePost,
+  handleDeletePost
+} from "./routes/posts";
 
 export function createServer() {
   const app = express();
 
+  // Connect to Database (async, but don't block)
+  connectDB().catch(console.error);
+
   // Middleware
   app.use(cors());
-  app.use(express.json({ limit: "25mb" })); // Снижено с 100mb до 25mb для Vercel
+  app.use(express.json({ limit: "25mb" }));
   app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
-  // Временное in-memory хранилище
-  const posts: any[] = [];
-  const stories: any[] = [];
-  const users: Map<string, any> = new Map();
-  const messages: any[] = [];
-  const notifications: Map<string, number> = new Map();
-  const starsBalance: Map<string, number> = new Map();
-  const premiumUsers: Map<string, { expiresAt: string; type: string }> =
-    new Map();
-
-  // Вспомогательная сортировка: сначала pinned, затем по дате
-  const sortWithPinned = (arr: any[]) => {
-    const now = Date.now();
-    return [...arr].sort((a, b) => {
-      const ap = a.pinnedUntil && new Date(a.pinnedUntil).getTime() > now;
-      const bp = b.pinnedUntil && new Date(b.pinnedUntil).getTime() > now;
-      if (ap && !bp) return -1;
-      if (!ap && bp) return 1;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  };
+  // Ensure DB connection before API routes
+  app.use("/api", async (req, res, next) => {
+    try {
+      await ensureDB();
+      next();
+    } catch (error) {
+      console.error("DB connection error in middleware:", error);
+      res.status(500).json({ error: "Database connection failed" });
+    }
+  });
 
   // Example API routes
   app.get("/api/ping", (_req, res) => {
@@ -71,563 +73,102 @@ export function createServer() {
   app.post("/api/admin/auth", handleAdminAuth);
   app.get("/api/admin/check", handleAdminCheck);
   app.get("/api/admin/users", handleGetUsers);
+  app.get("/api/admin/stats", handleAdminStats);
   app.post("/api/admin/set-admin", handleSetAdmin);
   app.post("/api/admin/ban-user", handleBanUser);
 
   // Users API routes
-  app.get("/api/users/:userId/stats", handleUserStats);
-  app.put("/api/users/:userId/stats", handleUpdateUserStats);
-  app.get("/api/users/:userId/settings", handleUserSettings);
-  app.put("/api/users/:userId/settings", handleUserSettings);
-  app.get("/api/users/:userId/premium", handlePremiumStatus);
-  app.delete("/api/users/:userId", handleDeleteUser);
-
-  // Users API (get user profile)
-  app.get("/api/users/:userId", (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
-      const { userId } = req.params;
+      const { id, first_name, last_name, username, photo_url } = req.body;
 
-      // Создаем базовый профиль с настройками
-      const profile = {
-        name: "Пользователь",
-        username: `@user${userId}`,
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-        verified: false,
-      };
-
-      // Если есть сохраненные данные пользователя, обновляем профиль
-      const userData = users.get(userId);
-      if (userData) {
-        if (userData.name) profile.name = userData.name;
-        if (userData.username) profile.username = userData.username;
-        if (userData.avatarUrl) profile.avatarUrl = userData.avatarUrl;
-        if (userData.verified !== undefined) profile.verified = userData.verified;
+      if (!id) {
+        return res.status(400).json({ error: "User ID is required" });
       }
 
-      res.json(profile);
+      const userId = id.toString();
+      const name = [first_name, last_name].filter(Boolean).join(" ");
+      const userUsername = username ? username : undefined;
+
+      // Find or create user in DB
+      let user = await User.findOne({ telegramId: userId });
+
+      if (!user) {
+        user = await User.create({
+          telegramId: userId,
+          name: name || `User ${userId}`,
+          username: userUsername,
+          avatarUrl: photo_url,
+          verified: false,
+          isAdmin: false,
+          isBanned: false,
+          stats: {
+            posts: 0,
+            followers: 0,
+            following: 0,
+            likesReceived: 0,
+            viewsCount: 0,
+            starsReceived: 0
+          },
+          settings: {
+            privateAccount: false,
+            allowDMs: true,
+            showOnlineStatus: true,
+            activityStatus: true,
+            postsFromFollowers: true,
+            likesAndComments: true,
+            directMessages: true,
+            followSuggestions: false,
+            reduceMotion: false,
+            accessibilityMode: false,
+            theme: 'dark',
+            email: "",
+            bio: "",
+          },
+          starsBalance: 0
+        });
+      } else {
+        // Update info if changed
+        user.name = name || user.name;
+        user.username = userUsername || user.username;
+        user.avatarUrl = photo_url || user.avatarUrl;
+        await user.save();
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.telegramId,
+          name: user.name,
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          verified: user.verified,
+          isAdmin: user.isAdmin
+        }
+      });
     } catch (error) {
-      console.error("Ошибка получения профиля:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+      console.error("Auth error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // Posts API routes
+  app.get("/api/posts", handleGetPosts);
+  app.post("/api/posts", handleCreatePost);
+  app.post("/api/posts/:postId/like", handleLikePost);
+  app.delete("/api/posts/:postId", handleDeletePost);
 
   // Premium API routes
   app.post("/api/premium/purchase", handlePremiumPurchase);
-
-  // Get premium status (use premium route)
   app.get("/api/premium/status", handlePremiumStatus);
 
-  // Posts API (in-memory)
-  app.get("/api/posts", (req, res) => {
-    const type = req.query.type;
-    let filteredPosts = posts;
-
-    if (type === "scroll") {
-      // Только видео для скролл-ленты
-      filteredPosts = posts.filter(p => p.mediaType === "video");
-    }
-
-    res.json({ posts: sortWithPinned(filteredPosts) });
-  });
-
-  // Like/Unlike post
-  app.post("/api/posts/:postId/like", (req, res) => {
-    try {
-      const { postId } = req.params;
-      const { userId, action } = req.body;
-
-      if (!userId || !postId) {
-        return res.status(400).json({ error: "userId и postId обязательны" });
-      }
-
-      const post = posts.find(p => p.id === postId);
-      if (!post) {
-        return res.status(404).json({ error: "Пост не найден" });
-      }
-
-      // Простая логика лайков (в продакшене нужна БД)
-      if (action === "like") {
-        post.likes = (post.likes || 0) + 1;
-      } else if (action === "unlike") {
-        post.likes = Math.max(0, (post.likes || 0) - 1);
-      }
-
-      res.json({ success: true, liked: action === "like", likes: post.likes });
-    } catch (error) {
-      console.error("Ошибка лайка:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  // Comments API
-  app.get("/api/posts/:postId/comments", (req, res) => {
-    try {
-      const { postId } = req.params;
-      const post = posts.find(p => p.id === postId);
-
-      if (!post) {
-        return res.status(404).json({ error: "Пост не найден" });
-      }
-
-      // Простое хранение комментариев в посте
-      const comments = post.comments || [];
-      res.json({ comments });
-    } catch (error) {
-      console.error("Ошибка получения комментариев:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  app.post("/api/posts/:postId/comments", (req, res) => {
-    try {
-      const { postId } = req.params;
-      const { userId, text, author } = req.body;
-
-      if (!userId || !text || !postId) {
-        return res.status(400).json({ error: "userId, text и postId обязательны" });
-      }
-
-      const post = posts.find(p => p.id === postId);
-      if (!post) {
-        return res.status(404).json({ error: "Пост не найден" });
-      }
-
-      // Инициализируем массив комментариев если его нет
-      if (!post.comments) {
-        post.comments = [];
-      }
-
-      const comment = {
-        id: `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        author: author || "Пользователь",
-        text,
-        timestamp: new Date().toISOString(),
-        likes: 0,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-      };
-
-      post.comments.push(comment);
-      post.comments_count = (post.comments_count || 0) + 1;
-
-      res.json({ success: true, comment });
-    } catch (error) {
-      console.error("Ошибка добавления комментария:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  app.post("/api/posts", (req, res) => {
-    try {
-      console.log("📥 Получен запрос на создание поста");
-      console.log("Body size:", JSON.stringify(req.body || {}).length, "bytes");
-      console.log("Body keys:", Object.keys(req.body || {}));
-
-      const { userId, caption, visibility, media, mediaType, type } =
-        req.body || {};
-
-      // Детальная диагностика
-      console.log("📊 Данные запроса:", {
-        userId: userId ? "✅ Есть" : "❌ Нет",
-        caption: caption ? `✅ ${caption.length} символов` : "⚠️ Пустой",
-        visibility: visibility || "public",
-        mediaType: mediaType || "❌ Не указан",
-        mediaSize: media ? `✅ ${media.length} символов` : "❌ Нет",
-        type: type || "post",
-      });
-
-      // Проверка обязательных полей
-      if (!userId) {
-        console.error("❌ Отсутствует userId");
-        return res.status(400).json({ error: "Не указан ID пользователя" });
-      }
-      if (!media) {
-        console.error("❌ Отсутствует media");
-        return res.status(400).json({ error: "Не указано медиа" });
-      }
-      if (!mediaType) {
-        console.error("❌ Отсутствует mediaType");
-        return res.status(400).json({ error: "Не указан тип медиа" });
-      }
-
-      // Проверка размера медиа
-      if (media.length > 25 * 1024 * 1024) {
-        console.error("❌ Медиа файл слишком большой:", media.length);
-        return res
-          .status(413)
-          .json({ error: "Файл слишком большой. Максимум 25MB" });
-      }
-
-      // Если это история, добавляем в массив stories
-      if (type === "story") {
-        const story = {
-          id: Date.now().toString(),
-          userId,
-          caption: caption || "",
-          media,
-          mediaType,
-          createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 часа
-          views: 0,
-          pinned: false,
-        };
-
-        stories.push(story);
-        console.log(
-          "✅ История создана:",
-          story.id,
-          "| userId:",
-          userId,
-          "| mediaType:",
-          mediaType,
-        );
-
-        return res.json({ success: true, story });
-      }
-
-      // Обычный пост
-      const post = {
-        id: Date.now().toString(),
-        userId,
-        caption: caption || "",
-        visibility: visibility || "public",
-        media,
-        mediaType,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        comments: [],
-        comments_count: 0,
-        pinned: false,
-      };
-
-      posts.push(post);
-      console.log(
-        "✅ Пост создан:",
-        post.id,
-        "| userId:",
-        userId,
-        "| mediaType:",
-        mediaType,
-      );
-
-      res.json({ success: true, post });
-    } catch (error: any) {
-      console.error("❌ Ошибка создания поста:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  // Stories API (in-memory)
-  app.get("/api/stories", (_req, res) => {
-    res.json({ stories: sortWithPinned(stories) });
-  });
-
-  // OpenAI endpoints
-  const OPENAI_API_KEY = process.env.API_KEY || "";
-  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
-  // Модерация контента
-  app.post("/api/ai/moderate", async (req, res) => {
-    try {
-      const { text } = req.body;
-      if (!text) return res.status(400).json({ error: "Нужен текст" });
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content:
-                'Ты модератор контента. Проверяй на соответствие правилам РФ: запрещены порнография, экстремизм, наркотики, насилие. Отвечай только "APPROVED" или "REJECTED".',
-            },
-            {
-              role: "user",
-              content: text,
-            },
-          ],
-          max_tokens: 10,
-          temperature: 0.3,
-        }),
-      });
-
-      if (!response.ok) {
-        return res.json({ approved: true }); // Fallback
-      }
-
-      const data = await response.json();
-      const result = data.choices?.[0]?.message?.content || "APPROVED";
-      const approved = result.includes("APPROVED");
-
-      console.log("🤖 Модерация:", { approved });
-      res.json({ approved });
-    } catch (error) {
-      console.error("❌ Ошибка модерации:", error);
-      res.json({ approved: true }); // Fallback
-    }
-  });
-
-  // Генерация подписей
-  app.post("/api/ai/generate", async (req, res) => {
-    try {
-      const { description, style = "casual" } = req.body;
-      if (!description)
-        return res.status(400).json({ error: "Нужно описание" });
-
-      const styles: Record<string, string> = {
-        casual: "непринуждённую",
-        professional: "профессиональную",
-        funny: "смешную с эмодзи",
-        poetic: "поэтичную",
-      };
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: `Ты креативный копирайтер. Пиши ${styles[style] || styles.casual} подпись для поста в соцсети на русском языке.`,
-            },
-            {
-              role: "user",
-              content: description,
-            },
-          ],
-          max_tokens: 150,
-          temperature: 0.8,
-        }),
-      });
-
-      if (!response.ok) {
-        return res.status(500).json({ error: "AI недоступен" });
-      }
-
-      const data = await response.json();
-      const caption = data.choices?.[0]?.message?.content || "";
-
-      console.log("✨ Генерация:", caption.substring(0, 50));
-      res.json({ caption: caption.trim() });
-    } catch (error) {
-      console.error("❌ Ошибка генерации:", error);
-      res.status(500).json({ error: "Ошибка генерации" });
-    }
-  });
-
-  // AI чат-бот
-  app.post("/api/ai/chat", async (req, res) => {
-    try {
-      const { message } = req.body;
-      if (!message) return res.status(400).json({ error: "Нужно сообщение" });
-
-      const response = await fetch(OPENAI_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Ты - дружелюбный AI помощник MoonCoon. Помогаешь с вопросами о платформе, публикации контента, Premium подписке и звёздах. Отвечай кратко и по делу на русском языке.",
-            },
-            {
-              role: "user",
-              content: message,
-            },
-          ],
-          max_tokens: 300,
-          temperature: 0.7,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("OpenAI error:", errorData);
-        return res.status(500).json({ error: "AI недоступен" });
-      }
-
-      const data = await response.json();
-      const reply =
-        data.choices?.[0]?.message?.content || "Извините, не могу ответить";
-
-      console.log("💬 AI чат:", reply.substring(0, 50));
-      res.json({ reply: reply.trim() });
-    } catch (error: any) {
-      console.error("❌ Ошибка чата:", error.message);
-      res.status(500).json({ error: "Ошибка чата: " + error.message });
-    }
-  });
-
-  // Media Proxy (whitelist)
-  app.get("/api/proxy", async (req, res) => {
-    try {
-      const url = (req.query.url as string) || "";
-      if (!url || !/^https:\/\//i.test(url)) {
-        return res.status(400).send("Invalid url");
-      }
-      // Разрешённые домены
-      const allowed = ["images.unsplash.com", "media.w3.org"];
-      const { hostname } = new URL(url);
-      if (!allowed.includes(hostname)) {
-        return res.status(403).send("Host not allowed");
-      }
-      const r = await fetch(url, { headers: { "User-Agent": "MoonCoon/1.0" } });
-      if (!r.ok) {
-        return res.status(r.status).send("Upstream error");
-      }
-      const ct = r.headers.get("content-type") || "application/octet-stream";
-      res.setHeader("Content-Type", ct);
-      const buf = Buffer.from(await r.arrayBuffer());
-      res.send(buf);
-    } catch (e) {
-      console.error("proxy error", e);
-      res.status(500).send("Proxy error");
-    }
-  });
-
-  // Ads API (pin content)
-  app.post("/api/ads/story", (req, res) => {
-    try {
-      const { userId, hours = 1 } = req.body || {};
-      if (!userId) return res.status(400).json({ error: "userId обязателен" });
-      const duration = Math.max(1, Math.min(24, Number(hours)));
-      const price = 300 * duration; // 300⭐ за 1 час
-      // TODO: списание звёзд на сервере из баланса (интеграция со stars)
-      // Ищем последнюю сторис пользователя и пиним её
-      const story = stories.find((s) => s.userId === userId);
-      if (!story)
-        return res
-          .status(404)
-          .json({ error: "Нет опубликованных историй для закрепления" });
-      story.pinnedUntil = new Date(
-        Date.now() + duration * 3600 * 1000,
-      ).toISOString();
-      res.json({ success: true, price, pinnedUntil: story.pinnedUntil, story });
-    } catch (e) {
-      console.error("ads/story error", e);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  app.post("/api/ads/post", (req, res) => {
-    try {
-      const { userId, hours = 1 } = req.body || {};
-      if (!userId) return res.status(400).json({ error: "userId обязателен" });
-      const duration = Math.max(1, Math.min(24, Number(hours)));
-      const price = 200 * duration; // 200⭐ за 1 час
-      // TODO: списание звёзд на сервере из баланса (интеграция со stars)
-      // Ищем последний пост пользователя и пиним его
-      const post = posts.find((p) => p.userId === userId);
-      if (!post)
-        return res
-          .status(404)
-          .json({ error: "Нет опубликованных постов для закрепления" });
-      post.pinnedUntil = new Date(
-        Date.now() + duration * 3600 * 1000,
-      ).toISOString();
-      res.json({ success: true, price, pinnedUntil: post.pinnedUntil, post });
-    } catch (e) {
-      console.error("ads/post error", e);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  // Messages API
-  app.post("/api/messages/send", (req, res) => {
-    try {
-      const { fromUserId, toUserId, text } = req.body || {};
-      if (!fromUserId || !toUserId || !text) {
-        return res.status(400).json({ error: "Недостаточно данных" });
-      }
-
-      const message = {
-        id: `msg_${Date.now()}`,
-        senderId: fromUserId,
-        receiverId: toUserId,
-        text,
-        timestamp: new Date().toISOString(),
-        read: false,
-      };
-
-      messages.push(message);
-
-      // Увеличиваем счетчик уведомлений для получателя
-      const currentNotifications = notifications.get(toUserId) || 0;
-      notifications.set(toUserId, currentNotifications + 1);
-
-      console.log("✉️ Сообщение отправлено:", {
-        from: fromUserId,
-        to: toUserId,
-      });
-      res.json({ success: true, message });
-    } catch (e) {
-      console.error("messages/send error", e);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  app.get("/api/messages/:conversationId", (req, res) => {
-    try {
-      const { conversationId } = req.params;
-      const { userId } = req.query;
-
-      if (!userId) {
-        return res.status(400).json({ error: "userId обязателен" });
-      }
-
-      // Получаем сообщения между двумя пользователями
-      const conversationMessages = messages.filter(
-        (m) =>
-          (m.senderId === userId && m.receiverId === conversationId) ||
-          (m.senderId === conversationId && m.receiverId === userId),
-      );
-
-      // Помечаем сообщения как прочитанные
-      conversationMessages.forEach((m) => {
-        if (m.receiverId === userId && !m.read) {
-          m.read = true;
-          const currentNotifications = notifications.get(userId as string) || 0;
-          notifications.set(
-            userId as string,
-            Math.max(0, currentNotifications - 1),
-          );
-        }
-      });
-
-      res.json({ messages: conversationMessages });
-    } catch (e) {
-      console.error("messages/get error", e);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
-
-  app.get("/api/messages/notifications", (req, res) => {
-    try {
-      const { userId } = req.query;
-      if (!userId) {
-        return res.status(400).json({ error: "userId обязателен" });
-      }
-
-      const count = notifications.get(userId as string) || 0;
-      res.json({ count });
-    } catch (e) {
-      console.error("messages/notifications error", e);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
-    }
-  });
+  // User Stats & Settings
+  app.get("/api/users/:userId", handleUserProfile); // Profile endpoint
+  app.get("/api/users/:userId/stats", handleUserStats); // Stats only
+  app.put("/api/users/:userId", handleUpdateUserStats);
+  app.get("/api/users/:userId/settings", handleUserSettings);
+  app.put("/api/users/:userId/settings", handleUserSettings);
+  app.delete("/api/users/:userId", handleDeleteUser);
 
   return app;
 }

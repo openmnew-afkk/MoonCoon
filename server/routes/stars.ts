@@ -1,215 +1,166 @@
 import { RequestHandler } from "express";
-
-interface StarsRequest {
-  userId: string;
-  amount: number;
-}
-
-interface SendStarRequest {
-  fromUserId: string;
-  toPostId: string;
-  amount: number;
-}
-
-// В реальном приложении здесь должна быть работа с БД
-const userStars: Record<string, number> = {};
-
-export function getUserBalance(userId: string): number {
-  return userStars[userId] || 0;
-}
-
-export function deductStars(userId: string, amount: number): void {
-  if (!userStars[userId]) {
-    userStars[userId] = 0;
-  }
-  userStars[userId] = Math.max(0, userStars[userId] - amount);
-}
+import User from "../models/User";
+import Post from "../models/Post";
 
 export const handleStarsAdd: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount }: StarsRequest = req.body;
+    const { userId, amount } = req.body;
 
-    if (!userId || !amount || amount <= 0) {
-      return res.status(400).json({ error: "Неверные параметры запроса" });
+    if (!userId || !amount) {
+      return res.status(400).json({ error: "Неверные параметры" });
     }
 
-    // Добавляем звезды к балансу пользователя (имитация Telegram Stars)
-    userStars[userId] = (userStars[userId] || 0) + amount;
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
 
-    res.json({
-      success: true,
-      balance: userStars[userId],
-      message: `Добавлено ${amount} звезд`,
-    });
+    user.starsBalance += amount;
+    await user.save();
+
+    res.json({ success: true, balance: user.starsBalance });
   } catch (error) {
-    console.error("Ошибка при добавлении звезд:", error);
+    console.error("Ошибка добавления звезд:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
 
 export const handleStarsWithdraw: RequestHandler = async (req, res) => {
   try {
-    const { userId, amount }: StarsRequest = req.body;
+    const { userId, amount } = req.body;
 
-    const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
-    const isAdmin = ADMIN_USER_ID && userId?.toString() === ADMIN_USER_ID;
-
-    if (!userId || !amount || (!isAdmin && amount < 100)) {
-      return res.status(400).json({
-        error: isAdmin
-          ? "Неверная сумма"
-          : "Минимальная сумма вывода: 100 звезд",
-      });
+    if (!userId || !amount) {
+      return res.status(400).json({ error: "Неверные параметры" });
     }
 
-    const currentBalance = userStars[userId] || 0;
-
-    if (amount > currentBalance) {
-      return res.status(400).json({ error: "Недостаточно звезд на балансе" });
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
     }
 
-    // Списываем звезды
-    userStars[userId] = currentBalance - amount;
+    if (user.starsBalance < amount) {
+      return res.status(400).json({ error: "Недостаточно средств" });
+    }
 
-    // В реальном приложении здесь должна быть отправка запроса на вывод через Telegram Bot API
-    // Например, через Telegram Stars API
+    user.starsBalance -= amount;
+    await user.save();
 
-    const getCommissionRate = (val: number) => {
-      if (isAdmin) return 0;
-      if (val >= 5000) return 0.05;
-      if (val >= 2000) return 0.07;
-      return 0.1;
-    };
-
-    const rate = getCommissionRate(amount);
-    const withdrawCommission = Math.floor(amount * rate);
-    const withdrawFinalAmount = amount - withdrawCommission;
-
-    res.json({
-      success: true,
-      balance: userStars[userId],
-      withdrawn: withdrawFinalAmount,
-      commission: withdrawCommission,
-      message: `Запрос на вывод ${withdrawFinalAmount} звезд принят. Комиссия: ${withdrawCommission} звезд (${rate * 100}%)`,
-    });
+    res.json({ success: true, balance: user.starsBalance });
   } catch (error) {
-    console.error("Ошибка при выводе звезд:", error);
+    console.error("Ошибка вывода звезд:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
 
 export const handleStarsBalance: RequestHandler = async (req, res) => {
   try {
-    const { userId } = req.query;
+    const userId = req.query.userId as string;
 
-    if (!userId || typeof userId !== "string") {
-      return res.status(400).json({ error: "Неверный userId" });
+    if (!userId) {
+      return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Проверяем наличие BOT_TOKEN для интеграции с Telegram Stars API
-    const BOT_TOKEN = process.env.BOT_TOKEN;
-
-    if (BOT_TOKEN) {
-      try {
-        // Пытаемся получить реальный баланс из Telegram Stars API
-        const response = await fetch(
-          `https://api.telegram.org/bot${BOT_TOKEN}/getStarTransactions`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              user_id: parseInt(userId),
-              offset: 0,
-              limit: 100,
-            }),
-          },
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-
-          if (data.ok && data.result?.transactions) {
-            // Рассчитываем баланс из транзакций
-            let balance = 0;
-            for (const tx of data.result.transactions) {
-              if (tx.amount) {
-                balance += tx.amount;
-              }
-            }
-
-            // Сохраняем в локальном хранилище для кэширования
-            userStars[userId] = balance;
-
-            return res.json({
-              success: true,
-              balance: balance,
-              source: "telegram",
-            });
-          }
-        }
-      } catch (telegramError) {
-        console.warn(
-          "Не удалось получить баланс из Telegram API:",
-          telegramError,
-        );
-      }
+    const user = await User.findOne({ telegramId: userId });
+    
+    // If user doesn't exist, return 0 (or create user)
+    if (!user) {
+      return res.json({ balance: 0 });
     }
-
-    // Fallback: используем локальное хранилище
-    const balance = userStars[userId] || 0;
-
-    res.json({
-      success: true,
-      balance: balance,
-      source: "local",
-    });
+    
+    res.json({ balance: user.starsBalance || 0 });
   } catch (error) {
-    console.error("Ошибка при получении баланса:", error);
+    console.error("Ошибка получения баланса:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
 
 export const handleSendStar: RequestHandler = async (req, res) => {
   try {
-    const { fromUserId, toPostId, amount }: SendStarRequest = req.body;
+    const { fromUserId, toPostId, amount } = req.body;
 
     if (!fromUserId || !toPostId || !amount || amount <= 0) {
-      return res.status(400).json({ error: "Неверные параметры запроса" });
+      return res.status(400).json({ error: "Неверные параметры" });
     }
 
-    const currentBalance = userStars[fromUserId] || 0;
-
-    if (amount > currentBalance) {
-      return res.status(400).json({ error: "Недостаточно звезд на балансе" });
+    const sender = await User.findOne({ telegramId: fromUserId });
+    if (!sender) {
+      return res.status(404).json({ error: "Отправитель не найден" });
     }
 
-    // В продакшене здесь должна быть интеграция с Telegram Stars API
-    // const BOT_TOKEN = process.env.BOT_TOKEN;
-    // const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendStarPayment`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     user_id: parseInt(fromUserId),
-    //     amount: amount,
-    //     // Telegram Stars API параметры
-    //   })
-    // });
+    if ((sender.starsBalance || 0) < amount) {
+      return res.status(400).json({ error: "Недостаточно звезд" });
+    }
 
-    // Списываем звезды у отправителя
-    userStars[fromUserId] = currentBalance - amount;
+    const post = await Post.findById(toPostId);
+    if (!post) {
+      return res.status(404).json({ error: "Пост не найден" });
+    }
 
-    // Добавляем звезды получателю (автору поста)
-    // В реальном приложении нужно получить userId автора поста из БД
-    // const postAuthorId = getPostAuthor(toPostId);
-    // userStars[postAuthorId] = (userStars[postAuthorId] || 0) + amount;
+    // Get or create recipient user
+    let recipient = await User.findOne({ telegramId: post.userId });
+    if (!recipient) {
+      // Create recipient if doesn't exist
+      recipient = await User.create({
+        telegramId: post.userId,
+        name: post.author?.name || `User ${post.userId}`,
+        username: post.author?.username,
+        avatarUrl: post.author?.avatar,
+        verified: post.author?.verified || false,
+        isAdmin: false,
+        isBanned: false,
+        stats: {
+          posts: 0,
+          followers: 0,
+          following: 0,
+          likesReceived: 0,
+          viewsCount: 0,
+          starsReceived: 0
+        },
+        settings: {
+          privateAccount: false,
+          allowDMs: true,
+          showOnlineStatus: true,
+          activityStatus: true,
+          postsFromFollowers: true,
+          likesAndComments: true,
+          directMessages: true,
+          followSuggestions: false,
+          reduceMotion: false,
+          accessibilityMode: false,
+          theme: 'dark',
+          email: "",
+          bio: "",
+        },
+        starsBalance: 0
+      });
+    }
 
-    res.json({
-      success: true,
-      balance: userStars[fromUserId],
-      message: `Отправлено ${amount} звезд`,
-    });
+    // Transaction simulation
+    sender.starsBalance = (sender.starsBalance || 0) - amount;
+    await sender.save();
+
+    post.stars = (post.stars || 0) + amount;
+    if (!post.starredBy.includes(fromUserId)) {
+      post.starredBy.push(fromUserId);
+    }
+    await post.save();
+
+    // Credit author
+    recipient.starsBalance = (recipient.starsBalance || 0) + amount;
+    recipient.stats = recipient.stats || {
+      posts: 0,
+      followers: 0,
+      following: 0,
+      likesReceived: 0,
+      viewsCount: 0,
+      starsReceived: 0
+    };
+    recipient.stats.starsReceived = (recipient.stats.starsReceived || 0) + amount;
+    await recipient.save();
+
+    res.json({ success: true, newBalance: sender.starsBalance });
   } catch (error) {
-    console.error("Ошибка при отправке звезды:", error);
+    console.error("Ошибка отправки звезды:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };

@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import User from "../models/User";
 
 interface PremiumPurchaseRequest {
   userId: string;
@@ -6,18 +7,6 @@ interface PremiumPurchaseRequest {
   duration: number; // дни
   type?: "standard" | "blogger"; // тип премиум
 }
-
-// В реальном приложении здесь должна быть работа с БД
-const premiumUsers: Record<
-  string,
-  {
-    expiresAt: Date;
-    isTrial: boolean;
-    createdAt: Date;
-    type: "standard" | "blogger";
-    videoDuration: number;
-  }
-> = {};
 
 export const handlePremiumPurchase: RequestHandler = async (req, res) => {
   try {
@@ -37,18 +26,18 @@ export const handlePremiumPurchase: RequestHandler = async (req, res) => {
       });
     }
 
-    // Импортируем функции из stars.ts
-    // В реальном приложении это должно быть через общую БД с транзакциями
-    const { getUserBalance, deductStars } = require("./stars");
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
 
     // Проверяем баланс
-    const currentBalance = getUserBalance(userId);
-    if (currentBalance < amount) {
+    if (user.starsBalance < amount) {
       return res.status(400).json({ error: "Недостаточно звезд" });
     }
 
     // Списываем звезды
-    deductStars(userId, amount);
+    user.starsBalance -= amount;
 
     // Активируем Premium
     const expiresAt = new Date();
@@ -57,24 +46,20 @@ export const handlePremiumPurchase: RequestHandler = async (req, res) => {
     const premiumType = amount === 180 ? "blogger" : "standard";
     const videoDuration = premiumType === "blogger" ? 18 * 60 : 5 * 60; // в секундах
 
-    premiumUsers[userId] = {
+    user.premium = {
+      isPremium: true,
       expiresAt,
       isTrial: false,
-      createdAt: new Date(),
       type: premiumType,
       videoDuration,
     };
 
+    await user.save();
+
     res.json({
       success: true,
-      premium: {
-        isPremium: true,
-        expiresAt: expiresAt.toISOString(),
-        isTrial: false,
-        type: premiumType,
-        videoDuration,
-      },
-      balance: currentBalance - amount,
+      premium: user.premium,
+      balance: user.starsBalance,
     });
   } catch (error) {
     console.error("Ошибка при покупке Premium:", error);
@@ -90,45 +75,60 @@ export const handlePremiumStatus: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    const premiumData = premiumUsers[userId];
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      // If user not found, we can't really give them a trial unless we create them, 
+      // but usually this endpoint is called for existing users.
+      // Let's just return not premium.
+      return res.json({
+        isPremium: false,
+        expiresAt: null,
+        isTrial: false,
+      });
+    }
+
     const now = new Date();
 
-    if (!premiumData) {
-      // Проверяем, новый ли это пользователь (в реальном приложении проверка через БД)
-      // Для демо: если пользователя нет в premiumUsers, даем неделю бесплатно
-      const trialExpiresAt = new Date();
-      trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
+    // Check if premium exists
+    if (!user.premium || !user.premium.isPremium) {
+      // Check for trial eligibility? 
+      // For now, let's say if they never had premium (or trial), give them trial?
+      // Or just stick to the demo logic: if no premium data, give trial.
 
-      premiumUsers[userId] = {
-        expiresAt: trialExpiresAt,
-        isTrial: true,
-        createdAt: new Date(),
-        type: "standard",
-        videoDuration: 5 * 60, // стандартный триал: 5 минут
-      };
+      // NOTE: In a real app, we'd track if they ALREADY had a trial.
+      // Here we just check if premium is set.
 
-      res.json({
-        isPremium: true,
-        expiresAt: trialExpiresAt.toISOString(),
-        isTrial: true,
-        type: "standard",
-        videoDuration: 5 * 60,
+      if (!user.premium) {
+        const trialExpiresAt = new Date();
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
+
+        user.premium = {
+          isPremium: true,
+          expiresAt: trialExpiresAt,
+          isTrial: true,
+          type: "standard",
+          videoDuration: 5 * 60,
+        };
+        await user.save();
+
+        return res.json(user.premium);
+      }
+
+      return res.json({
+        isPremium: false,
+        expiresAt: null,
+        isTrial: false,
       });
-      return;
     }
 
     // Проверяем, не истек ли Premium
-    if (premiumData.expiresAt > now) {
-      res.json({
-        isPremium: true,
-        expiresAt: premiumData.expiresAt.toISOString(),
-        isTrial: premiumData.isTrial,
-        type: premiumData.type,
-        videoDuration: premiumData.videoDuration,
-      });
+    if (user.premium.expiresAt && new Date(user.premium.expiresAt) > now) {
+      res.json(user.premium);
     } else {
       // Premium истек
-      delete premiumUsers[userId];
+      user.premium.isPremium = false;
+      await user.save();
+
       res.json({
         isPremium: false,
         expiresAt: null,
@@ -140,3 +140,4 @@ export const handlePremiumStatus: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
+

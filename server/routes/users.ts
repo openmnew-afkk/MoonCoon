@@ -1,12 +1,6 @@
 import { RequestHandler } from "express";
-import crypto from "node:crypto";
-
-// В реальном приложении здесь должна быть работа с БД
-const userStats: Record<
-  string,
-  { posts: number; followers: number; following: number }
-> = {};
-const userSettings: Record<string, any> = {};
+import User from "../models/User";
+import Post from "../models/Post";
 
 export const handleUserStats: RequestHandler = async (req, res) => {
   try {
@@ -16,18 +10,72 @@ export const handleUserStats: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Инициализируем статистику с 0, если пользователя еще нет
-    if (!userStats[userId]) {
-      userStats[userId] = {
+    const user = await User.findOne({ telegramId: userId });
+
+    if (!user) {
+      // If user doesn't exist, return default stats
+      return res.json({
         posts: 0,
         followers: 0,
         following: 0,
-      };
+        likesReceived: 0,
+        viewsCount: 0,
+        starsReceived: 0
+      });
     }
 
-    res.json(userStats[userId]);
+    // Ensure stats exist and return them
+    const stats = user.stats || {
+      posts: 0,
+      followers: 0,
+      following: 0,
+      likesReceived: 0,
+      viewsCount: 0,
+      starsReceived: 0
+    };
+
+    res.json(stats);
   } catch (error) {
     console.error("Ошибка получения статистики пользователя:", error);
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+  }
+};
+
+// New endpoint for user profile (not just stats)
+export const handleUserProfile: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId обязателен" });
+    }
+
+    const user = await User.findOne({ telegramId: userId });
+
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    // Return full profile info
+    res.json({
+      id: user.telegramId,
+      name: user.name,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      verified: user.verified,
+      isAdmin: user.isAdmin,
+      bio: user.settings?.bio || "",
+      stats: user.stats || {
+        posts: 0,
+        followers: 0,
+        following: 0,
+        likesReceived: 0,
+        viewsCount: 0,
+        starsReceived: 0
+      }
+    });
+  } catch (error) {
+    console.error("Ошибка получения профиля пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
@@ -35,23 +83,31 @@ export const handleUserStats: RequestHandler = async (req, res) => {
 export const handleUpdateUserStats: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { posts, followers, following } = req.body;
+    const updates = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    if (!userStats[userId]) {
-      userStats[userId] = { posts: 0, followers: 0, following: 0 };
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
     }
 
-    if (posts !== undefined) userStats[userId].posts = posts;
-    if (followers !== undefined) userStats[userId].followers = followers;
-    if (following !== undefined) userStats[userId].following = following;
+    // Merge updates into stats
+    // Only allow specific fields to be updated via this endpoint if needed
+    if (updates.posts !== undefined) user.stats.posts = updates.posts;
+    if (updates.followers !== undefined) user.stats.followers = updates.followers;
+    if (updates.following !== undefined) user.stats.following = updates.following;
+    if (updates.likesReceived !== undefined) user.stats.likesReceived = updates.likesReceived;
+    if (updates.viewsCount !== undefined) user.stats.viewsCount = updates.viewsCount;
+    if (updates.starsReceived !== undefined) user.stats.starsReceived = updates.starsReceived;
+
+    await user.save();
 
     res.json({
       success: true,
-      stats: userStats[userId],
+      stats: user.stats,
     });
   } catch (error) {
     console.error("Ошибка обновления статистики:", error);
@@ -67,67 +123,68 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    if (req.method === "GET") {
-      // Получить настройки
-      const raw = userSettings[userId] || {
+    // Handle PUT request for updating settings
+    if (req.method === 'PUT') {
+      const user = await User.findOne({ telegramId: userId });
+      if (!user) {
+        return res.status(404).json({ error: "Пользователь не найден" });
+      }
+
+      const settingsUpdate = req.body;
+      
+      // Update settings fields
+      if (settingsUpdate.privateAccount !== undefined) user.settings.privateAccount = settingsUpdate.privateAccount;
+      if (settingsUpdate.allowDMs !== undefined) user.settings.allowDMs = settingsUpdate.allowDMs;
+      if (settingsUpdate.showOnlineStatus !== undefined) user.settings.showOnlineStatus = settingsUpdate.showOnlineStatus;
+      if (settingsUpdate.activityStatus !== undefined) user.settings.activityStatus = settingsUpdate.activityStatus;
+      if (settingsUpdate.postsFromFollowers !== undefined) user.settings.postsFromFollowers = settingsUpdate.postsFromFollowers;
+      if (settingsUpdate.likesAndComments !== undefined) user.settings.likesAndComments = settingsUpdate.likesAndComments;
+      if (settingsUpdate.directMessages !== undefined) user.settings.directMessages = settingsUpdate.directMessages;
+      if (settingsUpdate.followSuggestions !== undefined) user.settings.followSuggestions = settingsUpdate.followSuggestions;
+      if (settingsUpdate.reduceMotion !== undefined) user.settings.reduceMotion = settingsUpdate.reduceMotion;
+      if (settingsUpdate.accessibilityMode !== undefined) user.settings.accessibilityMode = settingsUpdate.accessibilityMode;
+      if (settingsUpdate.theme !== undefined) user.settings.theme = settingsUpdate.theme;
+      if (settingsUpdate.email !== undefined) user.settings.email = settingsUpdate.email;
+      if (settingsUpdate.bio !== undefined) user.settings.bio = settingsUpdate.bio;
+
+      await user.save();
+
+      return res.json({
+        success: true,
+        settings: user.settings
+      });
+    }
+
+    // Handle GET request for retrieving settings
+    const user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      // Return defaults if user not found
+      return res.json({
         privateAccount: false,
         allowDMs: true,
         showOnlineStatus: true,
+        activityStatus: true,
+        postsFromFollowers: true,
+        likesAndComments: true,
+        directMessages: true,
+        followSuggestions: false,
+        reduceMotion: false,
+        accessibilityMode: false,
+        theme: 'dark',
         email: "",
-        username: "",
         bio: "",
-      };
-      // Не возвращаем hash PIN на клиент
-      const { childModePinHash, ...settings } = raw;
-      res.json(settings);
-    } else if (req.method === "PUT") {
-      const body = req.body || {};
-      const current = userSettings[userId] || {};
-
-      // Установка PIN: сохраняем hash
-      if (
-        typeof body.setChildModePin === "string" &&
-        body.setChildModePin.length >= 4
-      ) {
-        const pin = body.setChildModePin;
-        const hash = crypto.createHash("sha256").update(pin).digest("hex");
-        current.childModePinHash = hash;
-        current.childMode = true;
-        delete body.setChildModePin;
-      }
-
-      // Проверка PIN при выключении детского режима
-      if (current.childModePinHash && body.childMode === false) {
-        if (typeof body.verifyChildModePin !== "string") {
-          return res
-            .status(400)
-            .json({ error: "Требуется PIN для отключения детского режима" });
-        }
-        const checkHash = crypto
-          .createHash("sha256")
-          .update(body.verifyChildModePin)
-          .digest("hex");
-        if (checkHash !== current.childModePinHash) {
-          return res.status(403).json({ error: "Неверный PIN" });
-        }
-        // PIN верный, можно отключить
-        delete body.verifyChildModePin;
-      }
-
-      // Обновляем остальные настройки
-      userSettings[userId] = {
-        ...current,
-        ...body,
-      };
-
-      const { childModePinHash, ...safe } = userSettings[userId];
-      res.json({
-        success: true,
-        settings: safe,
       });
     }
+
+    // Return settings merged with some profile info that might be needed
+    res.json({
+      ...user.settings,
+      // Add these if the frontend expects them in settings
+      username: user.username,
+      bio: user.settings.bio // explicitly ensuring bio is there
+    });
   } catch (error) {
-    console.error("Ошибка работы с настройками:", error);
+    console.error("Ошибка получения настроек:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
@@ -140,16 +197,13 @@ export const handleDeleteUser: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // В реальном приложении здесь должна быть удаление из БД
-    delete userStats[userId];
-    delete userSettings[userId];
+    await User.deleteOne({ telegramId: userId });
+    await Post.deleteMany({ userId });
 
-    res.json({
-      success: true,
-      message: "Пользователь удален",
-    });
+    res.json({ success: true });
   } catch (error) {
     console.error("Ошибка удаления пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };
+

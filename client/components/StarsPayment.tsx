@@ -18,8 +18,13 @@ export default function StarsPayment({
   const [amount, setAmount] = useState<number>(100);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<number>(100);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const handlePurchase = async () => {
+    if (isPurchasing) return;
+    setIsPurchasing(true);
+
     try {
       const response = await fetch("/api/stars/add", {
         method: "POST",
@@ -55,17 +60,24 @@ export default function StarsPayment({
       } else {
         alert("Ошибка при добавлении звезд");
       }
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
   const handleWithdraw = async () => {
+    if (isWithdrawing) return;
+    setIsWithdrawing(true);
+
     if (withdrawAmount < 100) {
       webApp?.showAlert("Минимальная сумма вывода: 100 звезд");
+      setIsWithdrawing(false);
       return;
     }
 
     if (withdrawAmount > currentStars) {
       webApp?.showAlert("Недостаточно звезд на балансе");
+      setIsWithdrawing(false);
       return;
     }
 
@@ -96,6 +108,8 @@ export default function StarsPayment({
     } catch (error) {
       console.error("Ошибка при выводе звезд:", error);
       webApp?.showAlert("Ошибка при выводе звезд. Попробуйте позже.");
+    } finally {
+      setIsWithdrawing(false);
     }
   };
 
@@ -144,10 +158,11 @@ export default function StarsPayment({
             </div>
             <button
               onClick={handlePurchase}
-              className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20"
+              disabled={isPurchasing}
+              className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20"
             >
               <Star className="fill-primary" size={20} />
-              Купить {amount} звезд
+              {isPurchasing ? "Покупка..." : `Купить ${amount} звезд`}
             </button>
           </div>
 
@@ -211,10 +226,10 @@ export default function StarsPayment({
               </button>
               <button
                 onClick={handleWithdraw}
-                disabled={withdrawAmount < 100 || withdrawAmount > currentStars}
+                disabled={withdrawAmount < 100 || withdrawAmount > currentStars || isWithdrawing}
                 className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-3 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                Вывести
+                {isWithdrawing ? "Вывод..." : "Вывести"}
               </button>
             </div>
           </div>

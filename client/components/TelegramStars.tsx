@@ -55,7 +55,7 @@ const STAR_PACKAGES: StarPackage[] = [
 ];
 
 export default function TelegramStars({ onClose }: TelegramStarsProps) {
-  const { user, WebApp } = useTelegram();
+  const { user, webApp: WebApp } = useTelegram();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<number | null>(null);
@@ -66,7 +66,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
 
   const loadBalance = async () => {
     if (!user?.id) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/stars/balance?userId=${user.id}`);
@@ -111,19 +111,19 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
       // Use Telegram Web App API to open invoice
       WebApp.openInvoice(createInvoiceLink(invoice), (status) => {
         console.log('Payment status:', status);
-        
+
         if (status === 'paid') {
           // Payment successful - update balance
           const totalStars = starPackage.stars + (starPackage.bonus || 0);
           setBalance(prev => prev + totalStars);
-          
+
           // Send to our API to track the purchase
           updateServerBalance(totalStars);
-          
+
           WebApp.showPopup({
             title: '🎉 Успешно!',
             message: `Вы получили ${totalStars} звёзд!`,
-            buttons: [{ type: 'ok' }]
+            buttons: [{ type: 'ok', text: 'OK' }]
           });
         } else if (status === 'cancelled') {
           console.log('Payment cancelled by user');
@@ -131,10 +131,10 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
           WebApp.showPopup({
             title: '❌ Ошибка',
             message: 'Платёж не прошёл. Попробуйте ещё раз.',
-            buttons: [{ type: 'ok' }]
+            buttons: [{ type: 'ok', text: 'OK' }]
           });
         }
-        
+
         setPurchasing(null);
       });
 
@@ -155,7 +155,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
       currency: invoice.currency,
       prices: JSON.stringify(invoice.prices)
     });
-    
+
     return `https://t.me/invoice/${params.toString()}`;
   };
 
@@ -193,7 +193,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
         <p className="text-muted-foreground mb-4">
           Поддерживайте авторов и получайте эксклюзивные возможности
         </p>
-        
+
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-4">
             <Loader2 size={20} className="animate-spin text-primary" />
@@ -213,7 +213,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
       {/* Star Packages */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Купить звёзды</h3>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {STAR_PACKAGES.map((pkg, index) => (
             <button
@@ -231,7 +231,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
                   Популярный
                 </div>
               )}
-              
+
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {pkg.icon}
@@ -244,7 +244,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
                 </div>
                 <ArrowUpRight size={16} className="text-muted-foreground" />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">{pkg.price} XTR</div>
@@ -252,7 +252,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
                     ≈ {(pkg.price * 0.5).toFixed(1)} ₽
                   </div>
                 </div>
-                
+
                 {purchasing === pkg.stars ? (
                   <Loader2 size={16} className="animate-spin text-primary" />
                 ) : (
@@ -272,7 +272,7 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
           <Star size={16} className="text-yellow-400" />
           Как использовать звёзды
         </h4>
-        
+
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>• Отправляйте авторам в поддержку их контента</p>
           <p>• Получайте доступ к премиум-функциям</p>

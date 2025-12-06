@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Settings as SettingsIcon,
   Bell,
@@ -7,10 +7,103 @@ import {
   Globe,
   LogOut,
   X,
+  Save,
 } from "lucide-react";
+import { useTelegram } from "@/hooks/useTelegram";
+import { useUserData } from "@/hooks/useUserData";
 
 export default function Settings() {
   const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    privateAccount: false,
+    allowDMs: true,
+    showOnlineStatus: true,
+    activityStatus: true,
+    postsFromFollowers: true,
+    likesAndComments: true,
+    directMessages: true,
+    followSuggestions: false,
+    reduceMotion: false,
+    accessibilityMode: false,
+    theme: 'dark',
+  });
+  const [saving, setSaving] = useState(false);
+  const { user } = useTelegram();
+  const { profile, setProfile } = useUserData();
+
+  // Загружаем настройки из API или localStorage при открытии
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Сначала пробуем загрузить с сервера
+        const response = await fetch(`/api/users/${user.id}/settings`);
+        if (response.ok) {
+          const serverSettings = await response.json();
+          setSettings(prev => ({ ...prev, ...serverSettings }));
+          // Сохраняем в localStorage для оффлайн доступа
+          localStorage.setItem('mooncoon_settings', JSON.stringify({ ...settings, ...serverSettings }));
+        } else {
+          // Если сервер недоступен, грузим из localStorage
+          const savedSettings = localStorage.getItem('mooncoon_settings');
+          if (savedSettings) {
+            try {
+              const parsed = JSON.parse(savedSettings);
+              setSettings(prev => ({ ...prev, ...parsed }));
+            } catch (error) {
+              console.error('Ошибка загрузки настроек из localStorage:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки настроек с сервера:', error);
+        // Fallback to localStorage
+        const savedSettings = localStorage.getItem('mooncoon_settings');
+        if (savedSettings) {
+          try {
+            const parsed = JSON.parse(savedSettings);
+            setSettings(prev => ({ ...prev, ...parsed }));
+          } catch (localError) {
+            console.error('Ошибка загрузки настроек из localStorage:', localError);
+          }
+        }
+      }
+    };
+    loadSettings();
+  }, [user?.id]);
+
+  // Сохраняем настройки в localStorage и на сервер
+  const saveSettings = async () => {
+    if (!user?.id) return;
+
+    setSaving(true);
+    try {
+      // Сохраняем в localStorage
+      localStorage.setItem('mooncoon_settings', JSON.stringify(settings));
+
+      // Сохраняем на сервер
+      const response = await fetch(`/api/users/${user.id}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+
+      if (response.ok) {
+        console.log('Настройки сохранены');
+        alert('Настройки успешно сохранены!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Ошибка сохранения настроек на сервер:', errorData);
+        alert('Ошибка сохранения настроек на сервер: ' + (errorData.error || 'Неизвестная ошибка'));
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения настроек:', error);
+      alert('Ошибка сохранения настроек: ' + (error.message || 'Неизвестная ошибка'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <>
@@ -75,19 +168,39 @@ export default function Settings() {
                 <div className="space-y-3">
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Private Account</span>
-                    <input type="checkbox" className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.privateAccount}
+                      onChange={(e) => setSettings({ ...settings, privateAccount: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Allow DMs from Anyone</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.allowDMs}
+                      onChange={(e) => setSettings({ ...settings, allowDMs: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Show Online Status</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.showOnlineStatus}
+                      onChange={(e) => setSettings({ ...settings, showOnlineStatus: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Activity Status</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.activityStatus}
+                      onChange={(e) => setSettings({ ...settings, activityStatus: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                 </div>
               </div>
@@ -101,19 +214,39 @@ export default function Settings() {
                 <div className="space-y-3">
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Posts from Followers</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.postsFromFollowers}
+                      onChange={(e) => setSettings({ ...settings, postsFromFollowers: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Likes & Comments</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.likesAndComments}
+                      onChange={(e) => setSettings({ ...settings, likesAndComments: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Direct Messages</span>
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.directMessages}
+                      onChange={(e) => setSettings({ ...settings, directMessages: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Follow Suggestions</span>
-                    <input type="checkbox" className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.followSuggestions}
+                      onChange={(e) => setSettings({ ...settings, followSuggestions: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                 </div>
               </div>
@@ -128,24 +261,49 @@ export default function Settings() {
                   <div className="glass-card p-4 rounded-2xl">
                     <p className="text-sm font-medium mb-2">Theme</p>
                     <div className="flex gap-2">
-                      <button className="flex-1 glass-button rounded-xl bg-primary/20 text-primary font-medium">
+                      <button
+                        onClick={() => setSettings({ ...settings, theme: 'dark' })}
+                        className={`flex-1 glass-button rounded-xl font-medium ${
+                          settings.theme === 'dark' ? 'bg-primary/20 text-primary' : 'opacity-50'
+                        }`}
+                      >
                         Dark
                       </button>
-                      <button className="flex-1 glass-button rounded-xl opacity-50">
+                      <button
+                        onClick={() => setSettings({ ...settings, theme: 'light' })}
+                        className={`flex-1 glass-button rounded-xl font-medium ${
+                          settings.theme === 'light' ? 'bg-primary/20 text-primary' : 'opacity-50'
+                        }`}
+                      >
                         Light
                       </button>
-                      <button className="flex-1 glass-button rounded-xl opacity-50">
+                      <button
+                        onClick={() => setSettings({ ...settings, theme: 'auto' })}
+                        className={`flex-1 glass-button rounded-xl font-medium ${
+                          settings.theme === 'auto' ? 'bg-primary/20 text-primary' : 'opacity-50'
+                        }`}
+                      >
                         Auto
                       </button>
                     </div>
                   </div>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Reduce Motion</span>
-                    <input type="checkbox" className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.reduceMotion}
+                      onChange={(e) => setSettings({ ...settings, reduceMotion: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Accessibility Mode</span>
-                    <input type="checkbox" className="w-4 h-4" />
+                    <input
+                      type="checkbox"
+                      checked={settings.accessibilityMode}
+                      onChange={(e) => setSettings({ ...settings, accessibilityMode: e.target.checked })}
+                      className="w-4 h-4"
+                    />
                   </label>
                 </div>
               </div>
@@ -174,6 +332,18 @@ export default function Settings() {
                 </div>
               </div>
 
+              {/* Save Settings */}
+              <div className="mb-6">
+                <button
+                  onClick={saveSettings}
+                  disabled={saving}
+                  className="w-full glass-card bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed p-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all"
+                >
+                  <Save size={18} />
+                  {saving ? 'Сохранение...' : 'Сохранить настройки'}
+                </button>
+              </div>
+
               {/* Danger Zone */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-3 text-red-500">
@@ -183,11 +353,38 @@ export default function Settings() {
                   <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium">
                     Download Your Data
                   </button>
-                  <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium flex items-center justify-between">
+                  <button
+                    onClick={() => {
+                      if (confirm('Вы уверены, что хотите выйти?')) {
+                        localStorage.removeItem('mooncoon_settings');
+                        window.location.reload();
+                      }
+                    }}
+                    className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium flex items-center justify-between"
+                  >
                     <span>Logout</span>
                     <LogOut size={18} />
                   </button>
-                  <button className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium">
+                  <button
+                    onClick={async () => {
+                      if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить!')) {
+                        if (user?.id) {
+                          try {
+                            const response = await fetch(`/api/users/${user.id}`, {
+                              method: 'DELETE',
+                            });
+                            if (response.ok) {
+                              alert('Аккаунт удален');
+                              window.location.reload();
+                            }
+                          } catch (error) {
+                            console.error('Ошибка удаления:', error);
+                          }
+                        }
+                      }
+                    }}
+                    className="w-full glass-card p-4 hover:bg-red-500/10 transition-all rounded-2xl text-red-500 font-medium"
+                  >
                     Delete Account
                   </button>
                 </div>

@@ -348,8 +348,20 @@ function CreateLegacy() {
 
         {/* Create Form */}
         <div className="glass-card space-y-4">
-          {/* Media Upload */}
-          <div className="rounded-2xl overflow-hidden">
+           {/* Media Upload */}
+           <div className="rounded-2xl overflow-hidden">
+             {/* Кнопка добавить видео для Scroll режима */}
+             {mode === "scroll" && (
+               <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
+                 <div className="flex items-center gap-2 mb-2">
+                   <Video size={20} className="text-primary" />
+                   <span className="text-sm font-medium text-primary">Добавить видео в Scroll</span>
+                 </div>
+                 <p className="text-xs text-muted-foreground">
+                   Выберите видео для публикации в MoonCoon Scroll - вертикальную ленту видео
+                 </p>
+               </div>
+             )}
             {displayImage ? (
               <div className="relative">
                 <img
@@ -607,104 +619,104 @@ function CreateLegacy() {
           )}
 
           {/* Scroll Mode */}
-          {mode === "scroll" && (
-            <>
-              <div className="space-y-3 border-t border-glass-light/10 pt-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Видео будет добавлено в MoonCoon Scroll - вертикальную ленту видео
-                </p>
-                <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
-                  <span className="text-sm font-medium">Разрешить комментарии</span>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </label>
-                <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
-                  <span className="text-sm font-medium">Разрешить реакции</span>
-                  <input type="checkbox" defaultChecked className="w-4 h-4" />
-                </label>
-              </div>
+      {mode === "scroll" && (
+        <>
+          <div className="space-y-3 border-t border-glass-light/10 pt-4">
+            <p className="text-sm font-medium text-muted-foreground">
+              Видео будет добавлено в MoonCoon Scroll - вертикальную ленту видео
+            </p>
+            <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
+              <span className="text-sm font-medium">Разрешить комментарии</span>
+              <input type="checkbox" defaultChecked className="w-4 h-4" />
+            </label>
+            <label className="flex items-center justify-between p-3 bg-glass-light/30 rounded-xl cursor-pointer hover:bg-glass-light/50 transition-all">
+              <span className="text-sm font-medium">Разрешить реакции</span>
+              <input type="checkbox" defaultChecked className="w-4 h-4" />
+            </label>
+          </div>
 
-              {/* Scroll Preview */}
-              {hasMedia && (
-                <div className="p-4 bg-glass-light/30 rounded-2xl">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Предпросмотр в Scroll
-                  </p>
-                  <div className="w-32 h-56 rounded-2xl overflow-hidden mx-auto relative bg-black">
-                    {displayImage ? (
-                      <img
-                        src={displayImage}
-                        alt="Scroll preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : selectedVideo ? (
-                      <video
-                        src={selectedVideo}
-                        className="w-full h-full object-cover"
-                        muted
-                        playsInline
-                      />
-                    ) : null}
-                    <div className="absolute bottom-2 left-2 right-2 text-white text-xs">
-                      <p className="truncate">{caption || "Ваше видео в MoonCoon Scroll"}</p>
-                    </div>
-                  </div>
+          {/* Scroll Preview */}
+          {hasMedia && (
+            <div className="p-4 bg-glass-light/30 rounded-2xl">
+              <p className="text-xs text-muted-foreground mb-2">
+                Предпросмотр в Scroll
+              </p>
+              <div className="w-32 h-56 rounded-2xl overflow-hidden mx-auto relative bg-black">
+                {displayImage ? (
+                  <img
+                    src={displayImage}
+                    alt="Scroll preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : selectedVideo ? (
+                  <video
+                    src={selectedVideo}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                  />
+                ) : null}
+                <div className="absolute bottom-2 left-2 right-2 text-white text-xs">
+                  <p className="truncate">{caption || "Ваше видео в MoonCoon Scroll"}</p>
                 </div>
-              )}
-
-              {/* Publish Button */}
-              <button
-                onClick={async () => {
-                  if (!hasMedia || !selectedVideo) {
-                    alert("Необходимо выбрать видео для Scroll");
-                    return;
-                  }
-
-                  if (!user?.id) {
-                    alert("Необходима авторизация в Telegram");
-                    return;
-                  }
-
-                  const mediaPayload = await getMediaPayload();
-                  if (!mediaPayload) {
-                    alert("Не удалось подготовить видео");
-                    return;
-                  }
-
-                  try {
-                    const payload = {
-                      userId: user.id.toString(),
-                      caption: caption || "",
-                      media: mediaPayload.media,
-                      mediaType: mediaPayload.mediaType,
-                      type: "scroll",
-                    };
-
-                    const res = await fetch("/api/posts", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(payload),
-                    });
-
-                    if (res.ok) {
-                      const data = await res.json();
-                      console.log("Видео добавлено в Scroll:", data);
-                      resetForm();
-                      alert("✅ Видео добавлено в MoonCoon Scroll!");
-                    } else {
-                      const errorText = await res.text();
-                      alert(`❌ Ошибка: ${errorText}`);
-                    }
-                  } catch (e: any) {
-                    alert(`❌ Ошибка сети: ${e.message}`);
-                  }
-                }}
-                disabled={!hasMedia || !selectedVideo}
-                className="w-full glass-button rounded-2xl py-3 font-semibold bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 hover:from-pink-500/30 hover:to-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-              >
-                🎥 Добавить в Scroll
-              </button>
-            </>
+              </div>
+            </div>
           )}
+
+          {/* Publish Button */}
+          <button
+            onClick={async () => {
+              if (!hasMedia || !selectedVideo) {
+                alert("Необходимо выбрать видео для Scroll");
+                return;
+              }
+
+              if (!user?.id) {
+                alert("Необходима авторизация в Telegram");
+                return;
+              }
+
+              const mediaPayload = await getMediaPayload();
+              if (!mediaPayload) {
+                alert("Не удалось подготовить видео");
+                return;
+              }
+
+              try {
+                const payload = {
+                  userId: user.id.toString(),
+                  caption: caption || "",
+                  media: mediaPayload.media,
+                  mediaType: mediaPayload.mediaType,
+                  type: "post", // Изменено с "scroll" на "post" для совместимости с API
+                };
+
+                const res = await fetch("/api/posts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+
+                if (res.ok) {
+                  const data = await res.json();
+                  console.log("Видео добавлено в Scroll:", data);
+                  resetForm();
+                  alert("✅ Видео добавлено в MoonCoon Scroll!");
+                } else {
+                  const errorText = await res.text();
+                  alert(`❌ Ошибка: ${errorText}`);
+                }
+              } catch (e: any) {
+                alert(`❌ Ошибка сети: ${e.message}`);
+              }
+            }}
+            disabled={!hasMedia || !selectedVideo}
+            className="w-full glass-button rounded-2xl py-3 font-semibold bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 hover:from-pink-500/30 hover:to-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            🎥 Добавить в Scroll
+          </button>
+        </>
+      )}
 
           {/* Reset Button */}
           {hasMedia && (
