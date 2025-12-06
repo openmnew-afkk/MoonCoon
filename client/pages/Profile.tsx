@@ -1386,13 +1386,14 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
         const result = await response.json();
         console.log(`[PROFILE] Настройки сохранены:`, result);
         alert("Настройки сохранены!");
-        } else {
-          alert("Ошибка сохранения настроек");
-        }
-      } catch (error) {
-        console.error("Ошибка сохранения:", error);
-        alert("Ошибка сохранения настроек");
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+        console.error(`[PROFILE] Ошибка сохранения настроек:`, errorData);
+        alert(`Ошибка при сохранении настроек: ${errorData.error || errorData.details || 'Неизвестная ошибка'}`);
       }
+    } catch (error) {
+      console.error("[PROFILE] Ошибка сохранения настроек:", error);
+      alert(`Ошибка при сохранении настроек: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
     }
   };
 
