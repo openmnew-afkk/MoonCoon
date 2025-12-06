@@ -63,7 +63,14 @@ const AppContent = () => {
   }, [webApp, user]);
 
   if (showSplash) {
-    return <Splash onComplete={() => setShowSplash(false)} />;
+    return (
+      <Splash 
+        onComplete={() => {
+          console.log("[APP] Splash завершен, загружаем приложение");
+          setShowSplash(false);
+        }} 
+      />
+    );
   }
 
   return (
