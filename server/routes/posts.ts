@@ -40,7 +40,8 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
         }
 
         // Find or create user
-        let user = await (User.findOne({ telegramId: userId }) as any).exec();
+        const userQuery = User.findOne({ telegramId: userId }) as any;
+        let user = await userQuery.exec();
         
         if (!user) {
             console.log(`[POST] Пользователь ${userId} не найден, создаем нового`);
@@ -136,7 +137,8 @@ export const handleLikePost: RequestHandler = async (req, res) => {
         const { postId } = req.params;
         const { userId, action } = req.body;
 
-        const post = await (Post.findById(postId) as any).exec();
+        const postQuery = Post.findById(postId) as any;
+        const post = await postQuery.exec();
         if (!post) {
             return res.status(404).json({ error: "Пост не найден" });
         }
@@ -157,7 +159,8 @@ export const handleLikePost: RequestHandler = async (req, res) => {
         await post.save();
 
         // Update author's total likes received (ensure user exists)
-        const author = await (User.findOne({ telegramId: post.userId }) as any).exec();
+        const authorQuery = User.findOne({ telegramId: post.userId }) as any;
+        const author = await authorQuery.exec();
         if (author) {
             if (action === 'like') {
                 author.stats = author.stats || {
@@ -196,27 +199,31 @@ export const handleDeletePost: RequestHandler = async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body; // Check ownership
 
-        const post = await (Post.findById(postId) as any).exec();
+        const postQuery = Post.findById(postId) as any;
+        const post = await postQuery.exec();
         if (!post) {
             return res.status(404).json({ error: "Пост не найден" });
         }
 
         if (post.userId !== userId) {
             // Check if admin
-            const user = await (User.findOne({ telegramId: userId }) as any).exec();
+            const userQuery = User.findOne({ telegramId: userId }) as any;
+            const user = await userQuery.exec();
             if (!user?.isAdmin) {
                 return res.status(403).json({ error: "Нет прав" });
             }
         }
 
-        await (Post.findByIdAndDelete(postId) as any).exec();
+        const deleteQuery = Post.findByIdAndDelete(postId) as any;
+        await deleteQuery.exec();
 
         // Decrement stats
         if (post.type === 'post') {
-            await (User.updateOne(
+            const updateQuery = User.updateOne(
                 { telegramId: post.userId },
                 { $inc: { "stats.posts": -1 } }
-            ) as any).exec();
+            ) as any;
+            await updateQuery.exec();
         }
 
         res.json({ success: true });

@@ -24,7 +24,7 @@ import Splash from "./pages/Splash";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { webApp, user, isReady } = useTelegram();
+  const { webApp, user } = useTelegram();
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
@@ -62,31 +62,18 @@ const AppContent = () => {
     }
   }, [webApp, user]);
 
+  // Обработчик завершения Splash
+  const handleSplashComplete = () => {
+    console.log("[APP] Splash завершен, загружаем приложение");
+    setShowSplash(false);
+  };
+
   // Показываем Splash или основное приложение
   if (showSplash) {
-    console.log("[APP] Показываем Splash");
-    return (
-      <Splash 
-        onComplete={() => {
-          console.log("[APP] Splash завершен, загружаем приложение");
-          try {
-            setShowSplash(false);
-            console.log("[APP] showSplash установлен в false");
-          } catch (error) {
-            console.error("[APP] Ошибка при установке showSplash:", error);
-            // Принудительно перезагружаем если что-то пошло не так
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-          }
-        }} 
-      />
-    );
+    return <Splash onComplete={handleSplashComplete} />;
   }
 
-  console.log("[APP] Загружаем основное приложение");
-  
-  // Основное приложение - загружаем всегда, не зависим от isReady
+  // Основное приложение
   return (
     <BrowserRouter>
       <MainLayout>

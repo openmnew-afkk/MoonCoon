@@ -82,11 +82,6 @@ export default function Splash({
     };
   }, [duration, onComplete, completed]);
 
-  // Если fadeOut, скрываем элемент полностью после анимации
-  if (fadeOut && completed) {
-    return null;
-  }
-
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-500 ${
