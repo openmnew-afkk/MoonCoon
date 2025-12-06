@@ -6,7 +6,7 @@ import { Moon, Sparkles } from "lucide-react";
  */
 export default function Splash({
   onComplete,
-  duration = 2500,
+  duration = 2000,
 }: {
   onComplete: () => void;
   duration?: number;
@@ -14,10 +14,12 @@ export default function Splash({
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
   const [logoScale, setLogoScale] = useState(0.8);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     const start = Date.now();
     let animationFrame: number;
+    let timeoutId: NodeJS.Timeout;
 
     // Анимация появления логотипа
     setTimeout(() => setLogoScale(1), 100);
@@ -33,25 +35,59 @@ export default function Splash({
       
       setProgress(percent);
 
-      if (percent >= 100) {
+      if (percent >= 100 && !completed) {
+        setCompleted(true);
         setFadeOut(true);
-        setTimeout(() => {
+        // Убеждаемся что onComplete вызывается
+        timeoutId = setTimeout(() => {
           console.log("[SPLASH] Завершение загрузки, вызов onComplete");
-          onComplete();
-        }, 400);
-      } else {
+          try {
+            onComplete();
+          } catch (error) {
+            console.error("[SPLASH] Ошибка при вызове onComplete:", error);
+            // Вызываем еще раз на всякий случай
+            setTimeout(() => {
+              try {
+                onComplete();
+              } catch (e) {
+                console.error("[SPLASH] Критическая ошибка:", e);
+              }
+            }, 100);
+          }
+        }, 300);
+      } else if (!completed) {
         animationFrame = requestAnimationFrame(updateProgress);
       }
     };
 
     animationFrame = requestAnimationFrame(updateProgress);
 
+    // Fallback - если что-то пошло не так, вызываем onComplete через максимальное время
+    const maxTimeout = setTimeout(() => {
+      if (!completed) {
+        console.warn("[SPLASH] Таймаут, принудительно завершаем загрузку");
+        setCompleted(true);
+        setFadeOut(true);
+        setTimeout(() => {
+          try {
+            onComplete();
+          } catch (error) {
+            console.error("[SPLASH] Ошибка при принудительном завершении:", error);
+          }
+        }, 300);
+      }
+    }, duration + 1000);
+
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
       }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      clearTimeout(maxTimeout);
     };
-  }, [duration, onComplete]);
+  }, [duration, onComplete, completed]);
 
   return (
     <div
