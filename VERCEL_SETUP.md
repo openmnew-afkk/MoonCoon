@@ -60,6 +60,13 @@ vercel env add MONGODB_URI
 mongodb+srv://username:password@cluster-name.mongodb.net/database-name?retryWrites=true&w=majority
 ```
 
+**Ваша строка подключения (для MoonCoon):**
+```
+mongodb+srv://openmnew_db_user:o4x8p28SuEQJfBht@cluster0.iufs4hs.mongodb.net/mooncoon?retryWrites=true&w=majority
+```
+
+⚠️ **Важно:** Замените `mooncoon` на имя вашей базы данных, если используете другое имя.
+
 **MongoDB локальный или другой хостинг:**
 ```
 mongodb://username:password@host:port/database-name
