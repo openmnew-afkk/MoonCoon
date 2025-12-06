@@ -75,31 +75,41 @@ export default function Settings() {
 
   // Сохраняем настройки в localStorage и на сервер
   const saveSettings = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.error('❌ user.id отсутствует');
+      alert('Ошибка: пользователь не авторизован');
+      return;
+    }
 
     setSaving(true);
     try {
+      console.log(`[SETTINGS] Сохранение настроек для userId: ${user.id}`, settings);
+      
       // Сохраняем в localStorage
       localStorage.setItem('mooncoon_settings', JSON.stringify(settings));
 
       // Сохраняем на сервер
-      const response = await fetch(`/api/users/${user.id}/settings`, {
+      const userId = user.id.toString();
+      const response = await fetch(`/api/users/${userId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
       });
 
+      console.log(`[SETTINGS] Ответ сервера:`, response.status, response.statusText);
+
       if (response.ok) {
-        console.log('Настройки сохранены');
+        const result = await response.json();
+        console.log('✅ Настройки сохранены:', result);
         alert('Настройки успешно сохранены!');
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Ошибка сохранения настроек на сервер:', errorData);
-        alert('Ошибка сохранения настроек на сервер: ' + (errorData.error || 'Неизвестная ошибка'));
+        const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+        console.error('❌ Ошибка сохранения настроек на сервер:', errorData);
+        alert('Ошибка сохранения настроек: ' + (errorData.error || errorData.details || 'Неизвестная ошибка'));
       }
     } catch (error) {
-      console.error('Ошибка сохранения настроек:', error);
-      alert('Ошибка сохранения настроек: ' + (error.message || 'Неизвестная ошибка'));
+      console.error('❌ Ошибка сохранения настроек:', error);
+      alert('Ошибка сохранения настроек: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
     } finally {
       setSaving(false);
     }

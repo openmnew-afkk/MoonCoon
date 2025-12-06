@@ -156,6 +156,8 @@ export default function CreateInstagram() {
         });
 
         if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Пост создан:', result);
           const typeName = postType === 'story' ? 'История' : postType === 'scroll' ? 'Scroll' : 'Пост';
           alert(`${typeName} опубликован!`);
           // Reset form
@@ -164,7 +166,9 @@ export default function CreateInstagram() {
           setCaption("");
           setStage("select");
         } else {
-          alert('Ошибка при публикации');
+          const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+          console.error('❌ Ошибка при публикации:', errorData);
+          alert(`Ошибка при публикации: ${errorData.error || errorData.details || 'Неизвестная ошибка'}`);
         }
       };
 

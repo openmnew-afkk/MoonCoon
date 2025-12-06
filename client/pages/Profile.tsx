@@ -71,16 +71,25 @@ export default function Profile() {
       if (user?.id) {
         try {
           // Загружаем статистику
-          const statsResponse = await fetch(`/api/users/${user.id}/stats`);
+          const userId = user.id.toString();
+          console.log(`[PROFILE] Загрузка статистики для userId: ${userId}`);
+          const statsResponse = await fetch(`/api/users/${userId}/stats`);
           if (statsResponse.ok) {
             const userStats = await statsResponse.json();
-            setStats(userStats);
+            console.log(`[PROFILE] Статистика загружена:`, userStats);
+            setStats({
+              posts: userStats.posts || 0,
+              followers: userStats.followers || 0,
+              following: userStats.following || 0,
+            });
           } else {
+            const errorData = await statsResponse.json().catch(() => ({}));
+            console.error(`[PROFILE] Ошибка загрузки статистики:`, errorData);
             // Показываем базовые данные если API не отвечает
             setStats({
               posts: 0,
-              followers: Math.floor(Math.random() * 50) + 10,
-              following: Math.floor(Math.random() * 100) + 20,
+              followers: 0,
+              following: 0,
             });
           }
 
@@ -102,7 +111,7 @@ export default function Profile() {
           );
 
           // Загружаем настройки (аватар)
-          const settingsRes = await fetch(`/api/users/${user.id}/settings`);
+          const settingsRes = await fetch(`/api/users/${userId}/settings`);
           if (settingsRes.ok) {
             const s = await settingsRes.json();
             if (s.avatarUrl) {
@@ -1313,23 +1322,29 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
     if (user?.id) {
       const loadSettings = async () => {
         try {
-          const response = await fetch(`/api/users/${user.id}/settings`);
+          const userId = user.id.toString();
+          console.log(`[PROFILE] Загрузка настроек для userId: ${userId}`);
+          const response = await fetch(`/api/users/${userId}/settings`);
           if (response.ok) {
             const settings = await response.json();
+            console.log(`[PROFILE] Настройки загружены:`, settings);
             setPrivateAccount(settings.privateAccount || false);
             setAllowDMs(settings.allowDMs !== false);
             setShowOnlineStatus(settings.showOnlineStatus !== false);
             setEmail(settings.email || "");
-            setUsername(settings.username || `@user_${user.id}`);
+            setUsername(settings.username || `@user_${userId}`);
             setBio(settings.bio || "");
             // Возрастные и безопасные настройки
             setBlurAdultContent(settings.blurAdultContent !== false);
             setAllowAdultReveal(settings.allowAdultReveal !== false);
             setChildMode(settings.childMode === true);
             setHasChildPin(Boolean(settings.childModePinHash));
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error(`[PROFILE] Ошибка загрузки настроек:`, errorData);
           }
         } catch (error) {
-          console.error("Ошибка загрузки настроек:", error);
+          console.error("[PROFILE] Ошибка загрузки настроек:", error);
         }
       };
       loadSettings();
@@ -1337,27 +1352,40 @@ function SettingsPanel({ onBack }: { onBack: () => void }) {
   }, [user]);
 
   const handleSave = async () => {
-    if (user?.id) {
-      try {
-        const response = await fetch(`/api/users/${user.id}/settings`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            privateAccount,
-            allowDMs,
-            showOnlineStatus,
-            email,
-            username,
-            bio,
-            // Новые настройки
-            blurAdultContent,
-            allowAdultReveal,
-            childMode,
-            // child mode pin hash не отправляем с клиента явно здесь
-          }),
-        });
-        if (response.ok) {
-          alert("Настройки сохранены!");
+    if (!user?.id) {
+      console.error("[PROFILE] user.id отсутствует");
+      alert("Ошибка: пользователь не авторизован");
+      return;
+    }
+
+    try {
+      const userId = user.id.toString();
+      const settingsData = {
+        privateAccount,
+        allowDMs,
+        showOnlineStatus,
+        email,
+        username,
+        bio,
+        blurAdultContent,
+        allowAdultReveal,
+        childMode,
+      };
+      
+      console.log(`[PROFILE] Сохранение настроек для userId: ${userId}`, settingsData);
+      
+      const response = await fetch(`/api/users/${userId}/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settingsData),
+      });
+      
+      console.log(`[PROFILE] Ответ сервера:`, response.status, response.statusText);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`[PROFILE] Настройки сохранены:`, result);
+        alert("Настройки сохранены!");
         } else {
           alert("Ошибка сохранения настроек");
         }

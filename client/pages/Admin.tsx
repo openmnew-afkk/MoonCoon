@@ -67,18 +67,19 @@ export default function Admin() {
 
       try {
         // Проверяем статус админа по userId и username
-        const params = new URLSearchParams({ userId: user.id.toString() });
+        const userId = user.id.toString();
+        const params = new URLSearchParams({ userId });
         if (user.username) {
           params.append("username", user.username);
         }
 
         console.log("🔍 Проверяем админ статус для:", {
-          userId: user.id,
+          userId,
           username: user.username,
           url: `/api/admin/check?${params}`,
         });
 
-        const response = await fetch(`/api/admin/check?${params}`);
+        const response = await fetch(`/api/admin/check?${params.toString()}`);
 
         console.log("🌐 Ответ сервера:", {
           status: response.status,
