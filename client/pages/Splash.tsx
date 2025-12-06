@@ -33,24 +33,13 @@ export default function Splash({
 
       if (percent >= 100 && !completed) {
         setCompleted(true);
-        setFadeOut(true);
         console.log("[SPLASH] Прогресс 100%, начинаем fadeOut");
+        setFadeOut(true);
+        
+        // Вызываем onComplete сразу после fadeOut, не ждем
         timeoutId = setTimeout(() => {
           console.log("[SPLASH] Вызываем onComplete");
-          try {
-            onComplete();
-            console.log("[SPLASH] onComplete вызван успешно");
-          } catch (error) {
-            console.error("[SPLASH] Ошибка при вызове onComplete:", error);
-            // Пробуем еще раз
-            setTimeout(() => {
-              try {
-                onComplete();
-              } catch (e) {
-                console.error("[SPLASH] Критическая ошибка:", e);
-              }
-            }, 100);
-          }
+          onComplete();
         }, 300);
       } else if (!completed) {
         animationFrame = requestAnimationFrame(updateProgress);
@@ -59,21 +48,17 @@ export default function Splash({
 
     animationFrame = requestAnimationFrame(updateProgress);
 
-    // Fallback таймаут
+    // Fallback таймаут - гарантируем что onComplete будет вызван
     const maxTimeout = setTimeout(() => {
       if (!completed) {
-        console.warn("[SPLASH] Таймаут, завершаем");
+        console.warn("[SPLASH] Таймаут, принудительно завершаем");
         setCompleted(true);
         setFadeOut(true);
         setTimeout(() => {
-          try {
-            onComplete();
-          } catch (error) {
-            console.error("[SPLASH] Ошибка:", error);
-          }
+          onComplete();
         }, 300);
       }
-    }, duration + 1000);
+    }, duration + 2000);
 
     return () => {
       if (animationFrame) cancelAnimationFrame(animationFrame);
