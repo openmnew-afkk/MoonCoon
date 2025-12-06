@@ -82,10 +82,15 @@ export default function Splash({
     };
   }, [duration, onComplete, completed]);
 
+  // Если fadeOut, скрываем элемент полностью после анимации
+  if (fadeOut && completed) {
+    return null;
+  }
+
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-500 ${
-        fadeOut ? "opacity-0" : "opacity-100"
+        fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       style={{
         background: "radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%)",
