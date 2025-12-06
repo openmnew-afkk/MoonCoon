@@ -32,20 +32,24 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
     try {
         const { userId, caption, media, mediaType, type, visibility } = req.body;
 
+        console.log(`[POST] Создание поста для userId: ${userId}`, { type, mediaType, hasMedia: !!media });
+
         if (!userId || !media || !mediaType) {
-            return res.status(400).json({ error: "Неверные параметры" });
+            console.error(`[POST] Неверные параметры: userId=${userId}, hasMedia=${!!media}, mediaType=${mediaType}`);
+            return res.status(400).json({ error: "Неверные параметры: userId, media и mediaType обязательны" });
         }
 
         // Find or create user
-        let user = await User.findOne({ telegramId: userId });
+        let user = await User.findOne({ telegramId: userId }).exec();
         
         if (!user) {
-            // Create user if doesn't exist (shouldn't happen, but safety check)
-            user = await User.create({
+            console.log(`[POST] Пользователь ${userId} не найден, создаем нового`);
+            // Create user if doesn't exist
+            const newUserData = {
                 telegramId: userId,
                 name: `User ${userId}`,
-                username: undefined,
-                avatarUrl: undefined,
+                username: undefined as string | undefined,
+                avatarUrl: undefined as string | undefined,
                 verified: false,
                 isAdmin: false,
                 isBanned: false,
@@ -73,7 +77,21 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
                     bio: "",
                 },
                 starsBalance: 0
-            });
+            };
+            user = await (User.create as any)(newUserData);
+            console.log(`[POST] Пользователь ${userId} создан`);
+        }
+
+        // Ensure stats exist
+        if (!user.stats) {
+            user.stats = {
+                posts: 0,
+                followers: 0,
+                following: 0,
+                likesReceived: 0,
+                viewsCount: 0,
+                starsReceived: 0
+            };
         }
 
         const author = {
@@ -83,26 +101,33 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
             verified: user.verified || false
         };
 
-        const newPost = await Post.create({
+        console.log(`[POST] Создание поста в БД...`);
+        const postData = {
             userId,
             author,
             caption: caption || '',
             media,
             mediaType,
-            type: type || 'post',
-            visibility: visibility || 'public',
-        });
+            type: (type || 'post') as 'post' | 'story' | 'scroll',
+            visibility: (visibility || 'public') as 'public' | 'followers',
+        };
+        const newPost = await (Post.create as any)(postData);
+        console.log(`[POST] Пост создан с ID: ${newPost._id}`);
 
         // Update user stats
-        if (type === 'post') {
+        if (type === 'post' || !type) {
             user.stats.posts = (user.stats.posts || 0) + 1;
             await user.save();
+            console.log(`[POST] Статистика пользователя ${userId} обновлена: posts=${user.stats.posts}`);
         }
 
         res.json({ success: true, post: newPost });
     } catch (error) {
         console.error("Ошибка создания поста:", error);
-        res.status(500).json({ error: "Внутренняя ошибка сервера" });
+        res.status(500).json({ 
+            error: "Внутренняя ошибка сервера", 
+            details: error instanceof Error ? error.message : String(error) 
+        });
     }
 };
 
@@ -111,7 +136,7 @@ export const handleLikePost: RequestHandler = async (req, res) => {
         const { postId } = req.params;
         const { userId, action } = req.body;
 
-        const post = await Post.findById(postId);
+        const post = await (Post.findById(postId) as any).exec();
         if (!post) {
             return res.status(404).json({ error: "Пост не найден" });
         }
@@ -132,7 +157,7 @@ export const handleLikePost: RequestHandler = async (req, res) => {
         await post.save();
 
         // Update author's total likes received (ensure user exists)
-        const author = await User.findOne({ telegramId: post.userId });
+        const author = await (User.findOne({ telegramId: post.userId }) as any).exec();
         if (author) {
             if (action === 'like') {
                 author.stats = author.stats || {
@@ -171,27 +196,27 @@ export const handleDeletePost: RequestHandler = async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body; // Check ownership
 
-        const post = await Post.findById(postId);
+        const post = await (Post.findById(postId) as any).exec();
         if (!post) {
             return res.status(404).json({ error: "Пост не найден" });
         }
 
         if (post.userId !== userId) {
             // Check if admin
-            const user = await User.findOne({ telegramId: userId });
+            const user = await (User.findOne({ telegramId: userId }) as any).exec();
             if (!user?.isAdmin) {
                 return res.status(403).json({ error: "Нет прав" });
             }
         }
 
-        await Post.findByIdAndDelete(postId);
+        await (Post.findByIdAndDelete(postId) as any).exec();
 
         // Decrement stats
         if (post.type === 'post') {
-            await User.updateOne(
+            await (User.updateOne(
                 { telegramId: post.userId },
                 { $inc: { "stats.posts": -1 } }
-            );
+            ) as any).exec();
         }
 
         res.json({ success: true });

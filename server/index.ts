@@ -22,7 +22,8 @@ import {
   handleUserStats,
   handleUserProfile,
   handleUpdateUserStats,
-  handleUserSettings,
+  handleUserSettingsGet,
+  handleUserSettingsPut,
   handleDeleteUser,
 } from "./routes/users";
 import { handlePremiumPurchase, handlePremiumStatus } from "./routes/premium";
@@ -94,6 +95,7 @@ export function createServer() {
       let user = await User.findOne({ telegramId: userId });
 
       if (!user) {
+        console.log(`[AUTH] Создание нового пользователя: ${userId}`);
         user = await User.create({
           telegramId: userId,
           name: name || `User ${userId}`,
@@ -127,12 +129,45 @@ export function createServer() {
           },
           starsBalance: 0
         });
+        console.log(`[AUTH] Пользователь ${userId} создан успешно`);
       } else {
         // Update info if changed
+        console.log(`[AUTH] Обновление пользователя: ${userId}`);
+        
+        // Ensure stats and settings exist
+        if (!user.stats) {
+          user.stats = {
+            posts: 0,
+            followers: 0,
+            following: 0,
+            likesReceived: 0,
+            viewsCount: 0,
+            starsReceived: 0
+          };
+        }
+        if (!user.settings) {
+          user.settings = {
+            privateAccount: false,
+            allowDMs: true,
+            showOnlineStatus: true,
+            activityStatus: true,
+            postsFromFollowers: true,
+            likesAndComments: true,
+            directMessages: true,
+            followSuggestions: false,
+            reduceMotion: false,
+            accessibilityMode: false,
+            theme: 'dark',
+            email: "",
+            bio: "",
+          };
+        }
+        
         user.name = name || user.name;
         user.username = userUsername || user.username;
         user.avatarUrl = photo_url || user.avatarUrl;
         await user.save();
+        console.log(`[AUTH] Пользователь ${userId} обновлен`);
       }
 
       res.json({
@@ -166,8 +201,8 @@ export function createServer() {
   app.get("/api/users/:userId", handleUserProfile); // Profile endpoint
   app.get("/api/users/:userId/stats", handleUserStats); // Stats only
   app.put("/api/users/:userId", handleUpdateUserStats);
-  app.get("/api/users/:userId/settings", handleUserSettings);
-  app.put("/api/users/:userId/settings", handleUserSettings);
+  app.get("/api/users/:userId/settings", handleUserSettingsGet);
+  app.put("/api/users/:userId/settings", handleUserSettingsPut);
   app.delete("/api/users/:userId", handleDeleteUser);
 
   return app;
