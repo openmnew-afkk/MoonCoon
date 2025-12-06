@@ -64,16 +64,28 @@ const AppContent = () => {
 
   // Показываем Splash или основное приложение
   if (showSplash) {
+    console.log("[APP] Показываем Splash");
     return (
       <Splash 
         onComplete={() => {
           console.log("[APP] Splash завершен, загружаем приложение");
-          setShowSplash(false);
+          try {
+            setShowSplash(false);
+            console.log("[APP] showSplash установлен в false");
+          } catch (error) {
+            console.error("[APP] Ошибка при установке showSplash:", error);
+            // Принудительно перезагружаем если что-то пошло не так
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          }
         }} 
       />
     );
   }
 
+  console.log("[APP] Загружаем основное приложение");
+  
   // Основное приложение - загружаем всегда, не зависим от isReady
   return (
     <BrowserRouter>

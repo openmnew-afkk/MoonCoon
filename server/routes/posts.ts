@@ -40,7 +40,7 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
         }
 
         // Find or create user
-        let user = await User.findOne({ telegramId: userId }).exec();
+        let user = await (User.findOne({ telegramId: userId }) as any).exec();
         
         if (!user) {
             console.log(`[POST] Пользователь ${userId} не найден, создаем нового`);
