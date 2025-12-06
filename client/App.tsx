@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "@/components/MainLayout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { enableCopyProtection } from "@/lib/copyProtection";
 import { useTelegram } from "@/hooks/useTelegram";
 
@@ -62,16 +62,20 @@ const AppContent = () => {
     }
   }, [webApp, user]);
 
-  // Обработчик завершения Splash
-  const handleSplashComplete = () => {
-    console.log("[APP] Splash завершен, загружаем приложение");
+  // Обработчик завершения Splash - используем useCallback для стабильности
+  const handleSplashComplete = useCallback(() => {
+    console.log("[APP] Splash завершен, устанавливаем showSplash в false");
     setShowSplash(false);
-  };
+    console.log("[APP] showSplash должен быть false теперь");
+  }, []);
 
   // Показываем Splash или основное приложение
   if (showSplash) {
+    console.log("[APP] Рендерим Splash, showSplash =", showSplash);
     return <Splash onComplete={handleSplashComplete} />;
   }
+
+  console.log("[APP] Рендерим основное приложение, showSplash =", showSplash);
 
   // Основное приложение
   return (
