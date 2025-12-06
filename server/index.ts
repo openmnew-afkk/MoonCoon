@@ -16,6 +16,7 @@ import {
   handleGetUsers,
   handleSetAdmin,
   handleBanUser,
+  handleAdminStats,
 } from "./routes/admin";
 import {
   handleUserStats,
@@ -60,6 +61,7 @@ export function createServer() {
   app.post("/api/admin/auth", handleAdminAuth);
   app.get("/api/admin/check", handleAdminCheck);
   app.get("/api/admin/users", handleGetUsers);
+  app.get("/api/admin/stats", handleAdminStats);
   app.post("/api/admin/set-admin", handleSetAdmin);
   app.post("/api/admin/ban-user", handleBanUser);
 
@@ -126,8 +128,10 @@ export function createServer() {
 
   // User Stats & Settings
   app.get("/api/users/:userId", handleUserStats);
+  app.get("/api/users/:userId/stats", handleUserStats);
   app.put("/api/users/:userId", handleUpdateUserStats);
   app.get("/api/users/:userId/settings", handleUserSettings);
+  app.put("/api/users/:userId/settings", handleUserSettings);
   app.delete("/api/users/:userId", handleDeleteUser);
 
   return app;

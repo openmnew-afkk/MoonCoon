@@ -28,35 +28,14 @@ interface User {
   isBanned: boolean;
   posts: number;
   followers: number;
-  createdAt: string;
+  joinedAt: string;
 }
 
-const stats: StatCard[] = [
-  {
-    label: "Всего пользователей",
-    value: "12.5K",
-    change: "+12% на этой неделе",
-    icon: <Users className="text-primary" size={24} />,
-  },
-  {
-    label: "Активные посты",
-    value: "3.2K",
-    change: "+24% на этой неделе",
-    icon: <TrendingUp className="text-accent" size={24} />,
-  },
-  {
-    label: "Всего лайков",
-    value: "125K",
-    change: "+18% на этой неделе",
-    icon: <Heart className="text-red-500" size={24} />,
-  },
-  {
-    label: "Сообщений",
-    value: "45.6K",
-    change: "+31% на этой неделе",
-    icon: <MessageSquare className="text-primary" size={24} />,
-  },
-];
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return num.toString();
+};
 
 export default function Admin() {
   const { user } = useTelegram();
@@ -67,6 +46,16 @@ export default function Admin() {
   const [banReason, setBanReason] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [adminStats, setAdminStats] = useState({
+    totalUsers: 0,
+    totalPosts: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    usersChange: "+0% на этой неделе",
+    postsChange: "+0% на этой неделе",
+    likesChange: "+0% на этой неделе",
+    commentsChange: "+0% на этой неделе",
+  });
 
   // Проверка прав администратора
   useEffect(() => {
@@ -104,6 +93,7 @@ export default function Admin() {
             setIsAdmin(true);
             localStorage.setItem("admin_session", `admin_${user.id}`);
             loadUsers();
+            loadAdminStats();
           } else {
             console.log("❌ Пользователь не является админом");
           }
@@ -139,6 +129,24 @@ export default function Admin() {
       console.error("Ошибка загрузки пользователей:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAdminStats = async () => {
+    const adminSession = localStorage.getItem("admin_session");
+    if (!adminSession) return;
+
+    try {
+      const response = await fetch("/api/admin/stats", {
+        headers: { Authorization: `Bearer ${adminSession}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAdminStats(data);
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки статистики:", error);
     }
   };
 
@@ -218,22 +226,60 @@ export default function Admin() {
         </div>
       </div>
 
+      {!authChecked ? (
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p className="text-sm text-muted-foreground">Проверка прав доступа...</p>
+          </div>
+        </div>
+      ) : !isAdmin ? (
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Shield className="text-primary mx-auto mb-4" size={48} />
+            <h2 className="text-xl font-bold mb-2">Доступ запрещен</h2>
+            <p className="text-sm text-muted-foreground">У вас нет прав администратора</p>
+          </div>
+        </div>
+      ) : (
       <div
         className="max-w-6xl mx-auto px-4 py-6"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 7rem)" }}
       >
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat, i) => (
-            <div key={i} className="glass-card">
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                {stat.icon}
-              </div>
-              <p className="text-2xl font-bold mb-1">{stat.value}</p>
-              <p className="text-xs text-primary">{stat.change}</p>
+          <div className="glass-card">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Всего пользователей</p>
+              <Users className="text-primary" size={24} />
             </div>
-          ))}
+            <p className="text-2xl font-bold mb-1">{formatNumber(adminStats.totalUsers)}</p>
+            <p className="text-xs text-primary">{adminStats.usersChange}</p>
+          </div>
+          <div className="glass-card">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Активные посты</p>
+              <TrendingUp className="text-accent" size={24} />
+            </div>
+            <p className="text-2xl font-bold mb-1">{formatNumber(adminStats.totalPosts)}</p>
+            <p className="text-xs text-primary">{adminStats.postsChange}</p>
+          </div>
+          <div className="glass-card">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Всего лайков</p>
+              <Heart className="text-red-500" size={24} />
+            </div>
+            <p className="text-2xl font-bold mb-1">{formatNumber(adminStats.totalLikes)}</p>
+            <p className="text-xs text-primary">{adminStats.likesChange}</p>
+          </div>
+          <div className="glass-card">
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Сообщений</p>
+              <MessageSquare className="text-primary" size={24} />
+            </div>
+            <p className="text-2xl font-bold mb-1">{formatNumber(adminStats.totalComments)}</p>
+            <p className="text-xs text-primary">{adminStats.commentsChange}</p>
+          </div>
         </div>
 
         {/* Users Management */}
@@ -429,6 +475,7 @@ export default function Admin() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

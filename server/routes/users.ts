@@ -83,6 +83,39 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
+    // Handle PUT request for updating settings
+    if (req.method === 'PUT') {
+      const user = await User.findOne({ telegramId: userId });
+      if (!user) {
+        return res.status(404).json({ error: "Пользователь не найден" });
+      }
+
+      const settingsUpdate = req.body;
+      
+      // Update settings fields
+      if (settingsUpdate.privateAccount !== undefined) user.settings.privateAccount = settingsUpdate.privateAccount;
+      if (settingsUpdate.allowDMs !== undefined) user.settings.allowDMs = settingsUpdate.allowDMs;
+      if (settingsUpdate.showOnlineStatus !== undefined) user.settings.showOnlineStatus = settingsUpdate.showOnlineStatus;
+      if (settingsUpdate.activityStatus !== undefined) user.settings.activityStatus = settingsUpdate.activityStatus;
+      if (settingsUpdate.postsFromFollowers !== undefined) user.settings.postsFromFollowers = settingsUpdate.postsFromFollowers;
+      if (settingsUpdate.likesAndComments !== undefined) user.settings.likesAndComments = settingsUpdate.likesAndComments;
+      if (settingsUpdate.directMessages !== undefined) user.settings.directMessages = settingsUpdate.directMessages;
+      if (settingsUpdate.followSuggestions !== undefined) user.settings.followSuggestions = settingsUpdate.followSuggestions;
+      if (settingsUpdate.reduceMotion !== undefined) user.settings.reduceMotion = settingsUpdate.reduceMotion;
+      if (settingsUpdate.accessibilityMode !== undefined) user.settings.accessibilityMode = settingsUpdate.accessibilityMode;
+      if (settingsUpdate.theme !== undefined) user.settings.theme = settingsUpdate.theme;
+      if (settingsUpdate.email !== undefined) user.settings.email = settingsUpdate.email;
+      if (settingsUpdate.bio !== undefined) user.settings.bio = settingsUpdate.bio;
+
+      await user.save();
+
+      return res.json({
+        success: true,
+        settings: user.settings
+      });
+    }
+
+    // Handle GET request for retrieving settings
     const user = await User.findOne({ telegramId: userId });
     if (!user) {
       // Return defaults if user not found
