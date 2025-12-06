@@ -32,15 +32,19 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
     try {
         const { userId, caption, media, mediaType, type, visibility } = req.body;
 
+        console.log(`[POST] Создание поста для userId: ${userId}`, { type, mediaType, hasMedia: !!media });
+
         if (!userId || !media || !mediaType) {
-            return res.status(400).json({ error: "Неверные параметры" });
+            console.error(`[POST] Неверные параметры: userId=${userId}, hasMedia=${!!media}, mediaType=${mediaType}`);
+            return res.status(400).json({ error: "Неверные параметры: userId, media и mediaType обязательны" });
         }
 
         // Find or create user
         let user = await User.findOne({ telegramId: userId });
         
         if (!user) {
-            // Create user if doesn't exist (shouldn't happen, but safety check)
+            console.log(`[POST] Пользователь ${userId} не найден, создаем нового`);
+            // Create user if doesn't exist
             user = await User.create({
                 telegramId: userId,
                 name: `User ${userId}`,
@@ -74,6 +78,19 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
                 },
                 starsBalance: 0
             });
+            console.log(`[POST] Пользователь ${userId} создан`);
+        }
+
+        // Ensure stats exist
+        if (!user.stats) {
+            user.stats = {
+                posts: 0,
+                followers: 0,
+                following: 0,
+                likesReceived: 0,
+                viewsCount: 0,
+                starsReceived: 0
+            };
         }
 
         const author = {
@@ -83,6 +100,7 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
             verified: user.verified || false
         };
 
+        console.log(`[POST] Создание поста в БД...`);
         const newPost = await Post.create({
             userId,
             author,
@@ -92,17 +110,22 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
             type: type || 'post',
             visibility: visibility || 'public',
         });
+        console.log(`[POST] Пост создан с ID: ${newPost._id}`);
 
         // Update user stats
-        if (type === 'post') {
+        if (type === 'post' || !type) {
             user.stats.posts = (user.stats.posts || 0) + 1;
             await user.save();
+            console.log(`[POST] Статистика пользователя ${userId} обновлена: posts=${user.stats.posts}`);
         }
 
         res.json({ success: true, post: newPost });
     } catch (error) {
         console.error("Ошибка создания поста:", error);
-        res.status(500).json({ error: "Внутренняя ошибка сервера" });
+        res.status(500).json({ 
+            error: "Внутренняя ошибка сервера", 
+            details: error instanceof Error ? error.message : String(error) 
+        });
     }
 };
 
