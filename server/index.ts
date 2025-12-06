@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import connectDB from "./db";
+import connectDB, { ensureDB } from "./db";
 import User from "./models/User";
 import { handleDemo } from "./routes/demo";
 import {
@@ -20,6 +20,7 @@ import {
 } from "./routes/admin";
 import {
   handleUserStats,
+  handleUserProfile,
   handleUpdateUserStats,
   handleUserSettings,
   handleDeleteUser,
@@ -35,13 +36,24 @@ import {
 export function createServer() {
   const app = express();
 
-  // Connect to Database
-  connectDB();
+  // Connect to Database (async, but don't block)
+  connectDB().catch(console.error);
 
   // Middleware
   app.use(cors());
   app.use(express.json({ limit: "25mb" }));
   app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+
+  // Ensure DB connection before API routes
+  app.use("/api", async (req, res, next) => {
+    try {
+      await ensureDB();
+      next();
+    } catch (error) {
+      console.error("DB connection error in middleware:", error);
+      res.status(500).json({ error: "Database connection failed" });
+    }
+  });
 
   // Example API routes
   app.get("/api/ping", (_req, res) => {
@@ -89,7 +101,31 @@ export function createServer() {
           avatarUrl: photo_url,
           verified: false,
           isAdmin: false,
-          isBanned: false
+          isBanned: false,
+          stats: {
+            posts: 0,
+            followers: 0,
+            following: 0,
+            likesReceived: 0,
+            viewsCount: 0,
+            starsReceived: 0
+          },
+          settings: {
+            privateAccount: false,
+            allowDMs: true,
+            showOnlineStatus: true,
+            activityStatus: true,
+            postsFromFollowers: true,
+            likesAndComments: true,
+            directMessages: true,
+            followSuggestions: false,
+            reduceMotion: false,
+            accessibilityMode: false,
+            theme: 'dark',
+            email: "",
+            bio: "",
+          },
+          starsBalance: 0
         });
       } else {
         // Update info if changed
@@ -127,8 +163,8 @@ export function createServer() {
   app.get("/api/premium/status", handlePremiumStatus);
 
   // User Stats & Settings
-  app.get("/api/users/:userId", handleUserStats);
-  app.get("/api/users/:userId/stats", handleUserStats);
+  app.get("/api/users/:userId", handleUserProfile); // Profile endpoint
+  app.get("/api/users/:userId/stats", handleUserStats); // Stats only
   app.put("/api/users/:userId", handleUpdateUserStats);
   app.get("/api/users/:userId/settings", handleUserSettings);
   app.put("/api/users/:userId/settings", handleUserSettings);

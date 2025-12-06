@@ -13,7 +13,7 @@ export const handleUserStats: RequestHandler = async (req, res) => {
     const user = await User.findOne({ telegramId: userId });
 
     if (!user) {
-      // If user doesn't exist, return default stats (or 404, but frontend might expect defaults)
+      // If user doesn't exist, return default stats
       return res.json({
         posts: 0,
         followers: 0,
@@ -24,18 +24,58 @@ export const handleUserStats: RequestHandler = async (req, res) => {
       });
     }
 
-    // Recalculate stats from posts if needed, or trust the stored stats
-    // For robustness, let's trust stored stats but ensure they exist
-    // Optionally, we could aggregate from Posts collection for accuracy:
-    // const postStats = await Post.aggregate([
-    //   { $match: { userId: userId } },
-    //   { $group: { _id: null, totalLikes: { $sum: "$likes" }, totalStars: { $sum: "$stars" }, count: { $sum: 1 } } }
-    // ]);
+    // Ensure stats exist and return them
+    const stats = user.stats || {
+      posts: 0,
+      followers: 0,
+      following: 0,
+      likesReceived: 0,
+      viewsCount: 0,
+      starsReceived: 0
+    };
 
-    // For now, return the stats stored in the User document
-    res.json(user.stats);
+    res.json(stats);
   } catch (error) {
     console.error("Ошибка получения статистики пользователя:", error);
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+  }
+};
+
+// New endpoint for user profile (not just stats)
+export const handleUserProfile: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId обязателен" });
+    }
+
+    const user = await User.findOne({ telegramId: userId });
+
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    // Return full profile info
+    res.json({
+      id: user.telegramId,
+      name: user.name,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      verified: user.verified,
+      isAdmin: user.isAdmin,
+      bio: user.settings?.bio || "",
+      stats: user.stats || {
+        posts: 0,
+        followers: 0,
+        following: 0,
+        likesReceived: 0,
+        viewsCount: 0,
+        starsReceived: 0
+      }
+    });
+  } catch (error) {
+    console.error("Ошибка получения профиля пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 };

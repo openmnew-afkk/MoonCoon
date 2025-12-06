@@ -36,19 +36,57 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
             return res.status(400).json({ error: "Неверные параметры" });
         }
 
-        // Get author info
-        const user = await User.findOne({ telegramId: userId });
+        // Find or create user
+        let user = await User.findOne({ telegramId: userId });
+        
+        if (!user) {
+            // Create user if doesn't exist (shouldn't happen, but safety check)
+            user = await User.create({
+                telegramId: userId,
+                name: `User ${userId}`,
+                username: undefined,
+                avatarUrl: undefined,
+                verified: false,
+                isAdmin: false,
+                isBanned: false,
+                stats: {
+                    posts: 0,
+                    followers: 0,
+                    following: 0,
+                    likesReceived: 0,
+                    viewsCount: 0,
+                    starsReceived: 0
+                },
+                settings: {
+                    privateAccount: false,
+                    allowDMs: true,
+                    showOnlineStatus: true,
+                    activityStatus: true,
+                    postsFromFollowers: true,
+                    likesAndComments: true,
+                    directMessages: true,
+                    followSuggestions: false,
+                    reduceMotion: false,
+                    accessibilityMode: false,
+                    theme: 'dark',
+                    email: "",
+                    bio: "",
+                },
+                starsBalance: 0
+            });
+        }
+
         const author = {
-            name: user?.name || "Unknown",
-            avatar: user?.avatarUrl || "",
-            username: user?.username || "",
-            verified: user?.verified || false
+            name: user.name,
+            avatar: user.avatarUrl || "",
+            username: user.username || "",
+            verified: user.verified || false
         };
 
         const newPost = await Post.create({
             userId,
             author,
-            caption,
+            caption: caption || '',
             media,
             mediaType,
             type: type || 'post',
@@ -56,8 +94,8 @@ export const handleCreatePost: RequestHandler = async (req, res) => {
         });
 
         // Update user stats
-        if (user && type === 'post') {
-            user.stats.posts += 1;
+        if (type === 'post') {
+            user.stats.posts = (user.stats.posts || 0) + 1;
             await user.save();
         }
 
@@ -93,17 +131,32 @@ export const handleLikePost: RequestHandler = async (req, res) => {
 
         await post.save();
 
-        // Update author's total likes received
-        if (action === 'like') {
-            await User.updateOne(
-                { telegramId: post.userId },
-                { $inc: { "stats.likesReceived": 1 } }
-            );
-        } else {
-            await User.updateOne(
-                { telegramId: post.userId },
-                { $inc: { "stats.likesReceived": -1 } }
-            );
+        // Update author's total likes received (ensure user exists)
+        const author = await User.findOne({ telegramId: post.userId });
+        if (author) {
+            if (action === 'like') {
+                author.stats = author.stats || {
+                    posts: 0,
+                    followers: 0,
+                    following: 0,
+                    likesReceived: 0,
+                    viewsCount: 0,
+                    starsReceived: 0
+                };
+                author.stats.likesReceived = (author.stats.likesReceived || 0) + 1;
+                await author.save();
+            } else {
+                author.stats = author.stats || {
+                    posts: 0,
+                    followers: 0,
+                    following: 0,
+                    likesReceived: 0,
+                    viewsCount: 0,
+                    starsReceived: 0
+                };
+                author.stats.likesReceived = Math.max(0, (author.stats.likesReceived || 0) - 1);
+                await author.save();
+            }
         }
 
         res.json({ success: true, likes: post.likes, liked: action === 'like' });
