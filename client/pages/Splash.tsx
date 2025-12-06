@@ -34,15 +34,24 @@ export default function Splash({
       if (percent >= 100 && !completed) {
         setCompleted(true);
         setFadeOut(true);
+        console.log("[SPLASH] Прогресс 100%, начинаем fadeOut");
         timeoutId = setTimeout(() => {
-          console.log("[SPLASH] Завершение загрузки");
+          console.log("[SPLASH] Вызываем onComplete");
           try {
             onComplete();
+            console.log("[SPLASH] onComplete вызван успешно");
           } catch (error) {
-            console.error("[SPLASH] Ошибка:", error);
-            setTimeout(() => onComplete(), 100);
+            console.error("[SPLASH] Ошибка при вызове onComplete:", error);
+            // Пробуем еще раз
+            setTimeout(() => {
+              try {
+                onComplete();
+              } catch (e) {
+                console.error("[SPLASH] Критическая ошибка:", e);
+              }
+            }, 100);
           }
-        }, 400);
+        }, 300);
       } else if (!completed) {
         animationFrame = requestAnimationFrame(updateProgress);
       }
