@@ -55,7 +55,7 @@ const STAR_PACKAGES: StarPackage[] = [
 ];
 
 export default function TelegramStars({ onClose }: TelegramStarsProps) {
-  const { user, WebApp } = useTelegram();
+  const { user, webApp } = useTelegram();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<number | null>(null);
@@ -82,8 +82,8 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
   };
 
   const handlePurchase = async (starPackage: StarPackage) => {
-    if (!user?.id || !WebApp) {
-      alert("Telegram WebApp не доступен");
+    if (!user?.id || !webApp) {
+      alert("Telegram webApp не доступен");
       return;
     }
 
@@ -112,11 +112,11 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
         const totalStars = starPackage.stars + (starPackage.bonus || 0);
         setBalance(prev => prev + totalStars);
         updateServerBalance(totalStars);
-        if (WebApp?.showPopup) {
-          WebApp.showPopup({
+        if (webApp?.showPopup) {
+          webApp.showPopup({
             title: '🎉 Успешно!',
             message: `Вы получили ${totalStars} звёзд!`,
-            buttons: [{ type: 'ok' }]
+            buttons: [{ type: 'ok', text: 'OK' }]
           });
         } else {
           alert(`🎉 Успешно! Вы получили ${totalStars} звёзд!`);
@@ -124,9 +124,9 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
         setPurchasing(null);
       };
 
-      if (WebApp && WebApp.openInvoice) {
+      if (webApp && webApp.openInvoice) {
         try {
-          WebApp.openInvoice(createInvoiceLink(invoice), (status) => {
+          webApp.openInvoice(createInvoiceLink(invoice), (status) => {
             console.log('Payment status:', status);
             if (status === 'paid') {
               successPurchase();
@@ -134,10 +134,10 @@ export default function TelegramStars({ onClose }: TelegramStarsProps) {
               console.log('Payment cancelled by user');
               setPurchasing(null);
             } else if (status === 'failed') {
-              WebApp.showPopup({
+              webApp.showPopup({
                 title: '❌ Ошибка',
                 message: 'Платёж не прошёл. Попробуйте ещё раз.',
-                buttons: [{ type: 'ok' }]
+                buttons: [{ type: 'ok', text: 'OK' }]
               });
               setPurchasing(null);
             } else {

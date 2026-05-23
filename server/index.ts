@@ -27,6 +27,7 @@ import {
   handleDeleteUser,
   handleGetUser,
 } from "./routes/users";
+import { incrementUserPosts } from "./store/user-stats";
 import { handlePremiumPurchase, handlePremiumStatus } from "./routes/premium";
 import {
   handleGetGoals,
@@ -50,6 +51,7 @@ export function createServer() {
 
   // Временное in-memory хранилище
   const posts: any[] = [];
+  const postComments: Record<string, any[]> = {};
   const stories: any[] = [];
   const users: any[] = [];
   const messages: any[] = [];
@@ -203,10 +205,12 @@ export function createServer() {
         createdAt: new Date().toISOString(),
         likes: 0,
         comments: 0,
+        stars: 0,
         pinned: false,
       };
 
       posts.push(post);
+      incrementUserPosts(String(userId));
       console.log(
         "✅ Пост создан:",
         post.id,
@@ -221,6 +225,37 @@ export function createServer() {
       console.error("❌ Ошибка создания поста:", error);
       res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
+  });
+
+  // Comments API
+  app.get("/api/posts/:postId/comments", (req, res) => {
+    const { postId } = req.params;
+    res.json({ comments: postComments[postId] || [] });
+  });
+
+  app.post("/api/posts/:postId/comments", (req, res) => {
+    const { postId } = req.params;
+    const { userId, text, author } = req.body || {};
+    if (!text?.trim()) {
+      return res.status(400).json({ error: "Текст комментария обязателен" });
+    }
+    const post = posts.find((p) => p.id === postId);
+    if (!post) {
+      return res.status(404).json({ error: "Пост не найден" });
+    }
+    const comment = {
+      id: `c_${Date.now()}`,
+      author: author || "Пользователь",
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId || "anon"}`,
+      text: text.trim(),
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      liked: false,
+    };
+    if (!postComments[postId]) postComments[postId] = [];
+    postComments[postId].push(comment);
+    post.comments = (post.comments || 0) + 1;
+    res.json({ success: true, comment });
   });
 
   // Stories API (in-memory)

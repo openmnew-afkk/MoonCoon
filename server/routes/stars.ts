@@ -6,6 +6,10 @@ import {
   getLegacyUserStars,
   addLedgerEntry,
 } from "../store/stars-store";
+import {
+  addStarsReceived,
+  recordStarSupport,
+} from "../store/user-stats";
 
 interface StarsRequest {
   userId: string;
@@ -15,6 +19,7 @@ interface StarsRequest {
 interface SendStarRequest {
   fromUserId: string;
   toPostId: string;
+  toUserId?: string;
   amount: number;
 }
 
@@ -170,7 +175,8 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
 
 export const handleSendStar: RequestHandler = async (req, res) => {
   try {
-    const { fromUserId, toPostId, amount }: SendStarRequest = req.body;
+    const { fromUserId, toPostId, toUserId, amount }: SendStarRequest =
+      req.body;
 
     if (!fromUserId || !toPostId || !amount || amount <= 0) {
       return res.status(400).json({ error: "Неверные параметры запроса" });
@@ -182,7 +188,31 @@ export const handleSendStar: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Недостаточно звезд на балансе" });
     }
 
-    deductStars(fromUserId, amount);
+    const deducted = deductStars(fromUserId, amount);
+    if (!deducted) {
+      return res.status(400).json({ error: "Недостаточно звезд на балансе" });
+    }
+
+    addLedgerEntry({
+      userId: fromUserId,
+      amount: -amount,
+      type: "tip",
+      counterparty: "user",
+      description: `Поддержка поста: -${amount} ⭐`,
+    });
+
+    if (toUserId && toUserId !== fromUserId) {
+      addStars(toUserId, amount);
+      addStarsReceived(toUserId, amount);
+      recordStarSupport(fromUserId, toUserId);
+      addLedgerEntry({
+        userId: toUserId,
+        amount,
+        type: "tip",
+        counterparty: "user",
+        description: `Получено за пост: +${amount} ⭐`,
+      });
+    }
 
     res.json({
       success: true,

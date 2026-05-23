@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
 import crypto from "node:crypto";
+import {
+  getUserStats,
+  updateUserStats,
+  deleteUserStats,
+} from "../store/user-stats";
 
-// В реальном приложении здесь должна быть работа с БД
-const userStats: Record<
-  string,
-  { posts: number; followers: number; following: number }
-> = {};
 const userSettings: Record<string, any> = {};
 
 export const handleGetUser: RequestHandler = async (req, res) => {
@@ -21,7 +21,7 @@ export const handleGetUser: RequestHandler = async (req, res) => {
       name: "Пользователь " + userId,
       username: `@user${userId}`,
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-      verified: false
+      verified: false,
     });
   } catch (error) {
     console.error("Ошибка получения пользователя:", error);
@@ -37,16 +37,7 @@ export const handleUserStats: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Инициализируем статистику с 0, если пользователя еще нет
-    if (!userStats[userId]) {
-      userStats[userId] = {
-        posts: 0,
-        followers: 0,
-        following: 0,
-      };
-    }
-
-    res.json(userStats[userId]);
+    res.json(getUserStats(userId));
   } catch (error) {
     console.error("Ошибка получения статистики пользователя:", error);
     res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -56,23 +47,22 @@ export const handleUserStats: RequestHandler = async (req, res) => {
 export const handleUpdateUserStats: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { posts, followers, following } = req.body;
+    const { posts, followers, following, starsReceived } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    if (!userStats[userId]) {
-      userStats[userId] = { posts: 0, followers: 0, following: 0 };
-    }
-
-    if (posts !== undefined) userStats[userId].posts = posts;
-    if (followers !== undefined) userStats[userId].followers = followers;
-    if (following !== undefined) userStats[userId].following = following;
+    const stats = updateUserStats(userId, {
+      posts,
+      followers,
+      following,
+      starsReceived,
+    });
 
     res.json({
       success: true,
-      stats: userStats[userId],
+      stats,
     });
   } catch (error) {
     console.error("Ошибка обновления статистики:", error);
@@ -89,7 +79,6 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
     }
 
     if (req.method === "GET") {
-      // Получить настройки
       const raw = userSettings[userId] || {
         privateAccount: false,
         allowDMs: true,
@@ -98,14 +87,12 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
         username: "",
         bio: "",
       };
-      // Не возвращаем hash PIN на клиент
       const { childModePinHash, ...settings } = raw;
       res.json(settings);
     } else if (req.method === "PUT") {
       const body = req.body || {};
       const current = userSettings[userId] || {};
 
-      // Установка PIN: сохраняем hash
       if (
         typeof body.setChildModePin === "string" &&
         body.setChildModePin.length >= 4
@@ -117,7 +104,6 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
         delete body.setChildModePin;
       }
 
-      // Проверка PIN при выключении детского режима
       if (current.childModePinHash && body.childMode === false) {
         if (typeof body.verifyChildModePin !== "string") {
           return res
@@ -131,11 +117,9 @@ export const handleUserSettings: RequestHandler = async (req, res) => {
         if (checkHash !== current.childModePinHash) {
           return res.status(403).json({ error: "Неверный PIN" });
         }
-        // PIN верный, можно отключить
         delete body.verifyChildModePin;
       }
 
-      // Обновляем остальные настройки
       userSettings[userId] = {
         ...current,
         ...body,
@@ -161,8 +145,7 @@ export const handleDeleteUser: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // В реальном приложении здесь должна быть удаление из БД
-    delete userStats[userId];
+    deleteUserStats(userId);
     delete userSettings[userId];
 
     res.json({

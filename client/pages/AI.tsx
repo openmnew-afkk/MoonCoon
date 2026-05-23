@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Send,
@@ -152,18 +153,9 @@ const statusRu: Record<GoalStatus, string> = {
 
 export default function AI() {
   const { user } = useTelegram();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "ai",
-      content:
-        "Привет! Я Адель — твой AI-помощник в Vexora ✨\n\nПомогу с текстами, хэштегами, идеями для контента... или просто поболтаем 😊\n\nЧем могу помочь?",
-      timestamp: new Date().toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  const [chatStarted, setChatStarted] = useState(false);
+  const [introPulse, setIntroPulse] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [mode, setMode] = useState<AIMode>("chat");
@@ -373,10 +365,68 @@ export default function AI() {
     "Как работают цели?",
   ];
 
-  const onlyOneMessage = messages.length === 1;
+  const onlyOneMessage = messages.length <= 1;
+
+  const startChat = useCallback(() => {
+    if (chatStarted) return;
+    setIntroPulse(true);
+    const name = user?.first_name || "друг";
+    setTimeout(() => {
+      setMessages([
+        {
+          id: "adel-greet",
+          type: "ai",
+          content: `Привет, ${name}! 👋 Я Адель — твой AI в MoonCoon. Помогу с постами, целями и звёздами. О чём поговорим?`,
+          timestamp: new Date().toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+      setChatStarted(true);
+      setIntroPulse(false);
+    }, 520);
+  }, [chatStarted, user?.first_name]);
+
+  const safeTop = "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))";
 
   return (
-    <div className="ai-chat-shell">
+    <div className="ai-chat-shell relative">
+      <AnimatePresence>
+        {!chatStarted && (
+          <motion.div
+            key="adel-intro"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden"
+            style={{ paddingTop: safeTop, paddingBottom: "calc(5rem + var(--tg-safe-bottom, 0px))" }}
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <div className="adel-intro-bg absolute inset-0" />
+            <motion.button
+              type="button"
+              onClick={startChat}
+              className="relative z-10 flex flex-col items-center gap-6 select-none"
+              animate={introPulse ? { scale: [1, 1.08, 1] } : { scale: [1, 1.03, 1] }}
+              transition={{ repeat: Infinity, duration: introPulse ? 0.5 : 2.8, ease: "easeInOut" }}
+              style={{ WebkitTapHighlightColor: "transparent" }}
+            >
+              <div className="adel-orb-ring">
+                <div className="adel-orb">
+                  <span className="text-5xl">✨</span>
+                </div>
+              </div>
+              <div className="text-center px-8">
+                <p className="text-2xl font-bold tracking-tight">Адель</p>
+                <p className="text-sm text-muted-foreground mt-2">Нажми, чтобы поздороваться</p>
+              </div>
+            </motion.button>
+            <p className="absolute bottom-8 text-[11px] text-muted-foreground/60 z-10">AI-помощник MoonCoon</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={cn(!chatStarted && "opacity-0 pointer-events-none")}>
       <div className="ai-chat-header">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -665,6 +715,7 @@ export default function AI() {
             }}
           />
         </div>
+      </div>
       </div>
     </div>
   );
