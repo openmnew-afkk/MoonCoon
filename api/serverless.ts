@@ -124,21 +124,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json({ stories });
     }
 
-    // Admin Login
+    // Admin Login (by username only, no password)
     if (url === "/api/admin/login" && req.method === "POST") {
-      const { username, password, userId } = req.body || {};
-      if (!username || !password || !userId) {
-        return res.status(400).json({ error: "Нужны username, password, userId" });
+      const { username, userId } = req.body || {};
+      if (!username || !userId) {
+        return res.status(400).json({ error: "Нужны username и userId" });
       }
       const cleanUsername = username.toLowerCase().replace("@", "");
       if (cleanUsername !== getAdminUsername()) {
         return res.status(403).json({ success: false, error: "Доступ запрещён" });
       }
-      if (!verifyAdminPassword(password)) {
-        return res.status(403).json({ success: false, error: "Неверный пароль" });
-      }
       const sessionToken = createAdminSession(String(userId));
-      console.log("🔑 Admin login success:", userId);
+      console.log("🔑 Admin login:", userId);
       return res.json({ success: true, sessionToken, message: "Вход выполнен" });
     }
 

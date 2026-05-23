@@ -75,23 +75,18 @@ if (process.env.ADMIN_USER_ID) {
 
 export const handleAdminLogin: RequestHandler = async (req, res) => {
   try {
-    const { username, password, userId } = req.body as {
+    const { username, userId } = req.body as {
       username?: string;
-      password?: string;
       userId?: string;
     };
 
-    if (!username || !password || !userId) {
-      return res.status(400).json({ error: "Нужны username, password, userId" });
+    if (!username || !userId) {
+      return res.status(400).json({ error: "Нужны username и userId" });
     }
 
     const cleanUsername = username.toLowerCase().replace("@", "");
     if (cleanUsername !== getAdminUsername()) {
       return res.status(403).json({ success: false, error: "Доступ запрещён" });
-    }
-
-    if (!verifyPassword(password)) {
-      return res.status(403).json({ success: false, error: "Неверный пароль" });
     }
 
     adminUserIds.add(String(userId));
