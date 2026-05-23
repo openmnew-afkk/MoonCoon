@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import crypto from "crypto";
 
 // In-memory storage (will reset on each cold start)
 const posts: any[] = [];
@@ -10,6 +11,47 @@ const userStars: Record<string, number> = {}; // User stars balance
 const userProfiles: Record<string, any> = {}; // User profile data cache
 const postLikes: Record<string, Set<string>> = {}; // Track likes per post
 const postComments: Record<string, any[]> = {}; // Store comments per post
+
+// Admin session storage
+const adminSessions = new Map<string, { userId: string; expiresAt: number }>();
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
+function getAdminUsername(): string {
+  return (process.env.ADMIN_USERNAME || "mikysauce").toLowerCase().replace("@", "");
+}
+
+function getAdminPassword(): string {
+  return process.env.ADMIN_PASSWORD || "";
+}
+
+function hashStr(s: string): string {
+  return crypto.createHash("sha256").update(s).digest("hex");
+}
+
+function verifyAdminPassword(input: string): boolean {
+  const expected = getAdminPassword();
+  if (!expected) return false;
+  const a = Buffer.from(hashStr(input));
+  const b = Buffer.from(hashStr(expected));
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+function createAdminSession(userId: string): string {
+  const token = crypto.randomBytes(32).toString("hex");
+  adminSessions.set(token, { userId, expiresAt: Date.now() + SESSION_TTL_MS });
+  return token;
+}
+
+function isValidAdminSession(req: VercelRequest): boolean {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return false;
+  const token = auth.slice(7);
+  const session = adminSessions.get(token);
+  if (!session) return false;
+  if (session.expiresAt < Date.now()) { adminSessions.delete(token); return false; }
+  return true;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
@@ -82,30 +124,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json({ stories });
     }
 
+    // Admin Login
+    if (url === "/api/admin/login" && req.method === "POST") {
+      const { username, password, userId } = req.body || {};
+      if (!username || !password || !userId) {
+        return res.status(400).json({ error: "Нужны username, password, userId" });
+      }
+      const cleanUsername = username.toLowerCase().replace("@", "");
+      if (cleanUsername !== getAdminUsername()) {
+        return res.status(403).json({ success: false, error: "Доступ запрещён" });
+      }
+      if (!verifyAdminPassword(password)) {
+        return res.status(403).json({ success: false, error: "Неверный пароль" });
+      }
+      const sessionToken = createAdminSession(String(userId));
+      console.log("🔑 Admin login success:", userId);
+      return res.json({ success: true, sessionToken, message: "Вход выполнен" });
+    }
+
+    // Admin Auth check (by session token)
+    if (url === "/api/admin/auth" && req.method === "POST") {
+      const valid = isValidAdminSession(req);
+      return res.json({ success: valid });
+    }
+
     // Admin API
     if (url.startsWith("/api/admin/check")) {
-      const userId = req.query.userId as string;
-      const username = req.query.username as string;
-
-      console.log("🔍 Admin check:", { userId, username });
-
-      // Add more admin user IDs and usernames for testing
-      const testAdminIds = new Set(["1234567890", "MikySauce"]);
-      const testAdminUsernames = new Set(["testuser", "mikysauce", "admin"]);
-
-      let isAdmin = false;
-      if (userId) {
-        isAdmin = adminUsers.has(userId) || testAdminIds.has(userId);
-      }
-      if (!isAdmin && username) {
-        const cleanUsername = username.toLowerCase().replace("@", "");
-        isAdmin =
-          adminUsernames.has(cleanUsername) ||
-          testAdminUsernames.has(cleanUsername);
-      }
-
-      console.log("🔑 Admin result:", isAdmin);
-      return res.json({ isAdmin });
+      const isAdmin = isValidAdminSession(req);
+      console.log("🔑 Admin check:", isAdmin);
+      return res.json({ isAdmin, message: isAdmin ? "Доступ разрешен" : "Доступ запрещен" });
     }
 
     if (url === "/api/admin/users" && req.method === "GET") {
