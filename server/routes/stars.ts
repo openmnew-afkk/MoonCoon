@@ -1,4 +1,11 @@
 import { RequestHandler } from "express";
+import {
+  getUserBalance,
+  addStars,
+  deductStars,
+  getLegacyUserStars,
+  addLedgerEntry,
+} from "../store/stars-store";
 
 interface StarsRequest {
   userId: string;
@@ -11,18 +18,12 @@ interface SendStarRequest {
   amount: number;
 }
 
-// В реальном приложении здесь должна быть работа с БД
-const userStars: Record<string, number> = {};
-
-export function getUserBalance(userId: string): number {
-  return userStars[userId] || 0;
+export function getUserBalanceExport(userId: string): number {
+  return getUserBalance(userId);
 }
 
-export function deductStars(userId: string, amount: number): void {
-  if (!userStars[userId]) {
-    userStars[userId] = 0;
-  }
-  userStars[userId] = Math.max(0, userStars[userId] - amount);
+export function deductStarsExport(userId: string, amount: number): void {
+  deductStars(userId, amount);
 }
 
 export const handleStarsAdd: RequestHandler = async (req, res) => {
@@ -33,12 +34,18 @@ export const handleStarsAdd: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Неверные параметры запроса" });
     }
 
-    // Добавляем звезды к балансу пользователя
-    userStars[userId] = (userStars[userId] || 0) + amount;
+    addStars(userId, amount);
+    addLedgerEntry({
+      userId,
+      amount,
+      type: "purchase",
+      counterparty: "user",
+      description: `Пополнение: +${amount} ⭐`,
+    });
 
     res.json({
       success: true,
-      balance: userStars[userId],
+      balance: getUserBalance(userId),
       message: `Добавлено ${amount} звезд`,
     });
   } catch (error) {
@@ -62,17 +69,13 @@ export const handleStarsWithdraw: RequestHandler = async (req, res) => {
       });
     }
 
-    const currentBalance = userStars[userId] || 0;
+    const currentBalance = getUserBalance(userId);
 
     if (amount > currentBalance) {
       return res.status(400).json({ error: "Недостаточно звезд на балансе" });
     }
 
-    // Списываем звезды
-    userStars[userId] = currentBalance - amount;
-
-    // В реальном приложении здесь должна быть отправка запроса на вывод через Telegram Bot API
-    // Например, через Telegram Stars API
+    deductStars(userId, amount);
 
     const getCommissionRate = (val: number) => {
       if (isAdmin) return 0;
@@ -87,7 +90,7 @@ export const handleStarsWithdraw: RequestHandler = async (req, res) => {
 
     res.json({
       success: true,
-      balance: userStars[userId],
+      balance: getUserBalance(userId),
       withdrawn: withdrawFinalAmount,
       commission: withdrawCommission,
       message: `Запрос на вывод ${withdrawFinalAmount} звезд принят. Комиссия: ${withdrawCommission} звезд (${rate * 100}%)`,
@@ -106,12 +109,10 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Неверный userId" });
     }
 
-    // Проверяем наличие BOT_TOKEN для интеграции с Telegram Stars API
     const BOT_TOKEN = process.env.BOT_TOKEN;
 
     if (BOT_TOKEN) {
       try {
-        // Пытаемся получить реальный баланс из Telegram Stars API
         const response = await fetch(
           `https://api.telegram.org/bot${BOT_TOKEN}/getStarTransactions`,
           {
@@ -129,7 +130,6 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
           const data = await response.json();
 
           if (data.ok && data.result?.transactions) {
-            // Рассчитываем баланс из транзакций
             let balance = 0;
             for (const tx of data.result.transactions) {
               if (tx.amount) {
@@ -137,8 +137,8 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
               }
             }
 
-            // Сохраняем в локальном хранилище для кэширования
-            userStars[userId] = balance;
+            const legacy = getLegacyUserStars();
+            legacy[userId] = balance;
 
             return res.json({
               success: true,
@@ -155,8 +155,7 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
       }
     }
 
-    // Fallback: используем локальное хранилище
-    const balance = userStars[userId] || 0;
+    const balance = getUserBalance(userId);
 
     res.json({
       success: true,
@@ -177,35 +176,17 @@ export const handleSendStar: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Неверные параметры запроса" });
     }
 
-    const currentBalance = userStars[fromUserId] || 0;
+    const currentBalance = getUserBalance(fromUserId);
 
     if (amount > currentBalance) {
       return res.status(400).json({ error: "Недостаточно звезд на балансе" });
     }
 
-    // В продакшене здесь должна быть интеграция с Telegram Stars API
-    // const BOT_TOKEN = process.env.BOT_TOKEN;
-    // const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendStarPayment`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     user_id: parseInt(fromUserId),
-    //     amount: amount,
-    //     // Telegram Stars API параметры
-    //   })
-    // });
-
-    // Списываем звезды у отправителя
-    userStars[fromUserId] = currentBalance - amount;
-
-    // Добавляем звезды получателю (автору поста)
-    // В реальном приложении нужно получить userId автора поста из БД
-    // const postAuthorId = getPostAuthor(toPostId);
-    // userStars[postAuthorId] = (userStars[postAuthorId] || 0) + amount;
+    deductStars(fromUserId, amount);
 
     res.json({
       success: true,
-      balance: userStars[fromUserId],
+      balance: getUserBalance(fromUserId),
       message: `Отправлено ${amount} звезд`,
     });
   } catch (error) {

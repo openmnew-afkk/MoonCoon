@@ -9,26 +9,43 @@ import {
   handleSendStar,
 } from "./routes/stars";
 import {
+  handleAdminLogin,
   handleAdminAuth,
   handleAdminCheck,
   handleGetUsers,
   handleSetAdmin,
   handleBanUser,
+  handleAdminSettingsGet,
+  handleAdminSettingsPut,
+  handlePublicSettings,
 } from "./routes/admin";
+import { applySecurityMiddleware } from "./middleware/security";
 import {
   handleUserStats,
   handleUpdateUserStats,
   handleUserSettings,
   handleDeleteUser,
+  handleGetUser,
 } from "./routes/users";
 import { handlePremiumPurchase, handlePremiumStatus } from "./routes/premium";
+import {
+  handleGetGoals,
+  handleGetGoal,
+  handleCreateGoal,
+  handleBackGoal, // New
+  handleSubmitProof,
+  handleModerateProof,
+  handleVoteGoal,
+  handleStarsLedger,
+  handleEnsureBalance,
+} from "./routes/goals";
 
 export function createServer() {
   const app = express();
 
-  // Middleware
   app.use(cors());
-  app.use(express.json({ limit: "25mb" })); // Снижено с 100mb до 25mb для Vercel
+  applySecurityMiddleware(app);
+  app.use(express.json({ limit: "25mb" }));
   app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
   // Временное in-memory хранилище
@@ -66,15 +83,32 @@ export function createServer() {
   app.post("/api/stars/withdraw", handleStarsWithdraw);
   app.post("/api/stars/send", handleSendStar);
   app.get("/api/stars/balance", handleStarsBalance);
+  app.get("/api/stars/ledger", handleStarsLedger);
+  app.post("/api/stars/ensure-balance", handleEnsureBalance);
+
+  // Goals API
+  app.get("/api/goals", handleGetGoals);
+  app.get("/api/goals/:id", handleGetGoal);
+  app.post("/api/goals", handleCreateGoal);
+  app.post("/api/goals/:id/back", handleBackGoal);
+  app.post("/api/goals/:id/proof", handleSubmitProof);
+  app.post("/api/goals/:id/moderate", handleModerateProof);
+  app.post("/api/goals/:id/vote", handleVoteGoal);
+
+  app.get("/api/settings/public", handlePublicSettings);
 
   // Admin API routes
+  app.post("/api/admin/login", handleAdminLogin);
   app.post("/api/admin/auth", handleAdminAuth);
   app.get("/api/admin/check", handleAdminCheck);
+  app.get("/api/admin/settings", handleAdminSettingsGet);
+  app.put("/api/admin/settings", handleAdminSettingsPut);
   app.get("/api/admin/users", handleGetUsers);
   app.post("/api/admin/set-admin", handleSetAdmin);
   app.post("/api/admin/ban-user", handleBanUser);
 
   // Users API routes
+  app.get("/api/users/:userId", handleGetUser);
   app.get("/api/users/:userId/stats", handleUserStats);
   app.put("/api/users/:userId/stats", handleUpdateUserStats);
   app.get("/api/users/:userId/settings", handleUserSettings);
@@ -198,6 +232,102 @@ export function createServer() {
   const OPENAI_API_KEY = process.env.API_KEY || "";
   const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
+  // Модерация изображений (nanoban / текстовое описание)
+  app.post("/api/ai/moderate-image", async (req, res) => {
+    try {
+      const { proofDescription, proofImage } = req.body;
+      if (!proofDescription?.trim()) {
+        return res.status(400).json({ approved: false, reason: "Нужно описание" });
+      }
+
+      const textCheck = await fetch(OPENAI_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content:
+                'Модератор MoonCoon. Проверь описание фото-отчёта: запрещены 18+, насилие, спам, медицинские назначения. Ответь только "APPROVED" или "REJECTED: причина".',
+            },
+            { role: "user", content: proofDescription },
+          ],
+          max_tokens: 30,
+          temperature: 0.2,
+        }),
+      }).catch(() => null);
+
+      let approved = true;
+      let reason: string | undefined;
+
+      if (textCheck?.ok) {
+        const data = await textCheck.json();
+        const result = data.choices?.[0]?.message?.content || "APPROVED";
+        approved = result.includes("APPROVED") && !result.includes("REJECTED");
+        if (!approved) {
+          reason = result.replace(/REJECTED:?/i, "").trim() || "Контент не прошёл проверку";
+        }
+      }
+
+      if (approved && proofImage && OPENAI_API_KEY) {
+        const imgCheck = await fetch(OPENAI_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content:
+                  'Проверь изображение фото-отчёта цели. Запрещено: 18+, насилие, оружие, спам. Ответь только APPROVED или REJECTED.',
+              },
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: proofDescription },
+                  {
+                    type: "image_url",
+                    image_url: { url: proofImage.slice(0, 500000) },
+                  },
+                ],
+              },
+            ],
+            max_tokens: 20,
+          }),
+        }).catch(() => null);
+
+        if (imgCheck?.ok) {
+          const imgData = await imgCheck.json();
+          const imgResult = imgData.choices?.[0]?.message?.content || "APPROVED";
+          approved =
+            imgResult.includes("APPROVED") && !imgResult.includes("REJECTED");
+          if (!approved) reason = "Изображение не прошло проверку ИИ";
+        }
+      }
+
+      if (!OPENAI_API_KEY) {
+        const lower = proofDescription.toLowerCase();
+        const blocked = ["порно", "насилие", "наркот", "18+"];
+        if (blocked.some((w) => lower.includes(w))) {
+          approved = false;
+          reason = "Запрещённый контент в описании";
+        }
+      }
+
+      res.json({ approved, reason });
+    } catch (error) {
+      console.error("moderate-image error", error);
+      res.json({ approved: true });
+    }
+  });
+
   // Модерация контента
   app.post("/api/ai/moderate", async (req, res) => {
     try {
@@ -299,8 +429,11 @@ export function createServer() {
   // AI чат-бот
   app.post("/api/ai/chat", async (req, res) => {
     try {
-      const { message } = req.body;
+      const { message, systemPrompt } = req.body;
       if (!message) return res.status(400).json({ error: "Нужно сообщение" });
+
+      const defaultPrompt =
+        "Ты — Адель, живой AI-помощник MoonCoon. Не давай медицинских советов и 18+ контента. Помогаешь с постами, хэштегами, целями (команда: «Ставлю цель: … на N звёзд»), звёздами. Кратко, по-русски, с эмодзи.";
 
       const response = await fetch(OPENAI_API_URL, {
         method: "POST",
@@ -313,8 +446,7 @@ export function createServer() {
           messages: [
             {
               role: "system",
-              content:
-                "Ты - дружелюбный AI помощник MoonCoon. Помогаешь с вопросами о платформе, публикации контента, Premium подписке и звёздах. Отвечай кратко и по делу на русском языке.",
+              content: systemPrompt || defaultPrompt,
             },
             {
               role: "user",

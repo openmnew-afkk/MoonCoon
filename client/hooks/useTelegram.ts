@@ -164,13 +164,6 @@ export function useTelegram() {
           setUser(tg.initDataUnsafe?.user || null);
           setIsReady(true);
 
-          // Применяем тему Telegram
-          if (tg.themeParams?.bg_color) {
-            document.documentElement.style.setProperty(
-              "--background",
-              tg.themeParams.bg_color,
-            );
-          }
         } else {
           // Если Telegram Web App не доступен (запуск в обычном браузере)
           setIsReady(true);

@@ -5,7 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom slider styles */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -33,14 +32,13 @@ input[type="range"]::-webkit-slider-thumb {
   background: hsl(var(--primary));
   border-radius: 50%;
   border: 2px solid hsl(var(--background));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px hsl(var(--shadow-color) / 0.15);
   margin-top: -0.375rem;
   transition: all 0.2s;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -49,88 +47,129 @@ input[type="range"]::-moz-range-thumb {
   background: hsl(var(--primary));
   border-radius: 50%;
   border: 2px solid hsl(var(--background));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px hsl(var(--shadow-color) / 0.15);
   transition: all 0.2s;
 }
 
-input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
 @layer base {
-  /**
-   * iOS 26 Dark Glossy Theme
-   * Dark mode with glossy glass-morphism effects
-  */
   :root {
-    color-scheme: dark;
+    color-scheme: light;
+    --shadow-color: 220 15% 15%;
 
-    /* Dark iOS 26 base colors */
-    --background: 217 32.6% 10%;
-    --foreground: 210 40% 98%;
+    /* Light theme — Netflix-inspired clean */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 10%;
 
-    --card: 217 32.6% 15%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
 
-    --popover: 217 32.6% 18%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 217 91.2% 59.8%;
-    --primary-foreground: 217 32.6% 10%;
+    /* Light accent: deep pink */
+    --primary: 340 82% 47%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 32.6% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 217 32.6% 25%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 265 91.2% 59.8%;
-    --accent-foreground: 217 32.6% 10%;
+    --accent: 340 75% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 32.6% 20%;
-    --input: 217 32.6% 18%;
-    --ring: 217 91.2% 59.8%;
+    --border: 0 0% 90%;
+    --input: 0 0% 92%;
+    --ring: 340 82% 47%;
 
-    /* Glass morphism colors */
-    --glass: 217 32.6% 15%;
-    --glass-light: 217 32.6% 20%;
+    --glass: 0 0% 100%;
+    --glass-light: 0 0% 96%;
 
-    --radius: 0.75rem;
+    --gradient-from: 340 30% 97%;
+    --gradient-via: 0 0% 96%;
+    --gradient-to: 0 0% 96%;
+
+    --radius: 0.875rem;
+
+    --glow-primary: 340 82% 47%;
+    --glow-accent: 340 75% 55%;
   }
 
   .dark {
     color-scheme: dark;
+    --shadow-color: 0 0% 0%;
+
+    /* Netflix-style deep dark */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+
+    /* Netflix red accent */
+    --primary: 4 90% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 55%;
+
+    /* Red accent */
+    --accent: 4 85% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 14%;
+    --input: 0 0% 12%;
+    --ring: 4 90% 48%;
+
+    --glass: 0 0% 8%;
+    --glass-light: 0 0% 14%;
+
+    --gradient-from: 4 20% 8%;
+    --gradient-via: 0 0% 5%;
+    --gradient-to: 0 0% 4%;
+
+    --glow-primary: 4 90% 48%;
+    --glow-accent: 4 85% 55%;
   }
 
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
   html {
-    @apply dark;
-    color-scheme: dark !important;
+    color-scheme: light dark;
   }
 
-  html,
-  body {
-    @apply bg-background text-foreground;
+  html, body {
+    @apply bg-background text-foreground antialiased;
     height: 100%;
-    background-color: hsl(217 32.6% 10%) !important;
-    color: hsl(210 40% 98%) !important;
+    transition: background-color 0.3s ease, color 0.2s ease;
   }
 
   body {
     margin: 0;
     padding: 0;
     font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Helvetica Neue",
       sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
@@ -151,102 +190,229 @@ input[type="range"]::-moz-range-thumb:hover {
   }
 }
 
-/* iOS 26 Glossy Glass Morphism Effects */
 @layer components {
+  .app-shell {
+    @apply min-h-full bg-background text-foreground;
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 50% -20%,
+        hsl(var(--gradient-from) / 0.9),
+        transparent
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 100% 50%,
+        hsl(var(--gradient-via) / 0.35),
+        transparent
+      ),
+      linear-gradient(
+        180deg,
+        hsl(var(--background)) 0%,
+        hsl(var(--gradient-to)) 100%
+      );
+  }
+
   .glass-morphism {
-    @apply backdrop-blur-xl bg-glass/30 border border-glass-light/20;
+    @apply backdrop-blur-xl border;
+    background: hsl(var(--glass) / 0.72);
+    border-color: hsl(var(--border) / 0.6);
+    box-shadow: 0 1px 0 hsl(var(--foreground) / 0.04) inset;
+  }
+
+  .dark .glass-morphism {
+    background: hsl(var(--glass) / 0.35);
+    border-color: hsl(var(--glass-light) / 0.25);
+    box-shadow: none;
   }
 
   .glass-card {
     @apply glass-morphism rounded-3xl p-4;
   }
 
-  .glass-button {
-    @apply glass-morphism rounded-2xl px-4 py-2.5 font-medium transition-all active:scale-95;
+  .glass-surface-v2 {
+    @apply rounded-3xl border backdrop-blur-xl;
+    background: hsl(var(--card) / 0.85);
+    border-color: hsl(var(--border) / 0.8);
+    box-shadow: 0 4px 24px hsl(var(--shadow-color) / 0.06);
   }
 
+  .dark .glass-surface-v2 {
+    background: hsl(var(--glass) / 0.35);
+    border-color: hsl(var(--foreground) / 0.08);
+    box-shadow: none;
+  }
+
+  .text-body {
+    @apply text-sm leading-relaxed text-foreground/90;
+  }
+
+  .text-caption {
+    @apply text-[11px] leading-snug text-muted-foreground;
+  }
+
+  .section-gap {
+    @apply space-y-4;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.35s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Legacy alias ───────────────────────────────────────────── */
+  .glass-button {
+    @apply rounded-2xl px-4 py-2.5 font-medium;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.13s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .glass-button:active { transform: scale(0.93); }
+
+  /* ── Premium filled button — orange gradient per spec ─────────── */
+  .btn-premium {
+    @apply relative inline-flex items-center justify-center gap-2 font-bold text-white overflow-hidden;
+    border-radius: 40px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #FF3D00, #FF8C00);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1);
+    letter-spacing: 0.5px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s ease;
+  }
+  .btn-premium:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: 40px;
+  }
+
+  /* ── Ghost / outline button ──────────────────────────────────── */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 font-semibold;
+    border-radius: 40px;
+    padding: 12px 24px;
+    background: hsl(var(--card));
+    border: 1.5px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s ease;
+  }
+  .btn-ghost:active { transform: scale(0.97); background: hsl(var(--muted)); }
+
+  /* ── Danger button ───────────────────────────────────────────── */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 font-bold text-white;
+    border-radius: 40px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #e53935, #ff1744);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 20px rgba(229,57,53,0.3), inset 0 0 0 1px rgba(255,255,255,0.1);
+    letter-spacing: 0.5px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s ease;
+  }
+  .btn-danger:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+
+  /* ── Icon button (circular) ──────────────────────────────────── */
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-full;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.13s cubic-bezier(0.34,1.56,0.64,1), background 0.15s ease;
+  }
+  .btn-icon:active { transform: scale(0.85); background: hsl(var(--muted)); }
+
   .ios-shadow {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px hsl(var(--shadow-color) / 0.12);
+  }
+
+  .dark .ios-shadow {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   }
 
   .ios-shadow-sm {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px hsl(var(--shadow-color) / 0.08);
   }
 
   .ios-shadow-lg {
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 16px 48px hsl(var(--shadow-color) / 0.15);
   }
 
-  /* Soft blur effect for subtle glass look */
   .blur-glass {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
-  /* Touch optimization for mobile */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Animation delays */
-  .delay-75 {
-    animation-delay: 75ms;
-  }
-
-  .delay-150 {
-    animation-delay: 150ms;
-  }
-
-  .delay-500 {
-    animation-delay: 500ms;
-  }
-
-  .delay-1000 {
-    animation-delay: 1000ms;
-  }
-
-  /* Profile Avatar Glow Effect */
   .profile-avatar-glow {
     background: linear-gradient(
       135deg,
-      rgba(147, 51, 234, 0.3) 0%,
-      rgba(168, 85, 247, 0.4) 50%,
-      rgba(196, 181, 253, 0.3) 100%
+      hsl(var(--accent) / 0.25) 0%,
+      hsl(var(--primary) / 0.35) 50%,
+      hsl(var(--accent) / 0.2) 100%
     );
-    box-shadow:
-      0 0 20px rgba(147, 51, 234, 0.4),
-      0 0 40px rgba(147, 51, 234, 0.2),
-      0 0 60px rgba(147, 51, 234, 0.1),
-      inset 0 0 20px rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(147, 51, 234, 0.5);
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.25);
+    border: 2px solid hsl(var(--primary) / 0.4);
   }
 
-  .profile-avatar-glow:hover {
-    box-shadow:
-      0 0 25px rgba(147, 51, 234, 0.6),
-      0 0 50px rgba(147, 51, 234, 0.3),
-      0 0 75px rgba(147, 51, 234, 0.15),
-      inset 0 0 25px rgba(255, 255, 255, 0.15);
-    transform: scale(1.02);
+  /* Telegram Mini App safe area support. */
+  :root {
+    --tg-safe-top: var(--tg-safe-area-inset-top, env(safe-area-inset-top, 0px));
   }
 
-  /* Safe area positioning fixes */
   .safe-top {
-    padding-top: calc(env(safe-area-inset-top) + 1rem);
+    padding-top: calc(var(--tg-safe-top) + 1rem);
   }
 
   .safe-header {
-    padding-top: calc(env(safe-area-inset-top) + 7rem);
+    padding-top: calc(var(--tg-safe-top) + 7rem);
   }
 
-  /* Modal positioning fixes */
+  /* Premium press scale — iOS-feel tap feedback */
+  .press-scale {
+    transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.12s ease,
+                opacity 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .press-scale:active {
+    transform: scale(0.93);
+    opacity: 0.88;
+  }
+  .press-scale-sm:active {
+    transform: scale(0.95);
+  }
+  .press-scale-lg:active {
+    transform: scale(0.90);
+  }
+
   .modal-fixed {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 9999;
     max-width: 100vw;
     max-height: 100vh;
@@ -259,10 +425,188 @@ input[type="range"]::-moz-range-thumb:hover {
     overflow-y: auto;
   }
 
-  /* Prevent content overflow */
   .contain-layout {
     contain: layout style paint;
     overflow-wrap: break-word;
     word-break: break-word;
   }
+
+  /* AI chat — theme-aware */
+  .ai-chat-shell {
+    @apply flex flex-col h-screen bg-background;
+  }
+
+  .ai-chat-header {
+    @apply flex-shrink-0 border-b border-border/50 z-30;
+    padding-top: env(safe-area-inset-top);
+    background: hsl(var(--background) / 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .ai-chat-input-bar {
+    @apply flex-shrink-0 border-t border-border/50;
+    background: hsl(var(--background) / 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 5.5rem);
+  }
+
+  .ai-bubble-user {
+    background: linear-gradient(135deg, #FF3D00 0%, #FF8C00 100%);
+    box-shadow: 0 4px 20px rgba(255, 61, 0, 0.25);
+  }
+
+  .ai-bubble-assistant {
+    background: hsl(var(--card) / 0.9);
+    border: 1px solid hsl(var(--border) / 0.8);
+  }
+
+  .dark .ai-bubble-assistant {
+    background: hsl(var(--foreground) / 0.07);
+    border-color: hsl(var(--foreground) / 0.08);
+  }
+
+  .ai-input-field {
+    background: hsl(var(--input) / 0.5);
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  /* Premium bottom navigation bar */
+  .nav-glass {
+    background: hsl(var(--background) / 0.82);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    box-shadow:
+      0 -1px 0 hsl(var(--foreground) / 0.04),
+      0 -8px 32px hsl(var(--shadow-color) / 0.08);
+  }
+
+  .dark .nav-glass {
+    background: hsl(var(--background) / 0.65);
+    box-shadow:
+      0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 -8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Smooth page transition */
+  .page-enter {
+    animation: page-fade-in 0.3s ease-out forwards;
+  }
+
+  @keyframes page-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted) / 0.3) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted) / 0.3) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Premium gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #FF3D00 0%, #FF8C00 40%, #E50914 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Micro-interaction: bounce */
+  .bounce-tap {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .bounce-tap:active {
+    transform: scale(0.92);
+  }
+
+  /* Glow effect for premium elements */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
+  }
+
+  .dark .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4), 0 0 60px hsl(var(--primary) / 0.15);
+  }
+
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/[0.05] dark:bg-black/[0.15] border border-white/[0.1] dark:border-white/[0.05] shadow-xl;
+  }
+
+  /* Feed card — premium look */
+  .feed-card {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.18s ease;
+    will-change: transform;
+  }
+  .feed-card:active {
+    transform: scale(0.985);
+  }
+
+  /* Post action buttons */
+  .post-action-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform 0.13s cubic-bezier(0.34, 1.56, 0.64, 1),
+                color 0.15s ease;
+  }
+  .post-action-btn:active {
+    transform: scale(0.80);
+  }
+
+  /* Avatar ring glow for stories */
+  .story-ring {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, #f472b6 100%);
+    padding: 2px;
+    border-radius: 50%;
+  }
+
+} /* end of @layer components */
+
+@keyframes gradient-shift {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -8,6 +8,27 @@ const userStats: Record<
 > = {};
 const userSettings: Record<string, any> = {};
 
+export const handleGetUser: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId обязателен" });
+    }
+
+    res.json({
+      id: userId,
+      name: "Пользователь " + userId,
+      username: `@user${userId}`,
+      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+      verified: false
+    });
+  } catch (error) {
+    console.error("Ошибка получения пользователя:", error);
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+  }
+};
+
 export const handleUserStats: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;

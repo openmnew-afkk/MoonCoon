@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ThemeSelector from "@/components/ThemeSelector";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import {
   Settings as SettingsIcon,
   Bell,
@@ -10,6 +12,7 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
+  const { mode: themeMode, setTheme } = useAppTheme();
   const [showSettings, setShowSettings] = useState(false);
 
   return (
@@ -125,20 +128,7 @@ export default function Settings() {
                   Display & Theme
                 </h3>
                 <div className="space-y-3">
-                  <div className="glass-card p-4 rounded-2xl">
-                    <p className="text-sm font-medium mb-2">Theme</p>
-                    <div className="flex gap-2">
-                      <button className="flex-1 glass-button rounded-xl bg-primary/20 text-primary font-medium">
-                        Dark
-                      </button>
-                      <button className="flex-1 glass-button rounded-xl opacity-50">
-                        Light
-                      </button>
-                      <button className="flex-1 glass-button rounded-xl opacity-50">
-                        Auto
-                      </button>
-                    </div>
-                  </div>
+                  <ThemeSelector value={themeMode} onChange={setTheme} />
                   <label className="glass-card flex items-center justify-between p-4 cursor-pointer rounded-2xl hover:bg-glass-light/40 transition-all">
                     <span>Reduce Motion</span>
                     <input type="checkbox" className="w-4 h-4" />

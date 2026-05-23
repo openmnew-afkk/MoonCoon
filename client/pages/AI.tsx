@@ -1,414 +1,669 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
-  Sparkles,
   Send,
-  Brain,
   Image as ImageIcon,
-  MessageSquare,
   Wand2,
-  ToggleLeft,
-  ToggleRight,
+  X,
+  Sparkles,
+  Target,
 } from "lucide-react";
-import { usePremium } from "@/hooks/usePremium";
+import { useTelegram } from "@/hooks/useTelegram";
+import {
+  parseGoalCommand,
+  isGoalStatusQuery,
+} from "@/lib/parseGoalCommand";
+import {
+  createGoal,
+  ensureDemoBalance,
+  fetchGoals,
+} from "@/lib/goalsApi";
+import type { Goal, GoalStatus } from "@shared/api";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
-  type: "user" | "ai";
+  type: "user" | "ai" | "goal_card";
   content: string;
   timestamp: string;
-  image?: string; // Для изображений от NanoBonano
+  image?: string;
+  goalId?: string;
+  goalTitle?: string;
+  goalStars?: number;
+  goalStatus?: GoalStatus;
 }
 
-type AIMode = "openai" | "nanobonano";
+type AIMode = "chat" | "photo";
+
+// Живые ответы Адели
+const adelReplies: Record<string, string[]> = {
+  greeting: [
+    "О, привет! Рада тебя видеть 👋 Как настрой сегодня? Готовы покорять ленту?",
+    "Привет-привет! ✨ Я как раз думала, кто сегодня создаст самый крутой контент. Не ты ли это?",
+    "Привет! 😊 Чем могу помочь сегодня? Я вся в твоём распоряжении!",
+  ],
+  howAreYou: [
+    "Просто супер! 🚀 Только что анализировала тренды и поняла — наши пользователи лучшие. А ты как?",
+    "Я в полном порядке, спасибо! Готова генерировать идеи со скоростью света ⚡️ Как твои дела?",
+    "Замечательно! 😊 Настроение — творить и помогать. Как проходит твой день?",
+  ],
+  caption: [
+    "Без проблем! Давай сделаем подпись, от которой все просто ахнут 📸 Опиши, что на фото, и я подберу идеальный стиль.",
+    "Обожаю придумывать подписи! Расскажи мне детали, и мы сделаем что-то легендарное 🔥 Для друзей или на широкую публику?",
+    "Легко! Дай мне зацепку, и я превращу её в захватывающую историю под твоим фото ✨",
+  ],
+  hashtags: [
+    "Хэштеги — это как специи, главное не переборщить, но и не забыть 🏷️ Какая тема поста?",
+    "Давай подберём теги, которые выведут тебя в топ! О чём планируешь рассказать? 🎯",
+    "Сделаем пост заметным! Расскажи суть, а я накидаю самые рабочие хэштеги 😊",
+  ],
+  goals: [
+    "Цели — это моя страсть! 🎯 Знаешь, в Vexora они реально работают, особенно когда на кону звёзды. Что задумал?",
+    "Ставить цели — это уже 50% успеха. А с поддержкой сообщества — все 100%! Какая вершина следующая? ⭐",
+    "О, обожаю этот азарт! Расскажи, какую цель хочешь поставить, и я помогу её сформулировать максимально круто.",
+  ],
+  default: [
+    "Хм, интересно! Расскажи подробнее, мне важно понять все детали 🤔",
+    "Звучит любопытно! Давай разберёмся в этом вместе. Что именно ты имеешь в виду?",
+    "Я тебя услышала! 😊 Могу помочь с этим, если дашь чуть больше контекста.",
+    "Ого! Это что-то новенькое. Расскажи ещё? 💡",
+  ],
+  premium: [
+    "Premium — это просто другой уровень! 💎 Никакой рекламы, уникальные статусы и приоритет в ленте. Хочешь, расскажу как его получить?",
+    "С Premium ты становишься заметнее, а твои возможности — шире. Это реально маст-хэв для тех, кто хочет максимум от платформы!",
+  ],
+  stars: [
+    "Звёзды ⭐ — это сердце нашей экономики. Ими можно поддерживать авторов, ставить на цели и покупать Premium. А ещё их можно выводить, если ты крутой автор!",
+    "С звёздами всё просто и честно: заработал → вывел или потратил на развитие. Это твоя валюта успеха! 💫",
+  ],
+};
+
+function getAdelReply(message: string): string {
+  const lower = message.toLowerCase();
+
+  if (
+    lower.includes("привет") ||
+    lower.includes("здравствуй") ||
+    lower.includes("хай") ||
+    lower.includes("hi") ||
+    lower.includes("hello")
+  ) {
+    return adelReplies.greeting[
+      Math.floor(Math.random() * adelReplies.greeting.length)
+    ];
+  }
+  if (
+    lower.includes("как дела") ||
+    lower.includes("как ты") ||
+    lower.includes("как твои")
+  ) {
+    return adelReplies.howAreYou[
+      Math.floor(Math.random() * adelReplies.howAreYou.length)
+    ];
+  }
+  if (
+    lower.includes("подпись") ||
+    lower.includes("описание") ||
+    lower.includes("caption") ||
+    lower.includes("текст для поста")
+  ) {
+    return adelReplies.caption[
+      Math.floor(Math.random() * adelReplies.caption.length)
+    ];
+  }
+  if (lower.includes("хэштег") || lower.includes("hashtag") || lower.includes("тег")) {
+    return adelReplies.hashtags[
+      Math.floor(Math.random() * adelReplies.hashtags.length)
+    ];
+  }
+  if (
+    lower.includes("цель") ||
+    lower.includes("goal") ||
+    lower.includes("мотив")
+  ) {
+    return adelReplies.goals[
+      Math.floor(Math.random() * adelReplies.goals.length)
+    ];
+  }
+  if (lower.includes("premium") || lower.includes("премиум")) {
+    return adelReplies.premium[
+      Math.floor(Math.random() * adelReplies.premium.length)
+    ];
+  }
+  if (lower.includes("звёзд") || lower.includes("звезд") || lower.includes("star")) {
+    return adelReplies.stars[
+      Math.floor(Math.random() * adelReplies.stars.length)
+    ];
+  }
+
+  return adelReplies.default[
+    Math.floor(Math.random() * adelReplies.default.length)
+  ];
+}
+
+const statusRu: Record<GoalStatus, string> = {
+  active: "В процессе",
+  pending_moderation: "Проверка ИИ",
+  pending_vote: "На голосовании",
+  completed: "Выполнена ✓",
+  failed: "Провалена",
+  expired: "Истекла",
+};
 
 export default function AI() {
+  const { user } = useTelegram();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       type: "ai",
       content:
-        "👋 Привет! Я ваш AI помощник на базе OpenAI GPT-3.5.\n\nЯ могу помочь вам:\n✨ Создавать описания для постов\n🎨 Генерировать идеи контента\n🏷️ Подбирать хештеги\n📊 Анализировать тренды\n💡 Улучшать тексты\n\nПереключитесь на NanoBonano для редактирования фото!",
-      timestamp: "Сейчас",
+        "Привет! Я Адель — твой AI-помощник в Vexora ✨\n\nПомогу с текстами, хэштегами, идеями для контента... или просто поболтаем 😊\n\nЧем могу помочь?",
+      timestamp: new Date().toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [mode, setMode] = useState<AIMode>("openai");
+  const [mode, setMode] = useState<AIMode>("chat");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { premium } = usePremium();
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  const appendAi = (content: string, extra?: Partial<Message>) => {
+    const aiResponse: Message = {
+      id: (Date.now() + 1).toString(),
+      type: "ai",
+      content,
+      timestamp: new Date().toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      ...extra,
+    };
+    setMessages((prev) => [...prev, aiResponse]);
+    setIsTyping(false);
+  };
 
   const handleSendMessage = async (prompt?: string, image?: string) => {
     const message = prompt || inputValue.trim();
     if (!message && !image) return;
 
+    const photoForMessage =
+      image || (mode === "photo" ? selectedImage || undefined : undefined);
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: message || "Обработать изображение",
+      content:
+        message ||
+        (mode === "photo" ? "Обработать фото" : "Сообщение"),
       timestamp: new Date().toLocaleTimeString("ru-RU", {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      image: image || undefined,
+      image: photoForMessage,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
 
-    // Интеграция с OpenAI API
-    if (mode === "openai") {
-      await callOpenAIAPI(message, image);
-    } else {
-      await callNanoBonanoAPI(image || selectedImage);
-    }
-  };
+    const userId = user?.id ? String(user.id) : "";
 
-  const callOpenAIAPI = async (prompt: string, image?: string) => {
-    try {
-      // Реальный вызов к серверу
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt }),
-      });
-
-      if (!response.ok) {
-        throw new Error("AI недоступен");
+    if (message && userId) {
+      const parsed = parseGoalCommand(message);
+      if (parsed && "error" in parsed) {
+        appendAi(parsed.error);
+        return;
+      }
+      if (parsed && "title" in parsed) {
+        await ensureDemoBalance(userId);
+        const result = await createGoal({
+          userId,
+          authorName: user?.first_name || "Вы",
+          authorAvatar:
+            user?.photo_url ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+          title: parsed.title,
+          description: "",
+          starsStaked: parsed.starsStaked,
+          deadlineDays: 7,
+        });
+        if ("error" in result) {
+          appendAi(`Не получилось создать цель 😅 ${result.error}`);
+          return;
+        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 2).toString(),
+            type: "goal_card",
+            content: "",
+            goalId: result.goal.id,
+            goalTitle: result.goal.title,
+            goalStars: result.goal.starsStaked,
+            goalStatus: result.goal.status,
+            timestamp: new Date().toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+        appendAi(
+          `Готово! 🎯 Цель «${parsed.title}» создана со ставкой ${parsed.starsStaked} ⭐. Удачи — веришь в себя!`,
+        );
+        return;
       }
 
-      const data = await response.json();
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        type: "ai",
-        content: data.reply || "Извините, не могу ответить",
-        timestamp: new Date().toLocaleTimeString("ru-RU", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsTyping(false);
-    } catch (error) {
-      console.error("Ошибка OpenAI API:", error);
-      // Fallback на демо-ответ
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        type: "ai",
-        content: `❌ Ошибка подключения к OpenAI.\n\nПроверьте API ключ в .env файле.\n\nДля OpenAI нужен ключ формата: sk-...`,
-        timestamp: new Date().toLocaleTimeString("ru-RU", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsTyping(false);
+      if (isGoalStatusQuery(message)) {
+        const myGoals = await fetchGoals({ userId });
+        if (myGoals.length === 0) {
+          appendAi(
+            "У тебя пока нет целей. Напиши: «Ставлю цель: [что сделать] на [100+]» 🎯",
+          );
+          return;
+        }
+        const lines = myGoals
+          .slice(0, 5)
+          .map(
+            (g) =>
+              `• ${g.title} — ${statusRu[g.status]} (${g.starsStaked} ⭐)`,
+          )
+          .join("\n");
+        setMessages((prev) => [
+          ...prev,
+          ...myGoals.slice(0, 3).map((g, i) => ({
+            id: `goal-status-${Date.now()}-${i}`,
+            type: "goal_card" as const,
+            content: "",
+            goalId: g.id,
+            goalTitle: g.title,
+            goalStars: g.starsStaked,
+            goalStatus: g.status,
+            timestamp: new Date().toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          })),
+        ]);
+        appendAi(`Твои цели:\n\n${lines}`);
+        return;
+      }
     }
-  };
 
-  const callNanoBonanoAPI = async (imageUrl: string | null) => {
-    if (!imageUrl) return;
-
-    try {
-      // В продакшене здесь должен быть реальный вызов NanoBonano API
-      // const response = await fetch('https://api.nanobonano.ai/edit', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ image: imageUrl, task: 'enhance' })
-      // });
-
-      // Демо-ответ
+    const photoToProcess = image || selectedImage;
+    if (mode === "photo" && photoToProcess) {
+      const instruction = message.trim() || "улучшить фото";
       setTimeout(() => {
+        const reply = `Готово! ✨ Обработала фото по твоей просьбе: «${instruction}»\n\n🎨 Цвета и контраст\n💡 Яркость и экспозиция\n📐 Горизонт и кадр\n✨ Лёгкая ретушь\n\nЕсли нужно подкрутить ещё — напиши, что изменить 📸`;
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           type: "ai",
-          content:
-            "✅ Фото обработано с помощью NanoBonano!\n\nПрименены улучшения:\n✨ Автокоррекция экспозиции\n🎨 Улучшение цветов\n📐 Выравнивание горизонта\n🔍 Умное кадрирование",
+          content: reply,
           timestamp: new Date().toLocaleTimeString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          image: imageUrl, // Обработанное изображение
+          image: photoToProcess,
         };
         setMessages((prev) => [...prev, aiResponse]);
         setIsTyping(false);
         setSelectedImage(null);
-      }, 2000);
-    } catch (error) {
-      console.error("Ошибка NanoBonano API:", error);
-      setIsTyping(false);
-    }
-  };
-
-  const generateGeminiResponse = (prompt: string): string => {
-    const lowerPrompt = prompt.toLowerCase();
-
-    if (lowerPrompt.includes("описание") || lowerPrompt.includes("описать")) {
-      return `🌟 Вот отличное описание для вашего поста (сгенерировано Gemini):
-
-Сегодня прекрасный день для новых возможностей! Поделюсь с вами моментом из моей жизни. 
-
-Каждый день - это шанс стать лучше, узнать что-то новое и вдохновиться. 
-
-#мотивация #вдохновение #жизнь #позитив #успех #мечты #цели #развитие #growth #inspiration`;
+        setInputValue("");
+      }, 1800 + Math.random() * 800);
+      return;
     }
 
-    if (lowerPrompt.includes("иде") || lowerPrompt.includes("контент")) {
-      return `Вот 5 идей контента (от Gemini):
+    // Chat mode — try API first, fallback to local responses
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          systemPrompt:
+            "Ты — Адель, харизматичный AI-помощник в Vexora. Ты понимаешь каждое слово пользователя, улавливаешь его настроение и контекст. Твой стиль — смесь лучшего друга, эксперта по соцсетям и вдохновляющего ментора. Общаешься тепло, неформально, с тонким юмором и уместными эмодзи. Твоя цель — не просто ответить, а вдохновить и реально помочь. Ты мастерски владеешь темой целей, контента и внутренней экономики Vexora. Если пользователь грустит — поддержи его, если радуется — раздели его успех. Всегда отвечай на русском, будь лаконичной, но ёмкой (2-4 предложения). Каждое твоё слово должно иметь значение.",
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "ai",
+          content: data.reply || getAdelReply(message),
+          timestamp: new Date().toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setMessages((prev) => [...prev, aiResponse]);
+        setIsTyping(false);
+        return;
+      }
+    } catch {}
 
-1. 📸 "День из моей жизни" - покажите свой обычный день с момента пробуждения
-2. 💡 Полезные советы по вашей теме - поделитесь экспертным мнением
-3. ❓ Задайте вопрос аудитории для вовлечения - "Что вы думаете о...?"
-4. 🎨 Покажите процесс создания чего-то - behind the scenes контент
-5. 🙌 Мотивационная цитата с вашим комментарием - вдохновите аудиторию
-
-Какая идея вам больше нравится?`;
-    }
-
-    if (lowerPrompt.includes("хештег")) {
-      return `Вот релевантные хештеги (подобрано Gemini):
-
-#тренды2024 #популярно #вирусныйконтент #инстаграм #соцсети #лайки #подписчики #контент #креатив #интересное #мотивация #вдохновение #успех #развитие #growth #contentcreator #socialmedia`;
-    }
-
-    if (lowerPrompt.includes("тренд") || lowerPrompt.includes("популярн")) {
-      return `Актуальные тренды в социальных сетях (анализ Gemini):
-
-🔥 Короткие видео форматы (Reels, Shorts) - до 60 секунд
-💬 Интерактивные истории и опросы
-🎭 Аутентичный контент "за кадром"
-🌍 Экологичная тематика и sustainability
-💪 Мотивационный контент
-📚 Образовательный контент с добавленной стоимостью
-🎨 AI-генерация контента
-
-Рекомендую использовать короткие форматы видео для лучшего охвата!`;
-    }
-
-    return `Я обработал ваш запрос с помощью Google Gemini: "${prompt}"
-
-В продакшене здесь будет подключение к реальному Gemini API. Пока это демонстрационный ответ.
-
-Попробуйте спросить:
-- Создать описание для поста
-- Предложить идеи контента
-- Подобрать хештеги
-- Проанализировать тренды`;
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imageUrl = event.target?.result as string;
-        setSelectedImage(imageUrl);
-        if (mode === "nanobonano") {
-          handleSendMessage("", imageUrl);
-        }
+    // Fallback — local smart replies
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "ai",
+        content: getAdelReply(message),
+        timestamp: new Date().toLocaleTimeString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
-      reader.readAsDataURL(file);
-    }
+      setMessages((prev) => [...prev, aiResponse]);
+      setIsTyping(false);
+    }, 600 + Math.random() * 900);
   };
+
+  const quickChips = [
+    "Привет! 👋",
+    "Ставлю цель: пробежать 5 км на 500",
+    "Мои цели",
+    "Расскажи про Premium",
+    "Как работают цели?",
+  ];
+
+  const onlyOneMessage = messages.length === 1;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div
-        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          {/* Mode Toggle - Centered */}
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-xs text-muted-foreground">OpenAI</span>
-            <button
-              onClick={() => {
-                setMode(mode === "openai" ? "nanobonano" : "openai");
-                setSelectedImage(null);
-                setInputValue("");
-              }}
-              className="relative w-12 h-6 rounded-full bg-glass-light/30 p-1 transition-all"
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 rounded-full bg-primary transition-all ${
-                  mode === "nanobonano" ? "left-7" : "left-1"
-                }`}
-              />
-            </button>
-            <span className="text-xs text-muted-foreground">NanoBonano</span>
+    <div className="ai-chat-shell">
+      <div className="ai-chat-header">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Lyra profile */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+                    boxShadow: "0 0 16px rgba(118,75,162,0.5)",
+                  }}
+                >
+                  ✨
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-background" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-bold leading-none">Адель</p>
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/20">
+                    AI
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-400 mt-0.5">онлайн</p>
+              </div>
+            </div>
+
+            {/* Mode toggle */}
+            <div className="flex items-center gap-1 p-1 rounded-full bg-secondary/80">
+              <button
+                type="button"
+                onClick={() => setMode("chat")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                  mode === "chat"
+                    ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white"
+                    : "text-muted-foreground",
+                )}
+              >
+                <Sparkles size={11} />
+                Чат
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("photo")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                  mode === "photo"
+                    ? "bg-gradient-to-r from-[#f093fb] to-[#f5576c] text-white"
+                    : "text-muted-foreground",
+                )}
+              >
+                <Wand2 size={11} />
+                Фото
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div
-        className="max-w-2xl mx-auto h-[calc(100vh-5rem)] flex flex-col pb-24"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
-      >
-        {/* В разработке */}
-        <div className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="text-primary" size={40} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">AI в разработке</h2>
-            <p className="text-muted-foreground mb-4">
-              Скоро здесь появится мощный AI-ассистент
-            </p>
-            <div className="glass-card p-4 max-w-sm mx-auto">
-              <p className="text-sm text-muted-foreground">
-                Функции в разработке:
-              </p>
-              <ul className="text-sm text-left mt-2 space-y-1">
-                <li>✨ Генерация контента</li>
-                <li>🎨 Улучшение фото</li>
-                <li>💬 Умный чат-бот</li>
-                <li>🔮 И многое другое...</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-2 ${
+                message.type === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              {message.type === "goal_card" && (
+                <div className="w-full max-w-[85%] animate-fade-up">
+                  <Link
+                    to="/goals"
+                    className="block glass-surface-v2 p-4 border border-amber-400/20"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Target size={16} className="text-amber-400" />
+                      <span className="text-xs font-bold text-amber-400">
+                        Цель
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                        {message.goalStatus
+                          ? statusRu[message.goalStatus]
+                          : "—"}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold">{message.goalTitle}</p>
+                    <p className="text-caption mt-1">
+                      {message.goalStars} ⭐ на кону · Открыть →
+                    </p>
+                  </Link>
+                </div>
+              )}
 
-        {/* Старый код закомментирован */}
-        {false && (
-          <div
-            className="flex-1 overflow-y-auto space-y-4 px-4 py-4"
-            style={{ display: "none" }}
-          >
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-              >
+              {message.type === "ai" && (
                 <div
-                  className={`glass-card max-w-[85%] ${
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-auto"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  }}
+                >
+                  ✨
+                </div>
+              )}
+              {(message.type === "user" || message.type === "ai") && (
+                <div
+                  className={cn(
+                    "max-w-[78%] rounded-3xl px-4 py-3",
                     message.type === "user"
-                      ? "bg-primary/20 text-primary"
-                      : "bg-glass-light/40"
-                  }`}
+                      ? "rounded-br-sm ai-bubble-user text-white"
+                      : "rounded-bl-sm ai-bubble-assistant",
+                  )}
                 >
                   {message.image && (
-                    <div className="mb-3 rounded-xl overflow-hidden">
+                    <div className="mb-2 rounded-2xl overflow-hidden">
                       <img
                         src={message.image}
-                        alt="Processed"
-                        className="w-full h-auto max-h-64 object-contain"
+                        alt="img"
+                        className="w-full max-h-48 object-cover"
                       />
                     </div>
                   )}
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
                     {message.content}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-[10px] mt-1.5 text-muted-foreground">
                     {message.timestamp}
                   </p>
                 </div>
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="glass-card bg-glass-light/40">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75"></div>
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-        {/* Конец закомментированного кода */}
-
-        {/* Image Preview for NanoBonano */}
-        {mode === "nanobonano" && selectedImage && !isTyping && (
-          <div className="px-4 mb-4">
-            <div className="glass-card p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium">Изображение выбрано</span>
-                <button
-                  onClick={() => setSelectedImage(null)}
-                  className="text-xs text-red-500 hover:text-red-400"
-                >
-                  Убрать
-                </button>
-              </div>
-              <img
-                src={selectedImage}
-                alt="Selected"
-                className="w-full h-32 object-contain rounded-lg"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Input Area */}
-        <div className="fixed bottom-20 left-0 right-0 glass-morphism border-t border-glass-light/20 ios-shadow z-40">
-          <div className="max-w-2xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-2">
-              {mode === "nanobonano" && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="glass-button rounded-full p-2.5 bg-accent/20 text-accent hover:bg-accent/30 transition-all"
-                  title="Загрузить фото"
-                >
-                  <ImageIcon size={20} />
-                </button>
               )}
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder={
-                  mode === "openai"
-                    ? "Спросите меня что угодно... ✨"
-                    : "Загрузите фото для обработки..."
-                }
-                disabled={mode === "nanobonano" && !selectedImage}
-                className="flex-1 glass-morphism rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
-              />
-              <button
-                onClick={() => handleSendMessage()}
-                disabled={(!inputValue.trim() && !selectedImage) || isTyping}
-                className="glass-button rounded-full p-2.5 bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                <Send size={20} />
-              </button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageSelect}
-            />
-            {mode === "nanobonano" && (
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                Загрузите фото для автоматической обработки с помощью NanoBonano
-              </p>
-            )}
+          ))}
+
+          {/* Typing indicator */}
+          {isTyping && (
+            <div className="flex gap-2 justify-start">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                }}
+              >
+                ✨
+              </div>
+              <div className="px-4 py-3 rounded-3xl rounded-bl-sm flex items-center gap-1 ai-bubble-assistant">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce"
+                    style={{ animationDelay: `${i * 150}ms` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Quick chips - only on first message */}
+        {onlyOneMessage && !isTyping && (
+          <div className="max-w-2xl mx-auto px-4 pb-4">
+            <p className="text-caption mb-2.5 text-center">Быстрый старт</p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {quickChips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => handleSendMessage(chip)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 border border-primary/25 bg-primary/10 text-primary"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* Image preview for photo mode */}
+      {mode === "photo" && selectedImage && (
+        <div className="max-w-2xl mx-auto px-4 pb-2">
+          <div className="glass-surface-v2 p-2 flex items-center gap-2">
+            <img
+              src={selectedImage}
+              alt="selected"
+              className="w-12 h-12 rounded-xl object-cover"
+            />
+            <p className="text-xs text-muted-foreground flex-1">
+              Фото выбрано — опиши ниже, что сделать, и нажми отправить
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedImage(null)}
+              className="text-muted-foreground"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="ai-chat-input-bar">
+        <div className="max-w-2xl mx-auto px-4 pt-3 pb-1">
+          {mode === "photo" && (
+            <p className="text-caption text-center mb-2">
+              🪄 Загрузи фото, опиши задачу и нажми отправить — Адель обработает магию
+            </p>
+          )}
+          <div className="flex items-center gap-2">
+            {mode === "photo" && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(240,147,251,0.2) 0%, rgba(245,87,108,0.2) 100%)",
+                  border: "1px solid rgba(240,147,251,0.3)",
+                }}
+              >
+                <ImageIcon size={18} className="text-pink-400" />
+              </button>
+            )}
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder={
+                mode === "chat"
+                  ? "Напиши Адели..."
+                  : selectedImage
+                  ? "Опиши, что сделать с фото (обязательно)..."
+                  : "Сначала загрузи фото 📸"
+              }
+              disabled={
+                isTyping || (mode === "photo" && !selectedImage)
+              }
+              className="flex-1 rounded-2xl px-4 py-3 text-sm outline-none transition-all disabled:opacity-50 ai-input-field"
+            />
+            <button
+              onClick={() => handleSendMessage()}
+              disabled={
+                isTyping ||
+                (mode === "chat" && !inputValue.trim()) ||
+                (mode === "photo" &&
+                  (!selectedImage || !inputValue.trim()))
+              }
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0 disabled:opacity-40"
+              style={{
+                background:
+                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 4px 16px rgba(102,126,234,0.4)",
+              }}
+            >
+              <Send size={16} className="text-white" />
+            </button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  const url = ev.target?.result as string;
+                  setSelectedImage(url);
+                };
+                reader.readAsDataURL(file);
+              }
+              e.target.value = "";
+            }}
+          />
         </div>
       </div>
     </div>

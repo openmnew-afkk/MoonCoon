@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Search, Sparkles, TrendingUp, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Sparkles, TrendingUp, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DiscoveryItem {
@@ -16,11 +17,16 @@ interface DiscoveryItem {
 const discoveryItems: DiscoveryItem[] = [];
 
 export default function Explore() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"popular" | "recent" | "likes">(
-    "popular",
-  );
+  const [sortBy, setSortBy] = useState<"popular" | "recent" | "likes">("popular");
+
+  // Sync with URL params when navigation happens
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) setSearchQuery(q);
+  }, [searchParams]);
 
   const categories = [
     "Все",
@@ -59,34 +65,22 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div
-        className="fixed top-0 left-0 right-0 glass-morphism border-b border-glass-light/20 z-30 ios-shadow"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        className="max-w-2xl mx-auto px-4 pb-28 pt-4"
       >
-        <div className="max-w-2xl mx-auto px-4 py-4">{/* Empty header */}</div>
-      </div>
-
-      <div
-        className="max-w-2xl mx-auto px-4 pb-24"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 6.5rem)" }}
-      >
-        {/* Search Bar */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-              size={18}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск..."
-              className="w-full glass-morphism rounded-xl pl-10 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-            />
+        {/* Active search query indicator */}
+        {searchQuery && (
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Поиск:</span>
+            <span className="text-sm font-semibold text-primary">«{searchQuery}»</span>
+            <button
+              onClick={() => setSearchQuery("")}
+              className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Сбросить
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Filters */}
         <div className="mb-6 space-y-4">

@@ -68,58 +68,78 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Проверка прав администратора
+  const [tab, setTab] = useState<"settings" | "users">("settings");
+  const [settings, setSettings] = useState({
+    premiumPriceRub: 250,
+    premiumPriceStars: 2500,
+    premiumPaymentMethods: "both" as "stars" | "card" | "both",
+  });
+  const [settingsSaving, setSettingsSaving] = useState(false);
+
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!user?.id) {
+      const token = localStorage.getItem("admin_session");
+      if (!token) {
         setAuthChecked(true);
         return;
       }
-
       try {
-        // Проверяем статус админа по userId и username
-        const params = new URLSearchParams({ userId: user.id.toString() });
-        if (user.username) {
-          params.append("username", user.username);
-        }
-
-        console.log("🔍 Проверяем админ статус для:", {
-          userId: user.id,
-          username: user.username,
-          url: `/api/admin/check?${params}`,
+        const response = await fetch("/api/admin/check", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        const response = await fetch(`/api/admin/check?${params}`);
-
-        console.log("🌐 Ответ сервера:", {
-          status: response.status,
-          statusText: response.statusText,
-          ok: response.ok,
-        });
-
         if (response.ok) {
           const data = await response.json();
-          console.log("🔑 Admin check result:", data);
           if (data.isAdmin) {
             setIsAdmin(true);
-            localStorage.setItem("admin_session", `admin_${user.id}`);
             loadUsers();
-          } else {
-            console.log("❌ Пользователь не является админом");
+            loadSettings(token);
           }
-        } else {
-          const errorText = await response.text();
-          console.error("❌ Ошибка HTTP:", response.status, errorText);
         }
-      } catch (error) {
-        console.error("❌ Ошибка сети или подключения к серверу:", error);
+      } catch {
+        /* ignore */
       } finally {
         setAuthChecked(true);
       }
     };
-
     checkAdmin();
   }, [user]);
+
+  const loadSettings = async (token: string) => {
+    try {
+      const res = await fetch("/api/admin/settings", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data.settings);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const saveSettings = async () => {
+    const token = localStorage.getItem("admin_session");
+    if (!token) return;
+    setSettingsSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(settings),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data.settings);
+        alert("Настройки сохранены");
+      }
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
 
   const loadUsers = async () => {
     const adminSession = localStorage.getItem("admin_session");
@@ -222,6 +242,101 @@ export default function Admin() {
         className="max-w-6xl mx-auto px-4 py-6"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 7rem)" }}
       >
+        <div className="flex gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setTab("settings")}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold ${
+              tab === "settings" ? "bg-primary/20 text-primary" : "glass-button"
+            }`}
+          >
+            Настройки и оплата
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("users")}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold ${
+              tab === "users" ? "bg-primary/20 text-primary" : "glass-button"
+            }`}
+          >
+            Пользователи
+          </button>
+        </div>
+
+        {tab === "settings" && (
+          <div className="glass-card mb-8 space-y-4">
+            <h3 className="font-semibold">Premium и способы оплаты</h3>
+            <div>
+              <label className="text-sm font-medium">Цена Premium (₽/мес)</label>
+              <input
+                type="number"
+                value={settings.premiumPriceRub}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    premiumPriceRub: Number(e.target.value),
+                  }))
+                }
+                className="w-full mt-1 rounded-xl px-4 py-2 bg-input border border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Цена в звёздах (⭐/мес)</label>
+              <input
+                type="number"
+                value={settings.premiumPriceStars}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    premiumPriceStars: Number(e.target.value),
+                  }))
+                }
+                className="w-full mt-1 rounded-xl px-4 py-2 bg-input border border-border"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Способы оплаты</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ["both", "Карта + звёзды"],
+                    ["card", "Только карта"],
+                    ["stars", "Только звёзды"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() =>
+                      setSettings((s) => ({
+                        ...s,
+                        premiumPaymentMethods: id,
+                      }))
+                    }
+                    className={`py-2 px-2 rounded-xl text-xs font-semibold border ${
+                      settings.premiumPaymentMethods === id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={saveSettings}
+              disabled={settingsSaving}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold disabled:opacity-50"
+            >
+              {settingsSaving ? "Сохранение…" : "Сохранить настройки"}
+            </button>
+          </div>
+        )}
+
+        {tab === "users" && (
+          <>
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, i) => (
@@ -334,6 +449,8 @@ export default function Admin() {
             </div>
           )}
         </div>
+          </>
+        )}
 
         {/* User Management Modal */}
         {selectedUser && (

@@ -5,8 +5,11 @@ export interface PremiumStatus {
   isPremium: boolean;
   expiresAt: string | null;
   isTrial: boolean;
-  type?: "standard" | "blogger";
-  videoDuration?: number; // в секундах
+  videoDuration?: number;
+  priceRub?: number;
+  priceStars?: number;
+  cardPaymentEnabled?: boolean;
+  starsPaymentEnabled?: boolean;
 }
 
 export function usePremium() {

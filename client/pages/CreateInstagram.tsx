@@ -1,629 +1,430 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  ArrowRight,
   X,
+  ChevronLeft,
   Image as ImageIcon,
-  Video,
-  Sparkles,
-  Crop,
-  RotateCw,
-  Sun,
-  Contrast,
-  Palette,
-  Music,
-  Type,
-  Heart,
-  Users,
   Globe,
-  Lock,
-  Share2,
+  Users,
+  Send,
+  Zap,
+  Clock,
+  Video,
+  Target,
+  Trash2,
 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { usePremium } from "@/hooks/usePremium";
 import { cn } from "@/lib/utils";
 
-interface CreateStep {
-  id: string;
-  title: string;
-  component: React.ReactNode;
-}
-
-type CreateStage = "select" | "edit" | "filters" | "caption" | "publish";
+type Stage = "select" | "share";
 
 interface MediaFile {
   file: File;
   url: string;
   type: "image" | "video";
-  duration?: number;
 }
 
-interface Filter {
-  name: string;
-  preview: string;
-  filter: string;
-}
-
-const FILTERS: Filter[] = [
-  { name: "Оригинал", preview: "📷", filter: "none" },
-  { name: "Яркость", preview: "☀️", filter: "brightness(120%) saturate(110%)" },
-  { name: "Контраст", preview: "⚫", filter: "contrast(120%) brightness(110%)" },
-  { name: "Тёплый", preview: "🧡", filter: "sepia(30%) hue-rotate(20deg) saturate(120%)" },
-  { name: "Холодный", preview: "💙", filter: "hue-rotate(180deg) saturate(110%)" },
-  { name: "Чёрно-белый", preview: "⚪", filter: "grayscale(100%) contrast(110%)" },
-  { name: "Винтаж", preview: "📼", filter: "sepia(50%) hue-rotate(320deg) saturate(120%)" },
-  { name: "Драма", preview: "🎭", filter: "contrast(150%) brightness(90%) saturate(130%)" },
-];
+const MAX_VIDEO_DURATION_FREE = 60;
+const MAX_VIDEO_DURATION_PREMIUM = 5 * 60;
 
 export default function CreateInstagram() {
   const { user } = useTelegram();
   const { premium } = usePremium();
-  
-  const [stage, setStage] = useState<CreateStage>("select");
-  const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedFilter, setSelectedFilter] = useState("none");
+  const navigate = useNavigate();
+  const [stage, setStage] = useState<Stage>("select");
+  const [mediaList, setMediaList] = useState<MediaFile[]>([]);
   const [caption, setCaption] = useState("");
   const [isStory, setIsStory] = useState(false);
   const [visibility, setVisibility] = useState<"public" | "followers">("public");
   const [uploading, setUploading] = useState(false);
-  
-  // Editing states
-  const [brightness, setBrightness] = useState(100);
-  const [contrast, setContrast] = useState(100);
-  const [saturation, setSaturation] = useState(100);
-  const [rotation, setRotation] = useState(0);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleMediaSelect = useCallback((files: FileList) => {
-    const mediaFiles: MediaFile[] = [];
-    
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+  const maxDuration = premium.isPremium ? MAX_VIDEO_DURATION_PREMIUM : MAX_VIDEO_DURATION_FREE;
+  const current = mediaList[0];
+
+  const handleFiles = useCallback(
+    (files: FileList) => {
+      const items: MediaFile[] = [];
+      Array.from(files).forEach((file) => {
+        if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) return;
         const url = URL.createObjectURL(file);
-        const type = file.type.startsWith('image/') ? 'image' : 'video';
-        
-        // For videos, check duration
-        if (type === 'video') {
-          const video = document.createElement('video');
-          video.preload = 'metadata';
-          video.onloadedmetadata = () => {
-            URL.revokeObjectURL(video.src);
-            if (video.duration > 60 && !premium.isPremium) {
-              alert('Видео длиной больше 60 секунд доступно только с Premium');
+        const type = file.type.startsWith("image/") ? "image" : "video";
+
+        if (type === "video") {
+          const v = document.createElement("video");
+          v.preload = "metadata";
+          v.onloadedmetadata = () => {
+            if (v.duration > maxDuration) {
+              const maxMin = Math.floor(maxDuration / 60);
+              alert(`Видео слишком длинное. Максимум: ${maxMin} мин.`);
+              URL.revokeObjectURL(url);
               return;
             }
-            mediaFiles.push({ file, url, type, duration: video.duration });
+            items.push({ file, url, type });
+            if (items.length) {
+              setMediaList(items);
+              setStage("share");
+            }
           };
-          video.src = url;
+          v.src = url;
         } else {
-          mediaFiles.push({ file, url, type });
+          items.push({ file, url, type });
         }
+      });
+      if (items.length && items[0].type === "image") {
+        setMediaList(items);
+        setStage("share");
       }
-    });
-    
-    setSelectedMedia(mediaFiles);
-    if (mediaFiles.length > 0) {
-      setStage("edit");
-    }
-  }, [premium.isPremium]);
+    },
+    [maxDuration],
+  );
 
-  const handleFileSelect = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+  const removeMedia = () => {
+    mediaList.forEach((m) => URL.revokeObjectURL(m.url));
+    setMediaList([]);
+    setStage("select");
+    setCaption("");
+  };
 
-  const handlePublish = async () => {
-    if (!user?.id || selectedMedia.length === 0) {
-      alert("Необходимо выбрать медиа и авторизоваться");
-      return;
-    }
-
+  const publish = async () => {
+    if (!user?.id || !current) return;
     setUploading(true);
-
     try {
-      const currentMedia = selectedMedia[currentIndex];
-      
-      // Convert file to base64
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const mediaData = e.target?.result as string;
-        
-        const response = await fetch('/api/posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.id.toString(),
-            caption: caption.trim(),
-            visibility,
-            media: mediaData,
-            mediaType: currentMedia.type,
-            type: isStory ? 'story' : 'post',
-          }),
+      let mediaData: string;
+      if (current.type === "image") {
+        // Read image as data URL directly (no filters applied)
+        const resp = await fetch(current.url);
+        const blob = await resp.blob();
+        mediaData = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result as string);
+          r.onerror = rej;
+          r.readAsDataURL(blob);
         });
-
-        if (response.ok) {
-          alert(isStory ? 'История опубликована!' : 'Пост опубликован!');
-          // Reset form
-          setSelectedMedia([]);
-          setCurrentIndex(0);
-          setCaption("");
-          setStage("select");
-        } else {
-          alert('Ошибка при публикации');
-        }
-      };
-      
-      reader.readAsDataURL(currentMedia.file);
-    } catch (error) {
-      console.error('Error publishing:', error);
-      alert('Ошибка при публикации');
+      } else {
+        const resp = await fetch(current.url);
+        const blob = await resp.blob();
+        mediaData = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result as string);
+          r.onerror = rej;
+          r.readAsDataURL(blob);
+        });
+      }
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: String(user.id),
+          caption: caption.trim(),
+          visibility,
+          media: mediaData,
+          mediaType: current.type,
+          type: isStory ? "story" : "post",
+        }),
+      });
+      if (response.ok) {
+        alert(isStory ? "✅ История опубликована!" : "✅ Пост опубликован!");
+        removeMedia();
+      } else {
+        alert("❌ Ошибка публикации");
+      }
+    } catch {
+      alert("❌ Ошибка сети");
     } finally {
       setUploading(false);
     }
   };
 
-  const getCurrentFilter = () => {
-    if (selectedFilter === "none") {
-      return `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-    }
-    return `${selectedFilter} brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-  };
-
-  const renderSelectStage = () => (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
-      <div className="w-32 h-32 glass-card rounded-3xl flex items-center justify-center mb-6">
-        <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center">
-          <ImageIcon size={32} className="text-primary" />
-        </div>
-      </div>
-      
-      <h2 className="text-2xl font-bold mb-2">Создать публикацию</h2>
-      <p className="text-muted-foreground text-center mb-8 max-w-sm">
-        Выберите фото или видео для создания поста или истории
-      </p>
-      
-      <div className="space-y-4 w-full max-w-xs">
-        <button
-          onClick={handleFileSelect}
-          className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 py-4 rounded-2xl font-semibold flex items-center justify-center gap-3"
+  /* ─── Stage: Select ─── */
+  if (stage === "select") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <header
+          className="glass-morphism border-b border-border/50 px-4 py-3 flex items-center justify-between"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
         >
-          <ImageIcon size={20} />
-          Выбрать из галереи
-        </button>
-        
-        {navigator.mediaDevices && (
-          <button className="w-full glass-button py-4 rounded-2xl font-semibold flex items-center justify-center gap-3">
-            <Video size={20} />
-            Снять видео
+          <button type="button" onClick={() => window.history.back()} className="p-2 -ml-2 rounded-xl hover:bg-glass-light/30 transition-colors">
+            <X size={22} />
           </button>
-        )}
-      </div>
-      
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="image/*,video/*"
-        onChange={(e) => e.target.files && handleMediaSelect(e.target.files)}
-        className="hidden"
-      />
-    </div>
-  );
+          <h1 className="font-bold text-base">Новая публикация</h1>
+          <div className="w-10" />
+        </header>
 
-  const renderEditStage = () => {
-    if (selectedMedia.length === 0) return null;
-    
-    const currentMedia = selectedMedia[currentIndex];
-    
-    return (
-      <div className="flex-1 flex flex-col">
-        {/* Media Preview */}
-        <div className="flex-1 bg-black/90 flex items-center justify-center relative">
-          {currentMedia.type === 'image' ? (
-            <img
-              src={currentMedia.url}
-              alt="Preview"
-              className="max-w-full max-h-full object-contain"
-              style={{
-                filter: getCurrentFilter(),
-                transform: `rotate(${rotation}deg)`,
-              }}
-            />
-          ) : (
-            <video
-              src={currentMedia.url}
-              className="max-w-full max-h-full object-contain"
-              style={{
-                filter: getCurrentFilter(),
-                transform: `rotate(${rotation}deg)`,
-              }}
-              controls
-            />
-          )}
-          
-          {/* Multiple media navigation */}
-          {selectedMedia.length > 1 && (
-            <>
-              <button
-                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-                disabled={currentIndex === 0}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-3 rounded-full disabled:opacity-50"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <button
-                onClick={() => setCurrentIndex(Math.min(selectedMedia.length - 1, currentIndex + 1))}
-                disabled={currentIndex === selectedMedia.length - 1}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-3 rounded-full disabled:opacity-50"
-              >
-                <ArrowRight size={20} />
-              </button>
-              
-              {/* Indicators */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {selectedMedia.map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full",
-                      i === currentIndex ? "bg-white" : "bg-white/50"
-                    )}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-        
-        {/* Editing Tools */}
-        <div className="glass-card m-4 p-4 rounded-2xl">
-          <div className="flex gap-4 mb-4">
+        <div
+          className="flex-1 flex flex-col items-center justify-center p-6"
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+          }}
+        >
+          <div className={cn(
+            "w-full max-w-sm rounded-3xl border-2 border-dashed p-10 flex flex-col items-center gap-5 transition-all duration-300",
+            dragOver
+              ? "border-primary bg-primary/5 scale-[1.02]"
+              : "border-border/60 hover:border-primary/40 hover:bg-primary/[0.02]"
+          )}>
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center shadow-lg">
+              <ImageIcon size={36} className="text-primary" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-lg font-bold mb-1">Создать публикацию</h2>
+              <p className="text-sm text-muted-foreground mb-1">
+                Выберите фото или видео
+              </p>
+              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                <Video size={12} />
+                Видео до {maxDuration >= 60 ? `${Math.floor(maxDuration / 60)} мин` : `${maxDuration} сек`}
+              </p>
+            </div>
             <button
-              onClick={() => setRotation((prev) => (prev + 90) % 360)}
-              className="flex-1 glass-button py-3 rounded-xl flex items-center justify-center gap-2"
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-semibold text-sm shadow-lg shadow-primary/25 active:scale-[0.98] transition-transform"
             >
-              <RotateCw size={18} />
-              <span className="text-sm">Повернуть</span>
-            </button>
-            <button className="flex-1 glass-button py-3 rounded-xl flex items-center justify-center gap-2">
-              <Crop size={18} />
-              <span className="text-sm">Обрезать</span>
+              Выбрать из галереи
             </button>
           </div>
-          
-          {/* Adjustment Sliders */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Sun size={16} className="text-primary" />
-                  <span className="text-sm font-medium">Яркость</span>
-                </div>
-                <span className="text-xs text-primary">{brightness}%</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="150"
-                value={brightness}
-                onChange={(e) => setBrightness(parseInt(e.target.value))}
-                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Contrast size={16} className="text-primary" />
-                  <span className="text-sm font-medium">Контраст</span>
-                </div>
-                <span className="text-xs text-primary">{contrast}%</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="150"
-                value={contrast}
-                onChange={(e) => setContrast(parseInt(e.target.value))}
-                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Palette size={16} className="text-primary" />
-                  <span className="text-sm font-medium">Насыщенность</span>
-                </div>
-                <span className="text-xs text-primary">{saturation}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="200"
-                value={saturation}
-                onChange={(e) => setSaturation(parseInt(e.target.value))}
-                className="w-full h-2 bg-glass-light/30 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
-  const renderFiltersStage = () => {
-    if (selectedMedia.length === 0) return null;
-    
-    const currentMedia = selectedMedia[currentIndex];
-    
-    return (
-      <div className="flex-1 flex flex-col">
-        {/* Media Preview */}
-        <div className="flex-1 bg-black/90 flex items-center justify-center">
-          {currentMedia.type === 'image' ? (
-            <img
-              src={currentMedia.url}
-              alt="Preview"
-              className="max-w-full max-h-full object-contain"
-              style={{
-                filter: getCurrentFilter(),
-                transform: `rotate(${rotation}deg)`,
-              }}
-            />
-          ) : (
-            <video
-              src={currentMedia.url}
-              className="max-w-full max-h-full object-contain"
-              style={{
-                filter: getCurrentFilter(),
-                transform: `rotate(${rotation}deg)`,
-              }}
-              muted
-              loop
-              autoPlay
-            />
-          )}
-        </div>
-        
-        {/* Filters */}
-        <div className="glass-card m-4 p-4 rounded-2xl">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Sparkles size={18} className="text-primary" />
-            Фильтры
-          </h3>
-          
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {FILTERS.map((filter, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedFilter(filter.filter)}
-                className={cn(
-                  "flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
-                  selectedFilter === filter.filter
-                    ? "bg-primary/20 border-2 border-primary"
-                    : "glass-button hover:bg-glass-light/30"
-                )}
-              >
-                <div className="w-12 h-12 rounded-lg overflow-hidden">
-                  {currentMedia.type === 'image' ? (
-                    <img
-                      src={currentMedia.url}
-                      alt={filter.name}
-                      className="w-full h-full object-cover"
-                      style={{ filter: filter.filter }}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-lg">
-                      {filter.preview}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs font-medium">{filter.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCaptionStage = () => (
-    <div className="flex-1 flex flex-col p-4">
-      {/* Preview */}
-      <div className="glass-card p-4 rounded-2xl mb-4">
-        <div className="flex items-center gap-3 mb-3">
-          <img
-            src={user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
-            alt="Your avatar"
-            className="w-10 h-10 rounded-full"
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
-          <div>
-            <p className="font-semibold">{user?.first_name || "Вы"}</p>
-            <p className="text-xs text-muted-foreground">{user?.username ? `@${user.username}` : `@user${user?.id}`}</p>
-          </div>
-        </div>
-        
-        {selectedMedia.length > 0 && (
-          <div className="w-full h-40 rounded-xl overflow-hidden mb-3">
-            {selectedMedia[currentIndex].type === 'image' ? (
-              <img
-                src={selectedMedia[currentIndex].url}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                style={{
-                  filter: getCurrentFilter(),
-                  transform: `rotate(${rotation}deg)`,
-                }}
-              />
-            ) : (
-              <video
-                src={selectedMedia[currentIndex].url}
-                className="w-full h-full object-cover"
-                style={{
-                  filter: getCurrentFilter(),
-                  transform: `rotate(${rotation}deg)`,
-                }}
-                muted
-              />
-            )}
-          </div>
-        )}
-      </div>
-      
-      {/* Caption Input */}
-      <div className="glass-card p-4 rounded-2xl mb-4">
-        <textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          placeholder="Добавьте подпись..."
-          className="w-full bg-transparent resize-none outline-none text-sm h-24"
-          maxLength={2200}
-        />
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-glass-light/20">
-          <span className="text-xs text-muted-foreground">
-            {caption.length}/2200 символов
-          </span>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Music size={14} />
-            <Type size={14} />
-            <Heart size={14} />
-          </div>
-        </div>
-      </div>
-      
-      {/* Post Type */}
-      <div className="glass-card p-4 rounded-2xl mb-4">
-        <h3 className="font-semibold mb-3">Тип публикации</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setIsStory(false)}
-            className={cn(
-              "p-4 rounded-xl transition-all flex flex-col items-center gap-2",
-              !isStory ? "bg-primary/20 border-2 border-primary" : "glass-button"
-            )}
-          >
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <ImageIcon size={16} className="text-primary" />
-            </div>
-            <span className="text-sm font-medium">Пост</span>
-            <span className="text-xs text-muted-foreground">Постоянный</span>
-          </button>
-          
-          <button
-            onClick={() => setIsStory(true)}
-            className={cn(
-              "p-4 rounded-xl transition-all flex flex-col items-center gap-2",
-              isStory ? "bg-primary/20 border-2 border-primary" : "glass-button"
-            )}
-          >
-            <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-              <Sparkles size={16} className="text-accent" />
-            </div>
-            <span className="text-sm font-medium">История</span>
-            <span className="text-xs text-muted-foreground">24 часа</span>
-          </button>
-        </div>
-      </div>
-      
-      {/* Privacy Settings */}
-      <div className="glass-card p-4 rounded-2xl">
-        <h3 className="font-semibold mb-3">Кто может видеть</h3>
-        <div className="space-y-3">
-          <button
-            onClick={() => setVisibility("public")}
-            className={cn(
-              "w-full p-3 rounded-xl flex items-center gap-3 transition-all",
-              visibility === "public" ? "bg-primary/20 border border-primary" : "glass-button text-left"
-            )}
-          >
-            <Globe size={18} className="text-primary" />
-            <div>
-              <div className="font-medium">Все пользователи</div>
-              <div className="text-xs text-muted-foreground">Публично</div>
-            </div>
-          </button>
-          
-          <button
-            onClick={() => setVisibility("followers")}
-            className={cn(
-              "w-full p-3 rounded-xl flex items-center gap-3 transition-all",
-              visibility === "followers" ? "bg-primary/20 border border-primary" : "glass-button text-left"
-            )}
-          >
-            <Users size={18} className="text-primary" />
-            <div>
-              <div className="font-medium">Только подписчики</div>
-              <div className="text-xs text-muted-foreground">Ограниченный доступ</div>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
+          {/* Divider */}
+          <div className="flex items-center gap-3 w-full max-w-sm mt-2">
+            <div className="flex-1 h-px bg-border/40" />
+            <span className="text-xs text-muted-foreground font-medium">или</span>
+            <div className="flex-1 h-px bg-border/40" />
+          </div>
+
+          {/* Goal creation */}
+          <button
+            type="button"
+            onClick={() => navigate("/goals")}
+            className="w-full max-w-sm flex items-center gap-4 p-4 rounded-2xl border border-orange-400/30 bg-orange-400/5 hover:bg-orange-400/10 transition-all active:scale-[0.98]"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400/30 to-amber-400/20 flex items-center justify-center flex-shrink-0">
+              <Target size={24} className="text-orange-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-orange-400">Создать цель 🎯</p>
+              <p className="text-xs text-muted-foreground">Появится в ленте на 10 минут</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ─── Stage: Share (Preview + Caption + Settings) ─── */
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <div
-        className="glass-morphism border-b border-glass-light/20"
+      <header
+        className="glass-morphism border-b border-border/50 px-4 py-3 flex items-center justify-between z-20"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => {
-              if (stage === "select") {
-                // Go back to main app
-                window.history.back();
-              } else if (stage === "edit") {
-                setStage("select");
-              } else if (stage === "filters") {
-                setStage("edit");
-              } else if (stage === "caption") {
-                setStage("filters");
-              }
-            }}
-            className="text-primary font-semibold"
-          >
-            {stage === "select" ? <X size={24} /> : <ArrowLeft size={24} />}
-          </button>
-          
-          <h1 className="text-lg font-bold">
-            {stage === "select" && "Новая публикация"}
-            {stage === "edit" && "Редактировать"}
-            {stage === "filters" && "Фильтры"}
-            {stage === "caption" && "Новый пост"}
-          </h1>
-          
-          <button
-            onClick={() => {
-              if (stage === "edit") {
-                setStage("filters");
-              } else if (stage === "filters") {
-                setStage("caption");
-              } else if (stage === "caption") {
-                handlePublish();
-              }
-            }}
-            disabled={stage === "select" || uploading}
-            className={cn(
-              "font-semibold disabled:opacity-50",
-              stage === "caption" ? "text-primary" : "text-primary"
-            )}
-          >
-            {stage === "edit" && "Далее"}
-            {stage === "filters" && "Далее"}
-            {stage === "caption" && (uploading ? "Публикуется..." : "Поделиться")}
-          </button>
+        <button
+          type="button"
+          onClick={() => setStage("select")}
+          className="p-2 -ml-2 rounded-xl hover:bg-glass-light/30 transition-colors flex items-center gap-1"
+        >
+          <ChevronLeft size={20} />
+          <span className="text-sm font-medium">Назад</span>
+        </button>
+        <span className="font-bold text-base">Публикация</span>
+        <button
+          type="button"
+          onClick={publish}
+          disabled={uploading || !current}
+          className="px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold disabled:opacity-50 active:scale-[0.97] transition-all shadow-md shadow-primary/20"
+        >
+          {uploading ? (
+            <span className="flex items-center gap-1.5">
+              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Публикуем…
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <Send size={14} />
+              Готово
+            </span>
+          )}
+        </button>
+      </header>
+
+      <div className="flex-1 overflow-y-auto pb-28">
+        <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+          {/* Media Preview */}
+          {current && (
+            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+              {current.type === "image" ? (
+                <img
+                  src={current.url}
+                  alt=""
+                  className="w-full max-h-[50vh] object-contain bg-black/5 dark:bg-white/5"
+                />
+              ) : (
+                <div className="relative bg-black rounded-2xl">
+                  <video
+                    src={current.url}
+                    className="w-full max-h-[50vh] object-contain"
+                    controls
+                    playsInline
+                  />
+                </div>
+              )}
+              {/* Remove media button */}
+              <button
+                type="button"
+                onClick={removeMedia}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* Type Selector */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setIsStory(false)}
+              className={cn(
+                "py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border",
+                !isStory
+                  ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/10"
+                  : "border-border/60 text-muted-foreground hover:border-border"
+              )}
+            >
+              <ImageIcon size={16} />
+              Пост
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsStory(true)}
+              className={cn(
+                "py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border",
+                isStory
+                  ? "border-accent bg-accent/10 text-accent shadow-sm shadow-accent/10"
+                  : "border-border/60 text-muted-foreground hover:border-border"
+              )}
+            >
+              <Zap size={16} />
+              История
+            </button>
+          </div>
+
+          {/* Caption */}
+          <div className="glass-surface-v2 p-4 rounded-2xl">
+            <label className="block text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+              {isStory ? "Подпись к истории" : "Описание"}
+            </label>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder={isStory ? "Добавьте текст к вашей истории…" : "Напишите описание… #хештеги @упоминания"}
+              className="w-full bg-transparent text-sm min-h-[80px] outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
+              maxLength={2200}
+            />
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+              <span className="text-[10px] text-muted-foreground">
+                {caption.length} / 2200
+              </span>
+              {caption.match(/#[\w\u0400-\u04FF]+/g) && (
+                <div className="flex gap-1 flex-wrap justify-end">
+                  {caption.match(/#[\w\u0400-\u04FF]+/g)?.slice(0, 5).map((tag, i) => (
+                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Visibility */}
+          <div className="glass-surface-v2 p-4 rounded-2xl">
+            <label className="block text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+              Видимость
+            </label>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setVisibility("public")}
+                className={cn(
+                  "w-full p-3.5 rounded-xl flex items-center gap-3 border transition-all text-left",
+                  visibility === "public"
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-transparent hover:bg-glass-light/30"
+                )}
+              >
+                <div className={cn(
+                  "w-9 h-9 rounded-xl flex items-center justify-center",
+                  visibility === "public" ? "bg-primary/15" : "bg-muted/30"
+                )}>
+                  <Globe size={18} className={visibility === "public" ? "text-primary" : "text-muted-foreground"} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Все пользователи</p>
+                  <p className="text-[11px] text-muted-foreground">Видно всем в ленте</p>
+                </div>
+                {visibility === "public" && (
+                  <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  </div>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("followers")}
+                className={cn(
+                  "w-full p-3.5 rounded-xl flex items-center gap-3 border transition-all text-left",
+                  visibility === "followers"
+                    ? "border-accent/40 bg-accent/5"
+                    : "border-transparent hover:bg-glass-light/30"
+                )}
+              >
+                <div className={cn(
+                  "w-9 h-9 rounded-xl flex items-center justify-center",
+                  visibility === "followers" ? "bg-accent/15" : "bg-muted/30"
+                )}>
+                  <Users size={18} className={visibility === "followers" ? "text-accent" : "text-muted-foreground"} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Только подписчики</p>
+                  <p className="text-[11px] text-muted-foreground">Видно подписчикам</p>
+                </div>
+                {visibility === "followers" && (
+                  <div className="ml-auto w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Story hint */}
+          {isStory && (
+            <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-accent/5 border border-accent/15">
+              <Clock size={16} className="text-accent flex-shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                История будет видна <span className="text-accent font-semibold">24 часа</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Content */}
-      {stage === "select" && renderSelectStage()}
-      {stage === "edit" && renderEditStage()}
-      {stage === "filters" && renderFiltersStage()}
-      {stage === "caption" && renderCaptionStage()}
     </div>
   );
 }

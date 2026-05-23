@@ -61,6 +61,10 @@ export default {
         xs: "2px",
       },
       keyframes: {
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
         "accordion-down": {
           from: {
             height: "0",
@@ -79,6 +83,7 @@ export default {
         },
       },
       animation: {
+        "fade-up": "fade-up 0.35s ease-out forwards",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
