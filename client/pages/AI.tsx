@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Send,
@@ -21,6 +21,7 @@ import {
 } from "@/lib/goalsApi";
 import type { Goal, GoalStatus } from "@shared/api";
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/brand";
 
 interface Message {
   id: string;
@@ -376,7 +377,7 @@ export default function AI() {
         {
           id: "adel-greet",
           type: "ai",
-          content: `Привет, ${name}! 👋 Я Адель — твой AI в MoonCoon. Помогу с постами, целями и звёздами. О чём поговорим?`,
+          content: `Привет, ${name}! 👋 Я Адель — твой AI в ${APP_NAME}. Помогу с постами, целями и звёздами. О чём поговорим?`,
           timestamp: new Date().toLocaleTimeString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",
@@ -390,44 +391,40 @@ export default function AI() {
 
   const safeTop = "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))";
 
-  return (
-    <div className="ai-chat-shell relative">
-      <AnimatePresence>
-        {!chatStarted && (
-          <motion.div
-            key="adel-intro"
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden"
-            style={{ paddingTop: safeTop, paddingBottom: "calc(5rem + var(--tg-safe-bottom, 0px))" }}
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <div className="adel-intro-bg absolute inset-0" />
-            <motion.button
-              type="button"
-              onClick={startChat}
-              className="relative z-10 flex flex-col items-center gap-6 select-none"
-              animate={introPulse ? { scale: [1, 1.08, 1] } : { scale: [1, 1.03, 1] }}
-              transition={{ repeat: Infinity, duration: introPulse ? 0.5 : 2.8, ease: "easeInOut" }}
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              <div className="adel-orb-ring">
-                <div className="adel-orb">
-                  <span className="text-5xl">✨</span>
-                </div>
-              </div>
-              <div className="text-center px-8">
-                <p className="text-2xl font-bold tracking-tight">Адель</p>
-                <p className="text-sm text-muted-foreground mt-2">Нажми, чтобы поздороваться</p>
-              </div>
-            </motion.button>
-            <p className="absolute bottom-8 text-[11px] text-muted-foreground/60 z-10">AI-помощник MoonCoon</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+  if (!chatStarted) {
+    return (
+      <div
+        className="relative flex flex-col items-center justify-center bg-background"
+        style={{
+          height: "100dvh",
+          paddingTop: safeTop,
+          paddingBottom: "calc(4.5rem + var(--tg-safe-bottom, 0px))",
+        }}
+      >
+        <div className="adel-intro-bg absolute inset-0 pointer-events-none" />
+        <motion.button
+          type="button"
+          onClick={startChat}
+          className="relative z-10 flex flex-col items-center gap-6"
+          animate={introPulse ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="adel-orb-ring">
+            <div className="adel-orb"><span className="text-5xl">✨</span></div>
+          </div>
+          <div className="text-center px-8">
+            <p className="text-2xl font-bold">Адель</p>
+            <p className="text-sm text-muted-foreground mt-2">Нажми, чтобы поздороваться</p>
+          </div>
+        </motion.button>
+        <p className="relative z-10 mt-10 text-[11px] text-muted-foreground">AI · {APP_NAME}</p>
+      </div>
+    );
+  }
 
-      <div className={cn(!chatStarted && "opacity-0 pointer-events-none")}>
-      <div className="ai-chat-header">
+  return (
+    <div className="ai-chat-shell">
+      <header className="ai-chat-header flex-shrink-0">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Lyra profile */}
@@ -487,11 +484,10 @@ export default function AI() {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
+      <main className="ai-chat-messages flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        <div className="max-w-2xl mx-auto px-4 py-4 space-y-3 pb-2">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -609,11 +605,10 @@ export default function AI() {
             </div>
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Image preview for photo mode */}
       {mode === "photo" && selectedImage && (
-        <div className="max-w-2xl mx-auto px-4 pb-2">
+        <div className="flex-shrink-0 max-w-2xl mx-auto w-full px-4 pb-2">
           <div className="glass-surface-v2 p-2 flex items-center gap-2">
             <img
               src={selectedImage}
@@ -634,8 +629,8 @@ export default function AI() {
         </div>
       )}
 
-      <div className="ai-chat-input-bar">
-        <div className="max-w-2xl mx-auto px-4 pt-3 pb-1">
+      <footer className="ai-chat-input-bar flex-shrink-0">
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-2">
           {mode === "photo" && (
             <p className="text-caption text-center mb-2">
               🪄 Загрузи фото, опиши задачу и нажми отправить — Адель обработает магию
@@ -715,8 +710,7 @@ export default function AI() {
             }}
           />
         </div>
-      </div>
-      </div>
+      </footer>
     </div>
   );
 }

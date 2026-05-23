@@ -161,6 +161,9 @@ function CreateLegacy() {
         visibility: visibility || "public",
         media: mediaPayload.media,
         mediaType: mediaPayload.mediaType,
+        authorName: [user.first_name, user.last_name].filter(Boolean).join(" ") || "Вы",
+        authorUsername: user.username ? `@${user.username}` : `@user${user.id}`,
+        authorAvatar: user.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
       };
 
       console.log("Публикация поста...", {

@@ -173,6 +173,83 @@ export const handleStarsBalance: RequestHandler = async (req, res) => {
   }
 };
 
+export const handleStarsInvoice: RequestHandler = async (req, res) => {
+  try {
+    const { userId, amount } = req.body as StarsRequest;
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ error: "Неверные параметры" });
+    }
+
+    if (!BOT_TOKEN) {
+      return res.status(503).json({
+        error: "Покупка звёзд доступна только в Telegram-приложении с настроенным ботом",
+      });
+    }
+
+    const payload = JSON.stringify({
+      userId: String(userId),
+      amount,
+      ts: Date.now(),
+    });
+
+    const tgRes = await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/createInvoiceLink`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `${amount} Telegram Stars`,
+          description: `Пополнение баланса Vexora на ${amount} ⭐`,
+          payload: payload.slice(0, 128),
+          currency: "XTR",
+          prices: [{ label: `${amount} Stars`, amount }],
+        }),
+      },
+    );
+
+    const data = await tgRes.json();
+    if (!data.ok || !data.result) {
+      return res.status(502).json({
+        error: data.description || "Не удалось создать счёт Telegram",
+      });
+    }
+
+    res.json({ success: true, invoiceLink: data.result, amount });
+  } catch (error) {
+    console.error("Ошибка создания invoice:", error);
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+  }
+};
+
+export const handleStarsPurchaseConfirm: RequestHandler = async (req, res) => {
+  try {
+    const { userId, amount } = req.body as StarsRequest;
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ error: "Неверные параметры" });
+    }
+
+    addStars(userId, amount);
+    addLedgerEntry({
+      userId,
+      amount,
+      type: "purchase",
+      counterparty: "telegram",
+      description: `Покупка через Telegram: +${amount} ⭐`,
+    });
+
+    res.json({
+      success: true,
+      balance: getUserBalance(userId),
+      source: "telegram",
+    });
+  } catch (error) {
+    console.error("Ошибка подтверждения покупки:", error);
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+  }
+};
+
 export const handleSendStar: RequestHandler = async (req, res) => {
   try {
     const { fromUserId, toPostId, toUserId, amount }: SendStarRequest =

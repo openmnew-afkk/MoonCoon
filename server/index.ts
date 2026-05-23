@@ -7,6 +7,8 @@ import {
   handleStarsWithdraw,
   handleStarsBalance,
   handleSendStar,
+  handleStarsInvoice,
+  handleStarsPurchaseConfirm,
 } from "./routes/stars";
 import {
   handleAdminLogin,
@@ -82,6 +84,8 @@ export function createServer() {
 
   // Stars API routes
   app.post("/api/stars/add", handleStarsAdd);
+  app.post("/api/stars/invoice", handleStarsInvoice);
+  app.post("/api/stars/confirm-purchase", handleStarsPurchaseConfirm);
   app.post("/api/stars/withdraw", handleStarsWithdraw);
   app.post("/api/stars/send", handleSendStar);
   app.get("/api/stars/balance", handleStarsBalance);
@@ -195,6 +199,7 @@ export function createServer() {
       }
 
       // Обычный пост
+      const { authorName, authorAvatar, authorUsername } = req.body || {};
       const post = {
         id: Date.now().toString(),
         userId,
@@ -207,6 +212,11 @@ export function createServer() {
         comments: 0,
         stars: 0,
         pinned: false,
+        authorName: authorName || `Пользователь ${userId}`,
+        authorAvatar:
+          authorAvatar ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+        authorUsername: authorUsername || `@user${userId}`,
       };
 
       posts.push(post);
@@ -287,7 +297,7 @@ export function createServer() {
             {
               role: "system",
               content:
-                'Модератор MoonCoon. Проверь описание фото-отчёта: запрещены 18+, насилие, спам, медицинские назначения. Ответь только "APPROVED" или "REJECTED: причина".',
+                'Модератор Vexora. Проверь описание фото-отчёта: запрещены 18+, насилие, спам, медицинские назначения. Ответь только "APPROVED" или "REJECTED: причина".',
             },
             { role: "user", content: proofDescription },
           ],
@@ -468,7 +478,7 @@ export function createServer() {
       if (!message) return res.status(400).json({ error: "Нужно сообщение" });
 
       const defaultPrompt =
-        "Ты — Адель, живой AI-помощник MoonCoon. Не давай медицинских советов и 18+ контента. Помогаешь с постами, хэштегами, целями (команда: «Ставлю цель: … на N звёзд»), звёздами. Кратко, по-русски, с эмодзи.";
+        "Ты — Адель, живой AI-помощник Vexora. Не давай медицинских советов и 18+ контента. Помогаешь с постами, хэштегами, целями (команда: «Ставлю цель: … на N звёзд»), звёздами. Кратко, по-русски, с эмодзи.";
 
       const response = await fetch(OPENAI_API_URL, {
         method: "POST",
@@ -524,7 +534,7 @@ export function createServer() {
       if (!allowed.includes(hostname)) {
         return res.status(403).send("Host not allowed");
       }
-      const r = await fetch(url, { headers: { "User-Agent": "MoonCoon/1.0" } });
+      const r = await fetch(url, { headers: { "User-Agent": "Vexora/1.0" } });
       if (!r.ok) {
         return res.status(r.status).send("Upstream error");
       }

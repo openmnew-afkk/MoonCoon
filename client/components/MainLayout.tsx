@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Home, Plus, Sparkles, User, Search, X, Bell, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/brand";
 
 interface MainLayoutProps { children: React.ReactNode; }
 
@@ -64,10 +65,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const pagesWithOwnHeader = ["/", "/ai", "/create"];
-  const showTopBar = !pagesWithOwnHeader.some(p =>
-    p === "/" ? location.pathname === "/" : location.pathname.startsWith(p),
-  );
+  const pagesWithOwnHeader = ["/ai", "/create"];
+  const showTopBar = !pagesWithOwnHeader.some(p => location.pathname.startsWith(p));
 
   useEffect(() => {
     if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 80);
@@ -118,7 +117,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         >
           <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
             <Link to="/" className="flex items-center gap-2 select-none">
-              <span className="text-xl font-black gradient-text tracking-tight leading-none">MoonCoon</span>
+              <span className="text-xl font-black gradient-text tracking-tight leading-none">{APP_NAME}</span>
             </Link>
             <div className="flex items-center gap-1.5">
               <button
@@ -156,7 +155,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 type="search"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Поиск по MoonCoon..."
+                placeholder={`Поиск в ${APP_NAME}...`}
                 className="w-full bg-transparent outline-none text-base placeholder:text-muted-foreground"
                 autoComplete="off"
               />

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Star, ArrowUpRight } from "lucide-react";
+import { Star, ArrowUpRight, Loader2 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/brand";
 
 interface StarsPaymentProps {
   userId: string;
@@ -15,127 +16,111 @@ export default function StarsPayment({
   onSuccess,
 }: StarsPaymentProps) {
   const { webApp } = useTelegram();
-  const [amount, setAmount] = useState<number>(100);
+  const [amount, setAmount] = useState(100);
   const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState<number>(100);
+  const [withdrawAmount, setWithdrawAmount] = useState(100);
+  const [buying, setBuying] = useState(false);
+
+  const packages = [50, 100, 250, 500, 1000];
 
   const handlePurchase = async () => {
+    if (!userId || userId === "0") {
+      webApp?.showAlert?.("Войдите через Telegram");
+      return;
+    }
+    setBuying(true);
     try {
-      const response = await fetch("/api/stars/add", {
+      const res = await fetch("/api/stars/invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          amount,
-        }),
+        body: JSON.stringify({ userId, amount }),
       });
+      const data = await res.json();
 
-      if (response.ok) {
-        const data = await response.json();
-        if (webApp) {
-          webApp.showAlert(
-            `Успешно добавлено ${amount} ⭐\nНовый баланс: ${data.balance} ⭐`,
-          );
-        } else {
-          alert(`Успешно добавлено ${amount} ⭐`);
-        }
-        onSuccess?.();
-      } else {
-        const error = await response.json();
-        if (webApp) {
-          webApp.showAlert(error.error || "Ошибка при добавлении звезд");
-        } else {
-          alert(error.error || "Ошибка при добавлении звезд");
-        }
+      if (!res.ok) {
+        webApp?.showAlert?.(data.error || "Покупка недоступна. Проверьте BOT_TOKEN на сервере.");
+        return;
       }
-    } catch (error) {
-      console.error("Ошибка при добавлении звезд:", error);
-      if (webApp) {
-        webApp.showAlert("Ошибка при добавлении звезд. Попробуйте позже.");
+
+      if (webApp?.openInvoice) {
+        webApp.openInvoice(data.invoiceLink, async (status) => {
+          if (status === "paid") {
+            await fetch("/api/stars/confirm-purchase", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId, amount }),
+            });
+            webApp.showAlert?.(`Зачислено ${amount} ⭐ на баланс ${APP_NAME}`);
+            webApp.HapticFeedback?.notificationOccurred("success");
+            onSuccess?.();
+          }
+          setBuying(false);
+        });
       } else {
-        alert("Ошибка при добавлении звезд");
+        webApp?.showAlert?.("Оплата доступна только внутри Telegram");
+        setBuying(false);
       }
+    } catch {
+      webApp?.showAlert?.("Ошибка сети");
+      setBuying(false);
     }
   };
 
   const handleWithdraw = async () => {
     if (withdrawAmount < 100) {
-      webApp?.showAlert("Минимальная сумма вывода: 100 звезд");
+      webApp?.showAlert?.("Минимум 100 звёзд");
       return;
     }
-
     if (withdrawAmount > currentStars) {
-      webApp?.showAlert("Недостаточно звезд на балансе");
+      webApp?.showAlert?.("Недостаточно звёзд");
       return;
     }
-
-    const commission = Math.floor(withdrawAmount * 0.1); // 10% комиссия
-    const finalAmount = withdrawAmount - commission;
-
-    try {
-      // Отправляем запрос на вывод
-      const response = await fetch("/api/stars/withdraw", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          amount: withdrawAmount,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        webApp?.showAlert(
-          `Запрос на вывод ${data.amount} звезд отправлен. Комиссия: ${data.commission} звезд (${data.commissionPercentage}%)`,
-        );
-        setShowWithdraw(false);
-        onSuccess?.();
-      } else {
-        webApp?.showAlert("Ошибка при выводе звезд. Попробуйте позже.");
-      }
-    } catch (error) {
-      console.error("Ошибка при выводе звезд:", error);
-      webApp?.showAlert("Ошибка при выводе звезд. Попробуйте позже.");
+    const res = await fetch("/api/stars/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, amount: withdrawAmount }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      webApp?.showAlert?.(
+        `Заявка принята: ${data.withdrawn} ⭐ (комиссия ${data.commission} ⭐)`,
+      );
+      setShowWithdraw(false);
+      onSuccess?.();
+    } else {
+      const err = await res.json();
+      webApp?.showAlert?.(err.error || "Ошибка вывода");
     }
   };
 
-  const packages = [100, 250, 500, 1000, 2500, 5000];
-
   return (
-    <div className="space-y-6">
-      {/* Текущий баланс - Красивая карточка */}
-      <div className="relative glass-card p-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/20 opacity-50"></div>
-        <div className="relative">
-          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-            Ваш баланс
-          </p>
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Star className="text-primary fill-primary" size={32} />
-            <p className="text-4xl font-bold text-primary">{currentStars}</p>
-          </div>
-          <p className="text-xs text-muted-foreground">звезд доступно</p>
-        </div>
+    <div className="space-y-5">
+      <div className="text-center py-4 rounded-2xl bg-muted/50 border border-border">
+        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Баланс</p>
+        <p className="text-4xl font-bold flex items-center justify-center gap-2">
+          <Star className="text-primary fill-primary" size={28} />
+          {currentStars}
+        </p>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          Оплата через официальные Telegram Stars (XTR)
+        </p>
       </div>
 
       {!showWithdraw ? (
         <>
-          {/* Покупка звезд */}
-          <div className="glass-card p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Star className="text-primary fill-primary" size={20} />
-              <p className="text-base font-semibold">Купить звезды</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {packages.map((pkg) => (
+          <div>
+            <p className="text-sm font-semibold mb-3">Купить звёзды</p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {packages.map(pkg => (
                 <button
                   key={pkg}
+                  type="button"
                   onClick={() => setAmount(pkg)}
                   className={cn(
-                    "glass-button py-3 text-sm font-medium transition-all rounded-xl",
+                    "py-2.5 rounded-xl text-sm font-medium border",
                     amount === pkg
-                      ? "bg-primary/20 text-primary border-2 border-primary shadow-lg shadow-primary/30"
-                      : "hover:bg-glass-light/40",
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-card",
                   )}
                 >
                   {pkg}
@@ -143,82 +128,39 @@ export default function StarsPayment({
               ))}
             </div>
             <button
+              type="button"
               onClick={handlePurchase}
-              className="w-full glass-button bg-primary/20 text-primary hover:bg-primary/30 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20"
+              disabled={buying}
+              className="btn-premium w-full py-3.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              <Star className="fill-primary" size={20} />
-              Купить {amount} звезд
+              {buying ? <Loader2 size={18} className="animate-spin" /> : <Star size={18} className="fill-current" />}
+              Купить {amount} ⭐ в Telegram
             </button>
           </div>
-
-          {/* Вывод */}
-          <div className="border-t border-glass-light/20 pt-4">
-            <button
-              onClick={() => setShowWithdraw(true)}
-              className="w-full glass-button py-3 rounded-xl flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground hover:bg-glass-light/40 transition-all"
-            >
-              <ArrowUpRight size={18} />
-              Вывести звезды
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowWithdraw(true)}
+            className="w-full py-3 rounded-xl border border-border text-sm text-muted-foreground flex items-center justify-center gap-2"
+          >
+            <ArrowUpRight size={16} /> Вывести звёзды
+          </button>
         </>
       ) : (
-        <>
-          {/* Форма вывода */}
-          <div className="glass-card p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <ArrowUpRight className="text-primary" size={20} />
-              <p className="text-base font-semibold">Вывести звезды</p>
-            </div>
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-2 block">
-                Сумма (мин. 100 звезд)
-              </label>
-              <input
-                type="number"
-                min="100"
-                max={currentStars}
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-                className="w-full glass-morphism rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 mb-3"
-                placeholder="100"
-              />
-              {withdrawAmount >= 100 && (
-                <div className="glass-morphism rounded-xl p-3 text-sm space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">К получению:</span>
-                    <span className="font-semibold text-primary">
-                      {Math.floor(withdrawAmount * 0.9)} ⭐
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">
-                      Комиссия (10%):
-                    </span>
-                    <span className="text-muted-foreground">
-                      {Math.floor(withdrawAmount * 0.1)} ⭐
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowWithdraw(false)}
-                className="flex-1 glass-button py-3 rounded-xl text-sm hover:bg-glass-light/40 transition-all"
-              >
-                Отмена
-              </button>
-              <button
-                onClick={handleWithdraw}
-                disabled={withdrawAmount < 100 || withdrawAmount > currentStars}
-                className="flex-1 glass-button bg-primary/20 text-primary hover:bg-primary/30 py-3 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Вывести
-              </button>
-            </div>
+        <div className="space-y-3">
+          <p className="text-sm font-semibold">Вывод</p>
+          <input
+            type="number"
+            min={100}
+            max={currentStars}
+            value={withdrawAmount}
+            onChange={e => setWithdrawAmount(Number(e.target.value))}
+            className="w-full rounded-xl px-4 py-3 bg-muted border-0 text-sm"
+          />
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setShowWithdraw(false)} className="flex-1 py-3 rounded-xl bg-muted text-sm">Отмена</button>
+            <button type="button" onClick={handleWithdraw} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">Вывести</button>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

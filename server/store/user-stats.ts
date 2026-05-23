@@ -36,16 +36,9 @@ export function addStarsReceived(userId: string, amount: number) {
   ensureUserStats(userId).starsReceived += amount;
 }
 
-export function recordStarSupport(fromUserId: string, toUserId: string) {
-  if (fromUserId === toUserId) return;
-  if (!followersByUser.has(toUserId)) followersByUser.set(toUserId, new Set());
-  followersByUser.get(toUserId)!.add(fromUserId);
-  if (!followingByUser.has(fromUserId)) followingByUser.set(fromUserId, new Set());
-  followingByUser.get(fromUserId)!.add(toUserId);
-  const stats = ensureUserStats(toUserId);
-  stats.followers = followersByUser.get(toUserId)!.size;
-  const fromStats = ensureUserStats(fromUserId);
-  fromStats.following = followingByUser.get(fromUserId)!.size;
+/** Учёт поддержки авторов — не раздуваем «подписчиков» */
+export function recordStarSupport(_fromUserId: string, _toUserId: string) {
+  /* зарезервировано под будущую систему подписок */
 }
 
 export function updateUserStats(

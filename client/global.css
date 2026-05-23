@@ -306,7 +306,14 @@ input[type="range"]::-webkit-slider-thumb {
   .post-action-btn:active { transform: scale(0.80); }
 
   /* ── AI chat ───────────────────────────────────────────────────── */
-  .ai-chat-shell { @apply flex flex-col bg-background; height: 100dvh; }
+  .ai-chat-shell {
+    @apply flex flex-col bg-background max-w-2xl mx-auto w-full;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .ai-chat-messages {
+    -webkit-overflow-scrolling: touch;
+  }
   .adel-intro-bg {
     background:
       radial-gradient(ellipse 80% 60% at 50% 30%, hsl(var(--primary) / 0.18) 0%, transparent 55%),
@@ -342,7 +349,7 @@ input[type="range"]::-webkit-slider-thumb {
     background: hsl(var(--background) / 0.95);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    padding-bottom: calc(var(--tg-safe-bottom) + 5rem);
+    padding-bottom: calc(var(--tg-safe-bottom, 0px) + 4.75rem);
   }
   .ai-bubble-user {
     background: hsl(var(--primary));

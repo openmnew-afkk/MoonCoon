@@ -18,6 +18,7 @@ import Feed from "./pages/Feed";
 import Explore from "./pages/Explore";
 import Create from "./pages/Create";
 import Profile from "./pages/Profile";
+import SettingsPage from "./pages/SettingsPage";
 import AI from "./pages/AI";
 import Goals from "./pages/Goals";
 import StarsHistory from "./pages/StarsHistory";
@@ -64,6 +65,7 @@ const AppContent = () => {
           <Route path="/stars-history" element={<StarsHistory />} />
           <Route path="/photo-reports" element={<PhotoReports />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
