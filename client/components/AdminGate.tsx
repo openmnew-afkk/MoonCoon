@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield } from "lucide-react";
+import { Shield, Loader2, RefreshCw, KeyRound, CheckCircle2 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 
 const ADMIN_USERNAME = "mikysauce";
@@ -12,22 +12,28 @@ export default function AdminGate({ onAuthenticated }: AdminGateProps) {
   const { user } = useTelegram();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [authed, setAuthed] = useState(false);
+  const [done, setDone] = useState(false);
 
-  const isTargetAdmin =
-    user?.username?.toLowerCase().replace("@", "") === ADMIN_USERNAME;
+  // Normalize: strip @ and lowercase
+  const tgUsername = user?.username?.toLowerCase().replace("@", "") ?? "";
+  const isTargetAdmin = tgUsername === ADMIN_USERNAME;
 
+  // Auto-attempt when Telegram user matches
   useEffect(() => {
-    if (!isTargetAdmin || !user?.id) return;
-    // Auto-login by username, no password needed
-    handleLogin();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isTargetAdmin && user?.id && !done) {
+      handleLogin();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTargetAdmin, user?.id]);
 
-  if (!isTargetAdmin || authed) return null;
+  // Don't render if not the target admin or already done
+  if (!isTargetAdmin || done) return null;
 
   const handleLogin = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setError("userId недоступен. Откройте через Telegram.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -35,20 +41,20 @@ export default function AdminGate({ onAuthenticated }: AdminGateProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: user.username || "MikySauce",
+          username: user.username || ADMIN_USERNAME,
           userId: String(user.id),
         }),
       });
       const data = await res.json();
       if (res.ok && data.sessionToken) {
         localStorage.setItem("admin_session", data.sessionToken);
-        setAuthed(true);
+        setDone(true);
         onAuthenticated(data.sessionToken);
       } else {
         setError(data.error || "Ошибка доступа");
       }
     } catch {
-      setError("Ошибка подключения");
+      setError("Нет связи с сервером");
     } finally {
       setLoading(false);
     }
@@ -56,31 +62,42 @@ export default function AdminGate({ onAuthenticated }: AdminGateProps) {
 
   return (
     <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="glass-surface-v2 w-full max-w-sm p-6">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center">
-            <Shield className="text-primary" size={28} />
+      <div className="w-full max-w-sm rounded-2xl border border-border p-6 space-y-4"
+        style={{ background: "hsl(var(--card))" }}>
+
+        {/* Icon */}
+        <div className="flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style={{ background: "hsl(var(--primary) / 0.15)", border: "1px solid hsl(var(--primary) / 0.3)" }}>
+            <Shield className="text-primary" size={30} />
           </div>
         </div>
-        <h2 className="text-lg font-bold text-center mb-1">Вход администратора</h2>
-        <p className="text-caption text-center mb-5">
-          @{user?.username} · проверка доступа…
-        </p>
+
+        <div className="text-center">
+          <h2 className="text-lg font-bold">Вход администратора</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            @{user?.username ?? ADMIN_USERNAME} · проверка доступа...
+          </p>
+        </div>
+
         {loading && (
-          <div className="flex justify-center mb-4">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <div className="flex justify-center py-2">
+            <Loader2 className="animate-spin text-primary" size={28} />
           </div>
         )}
+
         {error && (
-          <p className="text-xs text-destructive mb-3 text-center">{error}</p>
+          <div className="text-xs text-destructive text-center bg-destructive/10 rounded-xl px-3 py-2">
+            {error}
+          </div>
         )}
-        {!loading && error && (
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-          >
-            Повторить
+
+        {!loading && (error || !user?.id) && (
+          <button type="button" onClick={handleLogin}
+            className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            <RefreshCw size={15} />
+            Повторить попытку
           </button>
         )}
       </div>
