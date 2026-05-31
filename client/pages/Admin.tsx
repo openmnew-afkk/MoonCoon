@@ -54,12 +54,18 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
   const { user } = useTelegram();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [manualMode, setManualMode] = useState(false);
-  const [manualUsername, setManualUsername] = useState("");
+  const [manualMode, setManualMode] = useState(true);
+  // Always show manual form — pre-filled with known admin username
+  const [manualUsername, setManualUsername] = useState(ADMIN_USERNAME);
   const [manualUserId, setManualUserId] = useState("");
 
   const tgUsername = user?.username?.toLowerCase().replace("@", "") ?? "";
   const isMiky = tgUsername === ADMIN_USERNAME;
+
+  // Update userId field when Telegram user loads
+  useEffect(() => {
+    if (user?.id) setManualUserId(String(user.id));
+  }, [user?.id]);
 
   // Auto-try if Telegram user matches
   useEffect(() => {
@@ -94,8 +100,9 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!manualUsername.trim() || !manualUserId.trim()) return;
-    attemptLogin(manualUsername.trim(), manualUserId.trim());
+    if (!manualUsername.trim()) return;
+    // server only validates username — userId just needs to be non-empty
+    attemptLogin(manualUsername.trim(), manualUserId.trim() || String(user?.id || "admin"));
   };
 
   return (
