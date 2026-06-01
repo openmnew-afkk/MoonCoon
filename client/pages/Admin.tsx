@@ -14,7 +14,6 @@ import {
   RefreshCw,
   Settings2,
   LogIn,
-  KeyRound,
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
@@ -54,43 +53,29 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
   const { user } = useTelegram();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [manualMode, setManualMode] = useState(true);
-  // Always show manual form — pre-filled with known admin username
-  const [manualUsername, setManualUsername] = useState(ADMIN_USERNAME);
-  const [manualPassword, setManualPassword] = useState("");
-  const [manualUserId, setManualUserId] = useState("");
+  const [password, setPassword] = useState("");
 
-  const tgUsername = user?.username?.toLowerCase().replace("@", "") ?? "";
-  const isMiky = tgUsername === ADMIN_USERNAME;
-
-  // Update userId field when Telegram user loads
-  useEffect(() => {
-    if (user?.id) setManualUserId(String(user.id));
-  }, [user?.id]);
-
-  // Auto-try if Telegram user matches
-  useEffect(() => {
-    if (isMiky && user?.id) {
-      attemptLogin(user.username || ADMIN_USERNAME, String(user.id));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMiky, user?.id]);
-
-  const attemptLogin = async (username: string, userId: string) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password.trim()) return;
     setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, userId, password: manualPassword }),
+        body: JSON.stringify({
+          username: ADMIN_USERNAME,
+          password,
+          userId: String(user?.id || "admin"),
+        }),
       });
       const data = await res.json();
       if (res.ok && data.sessionToken) {
         localStorage.setItem("admin_session", data.sessionToken);
         onSuccess(data.sessionToken);
       } else {
-        setError(data.error || "Доступ запрещён");
+        setError(data.error || "Неверный пароль");
       }
     } catch {
       setError("Нет связи с сервером");
@@ -99,128 +84,117 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
     }
   };
 
-  const handleManualLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!manualUsername.trim()) return;
-    attemptLogin(manualUsername.trim(), manualUserId.trim() || String(user?.id || "admin"));
-  };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 pb-28">
-      {/* Background glow */}
+      {/* Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div style={{
-          position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)",
-          width: "60vw", height: "60vw", borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(203,255,77,0.06) 0%, transparent 70%)",
+          position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)",
+          width: "70vw", height: "70vw", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(203,255,77,0.07) 0%, transparent 70%)",
+          filter: "blur(50px)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: "10%", right: "10%",
+          width: "40vw", height: "40vw", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)",
           filter: "blur(40px)",
         }} />
       </div>
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Card */}
-        <div className="rounded-3xl border border-border p-7 space-y-6"
-          style={{ background: "hsl(var(--card))" }}>
+        <form onSubmit={handleLogin}>
+          <div className="rounded-3xl border border-border p-7 space-y-5"
+            style={{ background: "hsl(var(--card))", boxShadow: "0 24px 80px rgba(0,0,0,0.2)" }}>
 
-          {/* Header */}
-          <div className="flex flex-col items-center text-center gap-3">
-            <div className="w-18 h-18 w-[72px] h-[72px] rounded-2xl flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.08))",
-                border: "1px solid hsl(var(--primary) / 0.35)",
-                boxShadow: "0 0 24px hsl(var(--primary) / 0.15)",
-              }}>
-              <Shield className="text-primary" size={32} />
+            {/* Header */}
+            <div className="flex flex-col items-center text-center gap-3 pb-1">
+              <div className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center relative"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary) / 0.06))",
+                  border: "1px solid hsl(var(--primary) / 0.3)",
+                  boxShadow: "0 0 32px hsl(var(--primary) / 0.18)",
+                }}>
+                <Shield className="text-primary" size={32} />
+                <div style={{
+                  position: "absolute", inset: -3, borderRadius: "18px",
+                  background: "conic-gradient(from 0deg, hsl(var(--primary) / 0.5), transparent, hsl(var(--primary) / 0.5))",
+                  animation: "adel-ring-spin 4s linear infinite",
+                  zIndex: -1,
+                }} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black">Админ-панель</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {user?.username ? `@${user.username} · введите пароль` : "Введите пароль для входа"}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-black">Админ-панель</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {isMiky
-                  ? `Обнаружен @${user?.username} · авторизуемся...`
-                  : "Проверка прав доступа"}
-              </p>
-            </div>
-          </div>
 
-          {/* Loading */}
-          {loading && (
-            <div className="flex flex-col items-center gap-3 py-2">
-              <Loader2 className="animate-spin text-primary" size={32} />
-              <p className="text-sm text-muted-foreground">Проверка доступа...</p>
-            </div>
-          )}
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
+                style={{ background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.25)", color: "#f43f5e" }}>
+                <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
 
-          {/* Error */}
-          {error && !loading && (
-            <div className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
-              style={{ background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.25)", color: "#f43f5e" }}>
-              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2 py-3">
+                <Loader2 className="animate-spin text-primary" size={22} />
+                <span className="text-sm text-muted-foreground">Проверка...</span>
+              </div>
+            ) : (
+              <>
+                {/* Account display */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                    Аккаунт
+                  </label>
+                  <div className="w-full rounded-xl px-4 py-2.5 text-sm border border-border/60 flex items-center gap-2"
+                    style={{ background: "hsl(var(--muted) / 0.4)" }}>
+                    <Shield size={13} className="text-primary/60 flex-shrink-0" />
+                    <span className="font-medium">{ADMIN_USERNAME}</span>
+                  </div>
+                </div>
 
-          {!loading && (
-            <>
-              {/* Auto-retry button if we have a Telegram user */}
-              {isMiky && user?.id && (
-                <button type="button" onClick={() => attemptLogin(user.username || ADMIN_USERNAME, String(user.id))}
-                  className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", boxShadow: "0 4px 16px hsl(var(--primary) / 0.35)" }}>
+                {/* Password */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                    Пароль
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Введите пароль"
+                    autoFocus
+                    autoComplete="current-password"
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none border border-border bg-background focus:border-primary/60 transition-colors"
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={!password.trim()}
+                  className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-all active:scale-95"
+                  style={{
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--primary-foreground))",
+                    boxShadow: "0 6px 20px hsl(var(--primary) / 0.4)",
+                  }}>
                   <LogIn size={16} />
-                  Войти через Telegram
+                  Войти в панель
                 </button>
-              )}
-
-              {/* Manual login toggle */}
-              <button type="button" onClick={() => setManualMode(m => !m)}
-                className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30">
-                <KeyRound size={14} />
-                {manualMode ? "Скрыть ручной вход" : "Войти вручную"}
-              </button>
-
-              {manualMode && (
-                <form onSubmit={handleManualLogin} className="space-y-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-                      Username (без @)
-                    </label>
-                    <input
-                      type="text"
-                      value={manualUsername}
-                      onChange={e => setManualUsername(e.target.value)}
-                      placeholder="mikysauce"
-                      autoComplete="username"
-                      className="w-full rounded-xl px-4 py-2.5 text-sm outline-none border border-border bg-background focus:border-primary/60 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-                      Пароль
-                    </label>
-                    <input
-                      type="password"
-                      value={manualPassword}
-                      onChange={e => setManualPassword(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      className="w-full rounded-xl px-4 py-2.5 text-sm outline-none border border-border bg-background focus:border-primary/60 transition-colors"
-                    />
-                  </div>
-                  <button type="submit"
-                    disabled={!manualUsername.trim() || !manualPassword.trim()}
-                    className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-all active:scale-95"
-                    style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-                    <LogIn size={15} />
-                    Войти
-                  </button>
-                </form>
-              )}
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+        </form>
 
         <p className="text-center text-[11px] text-muted-foreground mt-4">
-          Доступ только для авторизованных администраторов
+          Сессия действует 12 часов · только для @{ADMIN_USERNAME}
         </p>
       </div>
     </div>
