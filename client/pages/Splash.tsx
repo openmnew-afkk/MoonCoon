@@ -1,333 +1,297 @@
 import { useEffect, useState, useRef } from "react";
-import { getInitialResolvedTheme } from "@/lib/theme";
 
 interface Bubble {
   id: number;
-  x: number;          // % from left
-  size: number;       // px diameter
-  duration: number;   // s to float to top
-  delay: number;      // s start delay
+  x: number;
+  size: number;
+  duration: number;
+  delay: number;
   color: string;
-  blur: number;       // px blur
-  wobble: number;     // amplitude px horizontal wobble
+  variant: number;
 }
 
-const PHASES = ["Инициализация...", "Загрузка данных...", "Подготовка ленты...", "Почти готово...", "Готово ✓"];
-
-const BUBBLE_COLORS = [
-  "rgba(203,255,77,0.55)",
-  "rgba(168,85,247,0.5)",
-  "rgba(59,130,246,0.45)",
-  "rgba(236,72,153,0.45)",
-  "rgba(52,211,153,0.4)",
-  "rgba(251,191,36,0.45)",
-  "rgba(203,255,77,0.35)",
-  "rgba(168,85,247,0.35)",
-];
-
-function generateBubbles(count: number): Bubble[] {
-  return Array.from({ length: count }, (_, i) => ({
+function makeBubbles(n: number): Bubble[] {
+  const palette = [
+    "rgba(147,51,234,0.55)",   // violet
+    "rgba(88,28,220,0.5)",     // indigo
+    "rgba(168,85,247,0.45)",   // purple
+    "rgba(59,7,100,0.7)",      // deep purple
+    "rgba(109,40,217,0.6)",    // violet dark
+    "rgba(196,181,253,0.3)",   // lavender
+    "rgba(30,10,60,0.8)",      // near black purple
+  ];
+  return Array.from({ length: n }, (_, i) => ({
     id: i,
-    x: 5 + Math.random() * 90,
-    size: 12 + Math.random() * 52,
-    duration: 5 + Math.random() * 9,
-    delay: Math.random() * 10,
-    color: BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)],
-    blur: Math.random() * 3,
-    wobble: 8 + Math.random() * 20,
+    x: 3 + Math.random() * 94,
+    size: 10 + Math.random() * 60,
+    duration: 6 + Math.random() * 10,
+    delay: Math.random() * 12,
+    color: palette[Math.floor(Math.random() * palette.length)],
+    variant: i % 4,
   }));
 }
 
 export default function Splash({ onComplete }: { onComplete: () => void }) {
-  const [fadeOut, setFadeOut] = useState(false);
+  const [out, setOut] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [phaseIndex, setPhaseIndex] = useState(0);
-  const [logoVisible, setLogoVisible] = useState(false);
-  const [titleVisible, setTitleVisible] = useState(false);
-  const [barVisible, setBarVisible] = useState(false);
-  const bubbles = useRef<Bubble[]>(generateBubbles(22));
-  const isDark = getInitialResolvedTheme() === "dark";
+  const [show, setShow] = useState(false);
+  const bubbles = useRef(makeBubbles(28));
 
   useEffect(() => {
-    const t1 = setTimeout(() => setLogoVisible(true), 100);
-    const t2 = setTimeout(() => setTitleVisible(true), 400);
-    const t3 = setTimeout(() => setBarVisible(true), 640);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const t = setTimeout(() => setShow(true), 80);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    const duration = 2400;
+    const dur = 2600;
     const start = Date.now();
     const tick = () => {
-      const elapsed = Date.now() - start;
-      const p = Math.min(100, Math.round((elapsed / duration) * 100));
+      const p = Math.min(100, Math.round(((Date.now() - start) / dur) * 100));
       setProgress(p);
-      const phaseAt = [0, 22, 48, 72, 94];
-      const newPhase = phaseAt.filter(t => p >= t).length - 1;
-      setPhaseIndex(Math.max(0, Math.min(newPhase, PHASES.length - 1)));
-      if (elapsed < duration) requestAnimationFrame(tick);
+      if (p < 100) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-    const exitTimer = setTimeout(() => {
-      setFadeOut(true);
-      setTimeout(() => onComplete(), 500);
-    }, duration + 200);
-    return () => { clearTimeout(exitTimer); };
+    const exit = setTimeout(() => {
+      setOut(true);
+      setTimeout(onComplete, 600);
+    }, dur + 200);
+    return () => clearTimeout(exit);
   }, [onComplete]);
-
-  const bgDark = "linear-gradient(175deg, #05050c 0%, #0c0a1a 45%, #0a080f 100%)";
-  const bgLight = "linear-gradient(175deg, #f0f0ff 0%, #e8e0f8 45%, #f5f2ff 100%)";
 
   return (
     <div
-      className={`fixed inset-0 z-[100] overflow-hidden flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${fadeOut ? "opacity-0 scale-[1.05]" : "opacity-100 scale-100"}`}
-      style={{ background: isDark ? bgDark : bgLight }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        overflow: "hidden",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        background: "radial-gradient(ellipse at 50% 30%, #1a0533 0%, #0d001f 40%, #050008 100%)",
+        transition: "opacity 0.6s ease, transform 0.6s ease",
+        opacity: out ? 0 : 1,
+        transform: out ? "scale(1.04)" : "scale(1)",
+      }}
     >
-      {/* ── Lava-lamp bubbles ── */}
+      {/* ── Deep ambient layers ── */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse 80% 60% at 20% 80%, rgba(88,28,220,0.18) 0%, transparent 60%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse 60% 50% at 80% 20%, rgba(168,85,247,0.12) 0%, transparent 60%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* ── Rising bubbles (lava lamp) ── */}
       {bubbles.current.map(b => (
-        <div
-          key={b.id}
-          style={{
-            position: "absolute",
-            bottom: `-${b.size + 10}px`,
-            left: `${b.x}%`,
-            width: b.size,
-            height: b.size,
-            borderRadius: "50%",
-            background: b.color,
-            filter: `blur(${b.blur}px)`,
-            backdropFilter: "blur(2px)",
-            border: `1px solid ${b.color.replace(/[\d.]+\)$/, "0.8)")}`,
-            boxShadow: `0 0 ${b.size * 0.6}px ${b.color}, inset 0 2px 4px rgba(255,255,255,0.3)`,
-            animationName: `bubble-rise-${b.id % 4}`,
-            animationDuration: `${b.duration}s`,
-            animationDelay: `${b.delay}s`,
-            animationTimingFunction: "ease-in-out",
-            animationIterationCount: "infinite",
-            animationFillMode: "both",
-          }}
-        />
+        <div key={b.id} style={{
+          position: "absolute",
+          bottom: -(b.size + 20),
+          left: `${b.x}%`,
+          width: b.size,
+          height: b.size,
+          borderRadius: "50%",
+          background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.18), ${b.color})`,
+          border: `1px solid rgba(196,181,253,0.15)`,
+          boxShadow: `0 0 ${b.size * 0.5}px ${b.color}, inset 0 1px 3px rgba(255,255,255,0.12)`,
+          backdropFilter: "blur(1px)",
+          animationName: `bup${b.variant}`,
+          animationDuration: `${b.duration}s`,
+          animationDelay: `${b.delay}s`,
+          animationTimingFunction: "ease-in-out",
+          animationIterationCount: "infinite",
+          animationFillMode: "both",
+        }} />
       ))}
 
-      {/* ── Warm lamp glow at bottom ── */}
+      {/* ── Bottom lamp glow ── */}
       <div style={{
-        position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
-        width: "110%", height: "45%",
-        background: isDark
-          ? "radial-gradient(ellipse at 50% 100%, rgba(168,85,247,0.18) 0%, rgba(203,255,77,0.06) 40%, transparent 70%)"
-          : "radial-gradient(ellipse at 50% 100%, rgba(168,85,247,0.12) 0%, rgba(99,60,255,0.05) 40%, transparent 70%)",
-        filter: "blur(20px)",
+        position: "absolute", bottom: 0, left: "50%",
+        transform: "translateX(-50%)",
+        width: "120%", height: "50%",
+        background: "radial-gradient(ellipse at 50% 100%, rgba(109,40,217,0.3) 0%, rgba(88,28,220,0.12) 35%, transparent 65%)",
+        filter: "blur(30px)",
         pointerEvents: "none",
       }} />
 
-      {/* ── Top ambient orbs ── */}
+      {/* ── Central orb system ── */}
       <div style={{
-        position: "absolute", top: "-10%", left: "20%",
-        width: "50vw", height: "50vw", borderRadius: "50%",
-        background: isDark ? "rgba(203,255,77,0.05)" : "rgba(120,80,255,0.06)",
-        filter: "blur(70px)", animation: "orb-drift 11s ease-in-out infinite",
-        pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute", top: "-5%", right: "10%",
-        width: "40vw", height: "40vw", borderRadius: "50%",
-        background: isDark ? "rgba(168,85,247,0.07)" : "rgba(236,72,153,0.06)",
-        filter: "blur(60px)", animation: "orb-drift 14s ease-in-out infinite reverse",
-        pointerEvents: "none",
-      }} />
+        position: "relative",
+        opacity: show ? 1 : 0,
+        transform: show ? "scale(1) translateY(0)" : "scale(0.5) translateY(30px)",
+        transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 1s cubic-bezier(0.16,1,0.3,1)",
+      }}>
 
-      {/* ── Main content ── */}
-      <div className="relative z-10 flex flex-col items-center px-8 w-full max-w-xs">
-
-        {/* Logo */}
+        {/* Outermost pulse ring */}
         <div style={{
-          position: "relative", width: 96, height: 96,
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          width: 220, height: 220,
+          borderRadius: "50%",
+          border: "1px solid rgba(168,85,247,0.15)",
+          animation: "orb-ring3 4s ease-in-out infinite",
+        }} />
+
+        {/* Second ring */}
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          width: 170, height: 170,
+          borderRadius: "50%",
+          border: "1px solid rgba(168,85,247,0.25)",
+          animation: "orb-ring2 3.5s ease-in-out infinite 0.3s",
+        }} />
+
+        {/* Orbiting dot 1 */}
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          width: 160, height: 160,
+          marginTop: -80, marginLeft: -80,
+          borderRadius: "50%",
+          animation: "orbit1 6s linear infinite",
+        }}>
+          <div style={{
+            position: "absolute", top: -5, left: "50%", marginLeft: -5,
+            width: 10, height: 10, borderRadius: "50%",
+            background: "rgba(196,181,253,0.9)",
+            boxShadow: "0 0 12px rgba(196,181,253,1), 0 0 24px rgba(168,85,247,0.8)",
+          }} />
+        </div>
+
+        {/* Orbiting dot 2 (opposite, smaller) */}
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          width: 130, height: 130,
+          marginTop: -65, marginLeft: -65,
+          borderRadius: "50%",
+          animation: "orbit2 4.5s linear infinite reverse",
+        }}>
+          <div style={{
+            position: "absolute", top: -4, left: "50%", marginLeft: -4,
+            width: 8, height: 8, borderRadius: "50%",
+            background: "rgba(139,92,246,0.9)",
+            boxShadow: "0 0 10px rgba(139,92,246,1), 0 0 20px rgba(109,40,217,0.7)",
+          }} />
+        </div>
+
+        {/* Core orb glow (large blurred) */}
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          width: 120, height: 120,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, rgba(109,40,217,0.2) 40%, transparent 70%)",
+          filter: "blur(20px)",
+          animation: "orb-pulse 2.8s ease-in-out infinite",
+        }} />
+
+        {/* Core orb */}
+        <div style={{
+          position: "relative",
+          width: 96, height: 96,
+          borderRadius: "50%",
+          background: "radial-gradient(circle at 35% 30%, rgba(220,180,255,0.35) 0%, rgba(147,51,234,0.8) 40%, rgba(88,28,220,0.95) 80%, rgba(50,10,120,1) 100%)",
+          boxShadow: "0 0 30px rgba(147,51,234,0.7), 0 0 60px rgba(109,40,217,0.4), 0 0 100px rgba(88,28,220,0.25), inset 0 2px 8px rgba(255,255,255,0.15)",
+          animation: "orb-breathe 2.8s ease-in-out infinite",
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 28,
-          opacity: logoVisible ? 1 : 0,
-          transform: logoVisible ? "scale(1) translateY(0)" : "scale(0.6) translateY(20px)",
-          transition: "opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
         }}>
-          {/* Spinning conic ring */}
+          {/* Inner shimmer */}
           <div style={{
-            position: "absolute", inset: -6, borderRadius: "26px",
-            background: "conic-gradient(from 0deg, #CBFF4D, #a855f7, #ec4899, #3b82f6, #CBFF4D)",
-            opacity: 0.85,
-            animation: "ring-spin 5s linear infinite",
+            width: 36, height: 36, borderRadius: "50%",
+            background: "radial-gradient(circle at 40% 35%, rgba(255,255,255,0.5) 0%, rgba(196,181,253,0.2) 50%, transparent 70%)",
+            animation: "orb-shimmer 2.8s ease-in-out infinite",
           }} />
-          {/* Glass inner */}
-          <div style={{
-            position: "relative", width: "100%", height: "100%",
-            borderRadius: "20px",
-            background: isDark
-              ? "linear-gradient(145deg, rgba(20,18,36,0.95), rgba(10,8,20,0.98))"
-              : "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(12px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
-          }}>
-            <span style={{ fontSize: 42 }}>🌙</span>
-          </div>
-          {/* Outer glow */}
-          <div style={{
-            position: "absolute", inset: -18, borderRadius: "38px",
-            background: "conic-gradient(from 0deg, #CBFF4D22, #a855f722, #ec489922, #CBFF4D22)",
-            filter: "blur(22px)",
-            animation: "ring-spin 5s linear infinite",
-            zIndex: -1,
-          }} />
-          {/* Bubble floating off the logo */}
-          <div style={{
-            position: "absolute", top: -8, right: -8,
-            width: 18, height: 18, borderRadius: "50%",
-            background: "rgba(203,255,77,0.7)",
-            boxShadow: "0 0 12px rgba(203,255,77,0.9)",
-            animation: "logo-bubble1 3s ease-in-out infinite",
-          }} />
-          <div style={{
-            position: "absolute", bottom: -4, left: -10,
-            width: 12, height: 12, borderRadius: "50%",
-            background: "rgba(168,85,247,0.8)",
-            boxShadow: "0 0 10px rgba(168,85,247,0.9)",
-            animation: "logo-bubble2 3.7s ease-in-out infinite 0.6s",
-          }} />
-        </div>
-
-        {/* Title */}
-        <div style={{
-          opacity: titleVisible ? 1 : 0,
-          transform: titleVisible ? "translateY(0)" : "translateY(18px)",
-          transition: "opacity 0.6s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1)",
-          textAlign: "center", marginBottom: 8,
-        }}>
-          <h1 style={{
-            fontSize: 48, fontWeight: 900, letterSpacing: "-0.04em",
-            lineHeight: 1, margin: 0,
-            background: "linear-gradient(135deg, #CBFF4D 0%, #a855f7 40%, #ec4899 70%, #CBFF4D 100%)",
-            backgroundSize: "200% auto",
-            WebkitBackgroundClip: "text", backgroundClip: "text",
-            color: "transparent",
-            animation: "gradient-shift 3s linear infinite",
-          }}>
-            Vexora
-          </h1>
-          <p style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.38em",
-            textTransform: "uppercase", marginTop: 7,
-            color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)",
-          }}>
-            Create · Connect · Inspire
-          </p>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{
-          width: "100%", maxWidth: 240, marginTop: 40,
-          opacity: barVisible ? 1 : 0,
-          transform: barVisible ? "translateY(0)" : "translateY(12px)",
-          transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
-        }}>
-          <div style={{
-            height: 5, borderRadius: 5, overflow: "hidden",
-            background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
-          }}>
-            <div style={{
-              height: "100%", borderRadius: 5,
-              width: `${progress}%`,
-              background: "linear-gradient(90deg, #CBFF4D, #a855f7, #ec4899)",
-              transition: "width 0.3s ease-out",
-              boxShadow: "0 0 14px rgba(203,255,77,0.65), 0 0 28px rgba(203,255,77,0.3)",
-            }} />
-          </div>
-
-          <div style={{
-            display: "flex", justifyContent: "space-between",
-            alignItems: "center", marginTop: 10,
-          }}>
-            <p style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: isDark ? "rgba(255,255,255,0.32)" : "rgba(0,0,0,0.32)",
-            }}>
-              {PHASES[phaseIndex]}
-            </p>
-            <p style={{
-              fontSize: 11, fontFamily: "monospace", fontWeight: 700,
-              color: progress === 100 ? "#CBFF4D" : (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)"),
-              transition: "color 0.3s ease",
-            }}>
-              {progress}%
-            </p>
-          </div>
-
-          {/* Phase dots */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 14 }}>
-            {PHASES.map((_, i) => (
-              <div key={i} style={{
-                width: i === phaseIndex ? 18 : 5,
-                height: 5, borderRadius: 5,
-                background: i <= phaseIndex
-                  ? "linear-gradient(90deg, #CBFF4D, #a855f7)"
-                  : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"),
-                transition: "width 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.3s",
-                boxShadow: i <= phaseIndex ? "0 0 8px rgba(203,255,77,0.5)" : "none",
-              }} />
-            ))}
-          </div>
         </div>
       </div>
 
+      {/* ── Progress bar (minimal, at bottom) ── */}
+      <div style={{
+        position: "absolute", bottom: 56, left: "50%",
+        transform: "translateX(-50%)",
+        width: 180,
+        opacity: show ? 1 : 0,
+        transition: "opacity 0.6s ease 0.8s",
+      }}>
+        <div style={{
+          height: 2, borderRadius: 2,
+          background: "rgba(109,40,217,0.2)",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            height: "100%", borderRadius: 2,
+            width: `${progress}%`,
+            background: "linear-gradient(90deg, rgba(139,92,246,0.8), rgba(196,181,253,1), rgba(139,92,246,0.8))",
+            boxShadow: "0 0 8px rgba(196,181,253,0.8)",
+            transition: "width 0.25s ease-out",
+          }} />
+        </div>
+      </div>
+
+      {/* ── Keyframes ── */}
       <style>{`
-        @keyframes orb-drift {
-          0%,100% { transform: translate(0,0) scale(1); }
-          50% { transform: translate(4%,5%) scale(1.07); }
+        @keyframes bup0 {
+          0%   { transform:translateX(0) translateY(0) scale(1); opacity:0; }
+          6%   { opacity:1; }
+          50%  { transform:translateX(20px) translateY(-50vh) scale(1.06); }
+          94%  { opacity:0.7; }
+          100% { transform:translateX(-8px) translateY(-108vh) scale(0.88); opacity:0; }
         }
-        @keyframes ring-spin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
+        @keyframes bup1 {
+          0%   { transform:translateX(0) translateY(0) scale(1); opacity:0; }
+          6%   { opacity:1; }
+          50%  { transform:translateX(-24px) translateY(-50vh) scale(1.1); }
+          94%  { opacity:0.7; }
+          100% { transform:translateX(14px) translateY(-108vh) scale(0.85); opacity:0; }
         }
-        @keyframes gradient-shift {
-          0%   { background-position: 0% center; }
-          100% { background-position: 200% center; }
+        @keyframes bup2 {
+          0%   { transform:translateX(0) translateY(0) scale(1); opacity:0; }
+          6%   { opacity:1; }
+          40%  { transform:translateX(16px) translateY(-40vh) scale(1.04); }
+          70%  { transform:translateX(-12px) translateY(-70vh) scale(1.08); }
+          94%  { opacity:0.6; }
+          100% { transform:translateX(6px) translateY(-108vh) scale(0.9); opacity:0; }
         }
-        /* 4 bubble path variants with horizontal wobble */
-        @keyframes bubble-rise-0 {
-          0%   { transform: translateX(0px) translateY(0px) scale(1);   opacity: 0; }
-          8%   { opacity: 1; }
-          50%  { transform: translateX(18px) translateY(-50vh) scale(1.05); }
-          92%  { opacity: 0.7; }
-          100% { transform: translateX(-8px) translateY(-105vh) scale(0.9); opacity: 0; }
+        @keyframes bup3 {
+          0%   { transform:translateX(0) translateY(0) scale(1); opacity:0; }
+          6%   { opacity:1; }
+          35%  { transform:translateX(-18px) translateY(-35vh) scale(1.12); }
+          65%  { transform:translateX(22px) translateY(-65vh) scale(1.03); }
+          94%  { opacity:0.65; }
+          100% { transform:translateX(-6px) translateY(-108vh) scale(0.87); opacity:0; }
         }
-        @keyframes bubble-rise-1 {
-          0%   { transform: translateX(0px) translateY(0px) scale(1);   opacity: 0; }
-          8%   { opacity: 1; }
-          50%  { transform: translateX(-22px) translateY(-50vh) scale(1.08); }
-          92%  { opacity: 0.7; }
-          100% { transform: translateX(12px) translateY(-105vh) scale(0.85); opacity: 0; }
+        @keyframes orb-breathe {
+          0%,100% { transform:scale(1); }
+          50%      { transform:scale(1.08); }
         }
-        @keyframes bubble-rise-2 {
-          0%   { transform: translateX(0px) translateY(0px) scale(1);   opacity: 0; }
-          8%   { opacity: 1; }
-          40%  { transform: translateX(14px) translateY(-40vh) scale(1.03); }
-          70%  { transform: translateX(-10px) translateY(-70vh) scale(1.06); }
-          92%  { opacity: 0.6; }
-          100% { transform: translateX(6px) translateY(-105vh) scale(0.9); opacity: 0; }
+        @keyframes orb-pulse {
+          0%,100% { transform:translate(-50%,-50%) scale(1); opacity:0.6; }
+          50%      { transform:translate(-50%,-50%) scale(1.3); opacity:1; }
         }
-        @keyframes bubble-rise-3 {
-          0%   { transform: translateX(0px) translateY(0px) scale(1);   opacity: 0; }
-          8%   { opacity: 1; }
-          35%  { transform: translateX(-16px) translateY(-35vh) scale(1.1); }
-          65%  { transform: translateX(20px) translateY(-65vh) scale(1.02); }
-          92%  { opacity: 0.65; }
-          100% { transform: translateX(-5px) translateY(-105vh) scale(0.88); opacity: 0; }
+        @keyframes orb-shimmer {
+          0%,100% { opacity:0.6; transform:scale(1) rotate(0deg); }
+          50%      { opacity:1; transform:scale(1.15) rotate(15deg); }
         }
-        @keyframes logo-bubble1 {
-          0%,100% { transform: translate(0,0) scale(1); opacity: 0.9; }
-          50%      { transform: translate(4px,-6px) scale(1.15); opacity: 1; }
+        @keyframes orb-ring2 {
+          0%,100% { transform:translate(-50%,-50%) scale(1); opacity:0.5; }
+          50%      { transform:translate(-50%,-50%) scale(1.08); opacity:1; }
         }
-        @keyframes logo-bubble2 {
-          0%,100% { transform: translate(0,0) scale(1); opacity: 0.85; }
-          50%      { transform: translate(-5px,-8px) scale(1.2); opacity: 1; }
+        @keyframes orb-ring3 {
+          0%,100% { transform:translate(-50%,-50%) scale(1); opacity:0.2; }
+          50%      { transform:translate(-50%,-50%) scale(1.06); opacity:0.5; }
+        }
+        @keyframes orbit1 {
+          from { transform:rotate(0deg); }
+          to   { transform:rotate(360deg); }
+        }
+        @keyframes orbit2 {
+          from { transform:rotate(0deg); }
+          to   { transform:rotate(360deg); }
         }
       `}</style>
     </div>
