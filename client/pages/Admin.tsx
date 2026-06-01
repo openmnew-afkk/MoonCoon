@@ -211,7 +211,7 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
                     )}
                   </div>
                   <button type="submit"
-                    disabled={!manualUsername.trim() || !manualUserId.trim()}
+                    disabled={!manualUsername.trim()}
                     className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-all active:scale-95"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                     <LogIn size={15} />

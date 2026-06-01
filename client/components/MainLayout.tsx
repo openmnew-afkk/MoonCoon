@@ -232,10 +232,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* ── Bottom Nav ────────────────────────────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-40">
-        {/* Top separator with glow */}
-        <div className="nav-glass border-t border-border/30">
+        {/* Top glow accent line */}
+        <div className="h-px w-full" style={{
+          background: "linear-gradient(90deg, transparent 5%, hsl(var(--primary) / 0.3) 30%, hsl(var(--primary) / 0.5) 50%, hsl(var(--primary) / 0.3) 70%, transparent 95%)",
+        }} />
+        <div className="nav-glass">
           <div
-            className="max-w-2xl mx-auto h-[4.5rem] flex items-center justify-around px-2"
+            className="max-w-2xl mx-auto h-[4.5rem] flex items-center justify-around px-3"
             style={{ paddingBottom: "var(--tg-safe-bottom, env(safe-area-inset-bottom, 0px))" }}
           >
             <NavItem path="/" icon={Home} label="Лента" exact />

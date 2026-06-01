@@ -34,10 +34,10 @@ input[type="range"]::-webkit-slider-thumb {
     color-scheme: dark;
     --shadow-color: 0 0% 0%;
 
-    --background: 0 0% 6%;          /* #0F0F0F */
+    --background: 240 8% 5%;        /* #0B0B10 deep space */
     --foreground: 0 0% 96%;
 
-    --card: 0 0% 10%;               /* #1A1A1A */
+    --card: 240 6% 10%;             /* #17171E slightly blue */
     --card-foreground: 0 0% 96%;
 
     --popover: 0 0% 10%;
@@ -59,7 +59,7 @@ input[type="range"]::-webkit-slider-thumb {
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 16%;             /* #282828 */
+    --border: 240 5% 16%;           /* #272730 subtle blue */
     --input: 0 0% 14%;
     --ring: 76 100% 64%;
 

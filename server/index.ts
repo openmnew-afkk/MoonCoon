@@ -52,7 +52,56 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
   // Временное in-memory хранилище
-  const posts: any[] = [];
+  const posts: any[] = [
+    {
+      id: "demo_1", userId: "1001",
+      caption: "Закат над городом 🌅 Иногда нужно просто остановиться и посмотреть вверх",
+      media: "https://picsum.photos/id/1036/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 1 * 3600000).toISOString(),
+      likes: 234, comments: 18, stars: 45, pinned: false,
+      authorName: "Алиса Морозова", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=alice", authorUsername: "@alice_frost",
+    },
+    {
+      id: "demo_2", userId: "1002",
+      caption: "Новый проект в работе ✨ Дизайн — это не просто красиво, это про эмоции",
+      media: "https://picsum.photos/id/180/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+      likes: 567, comments: 42, stars: 120, pinned: false,
+      authorName: "Макс Дизайнер", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=maxdesign", authorUsername: "@max.design",
+    },
+    {
+      id: "demo_3", userId: "1003",
+      caption: "Утренний кофе и код ☕️ Лучшее сочетание для продуктивного дня",
+      media: "https://picsum.photos/id/312/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+      likes: 189, comments: 15, stars: 33, pinned: false,
+      authorName: "Даша Кодер", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=dashacoder", authorUsername: "@dasha.codes",
+    },
+    {
+      id: "demo_4", userId: "1004",
+      caption: "Горы зовут 🏔️ Когда природа — лучший дизайнер",
+      media: "https://picsum.photos/id/29/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 8 * 3600000).toISOString(),
+      likes: 892, comments: 67, stars: 210, pinned: false,
+      authorName: "Артём Путешественник", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=artem", authorUsername: "@artem.travel",
+    },
+    {
+      id: "demo_5", userId: "1005",
+      caption: "Студия готова к съёмке 📸 Свет, камера, мотор!",
+      media: "https://picsum.photos/id/96/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 12 * 3600000).toISOString(),
+      likes: 445, comments: 31, stars: 88, pinned: false,
+      authorName: "Лена Фото", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=lenaphoto", authorUsername: "@lena.photo",
+    },
+    {
+      id: "demo_6", userId: "1006",
+      caption: "Вечерний город никогда не спит 🌃 Огни мегаполиса",
+      media: "https://picsum.photos/id/274/800/1000", mediaType: "image",
+      createdAt: new Date(Date.now() - 18 * 3600000).toISOString(),
+      likes: 678, comments: 55, stars: 156, pinned: false,
+      authorName: "Никита Урбан", authorAvatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=nikita", authorUsername: "@nikita.urban",
+    },
+  ];
   const postComments: Record<string, any[]> = {};
   const stories: any[] = [];
   const users: any[] = [];
