@@ -57,6 +57,7 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
   const [manualMode, setManualMode] = useState(true);
   // Always show manual form — pre-filled with known admin username
   const [manualUsername, setManualUsername] = useState(ADMIN_USERNAME);
+  const [manualPassword, setManualPassword] = useState("");
   const [manualUserId, setManualUserId] = useState("");
 
   const tgUsername = user?.username?.toLowerCase().replace("@", "") ?? "";
@@ -82,7 +83,7 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, userId }),
+        body: JSON.stringify({ username, userId, password: manualPassword }),
       });
       const data = await res.json();
       if (res.ok && data.sessionToken) {
@@ -101,7 +102,6 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!manualUsername.trim()) return;
-    // server only validates username — userId just needs to be non-empty
     attemptLogin(manualUsername.trim(), manualUserId.trim() || String(user?.id || "admin"));
   };
 
@@ -189,29 +189,25 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
                       value={manualUsername}
                       onChange={e => setManualUsername(e.target.value)}
                       placeholder="mikysauce"
+                      autoComplete="username"
                       className="w-full rounded-xl px-4 py-2.5 text-sm outline-none border border-border bg-background focus:border-primary/60 transition-colors"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-                      Telegram User ID
+                      Пароль
                     </label>
                     <input
-                      type="text"
-                      value={manualUserId}
-                      onChange={e => setManualUserId(e.target.value)}
-                      placeholder="123456789"
+                      type="password"
+                      value={manualPassword}
+                      onChange={e => setManualPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
                       className="w-full rounded-xl px-4 py-2.5 text-sm outline-none border border-border bg-background focus:border-primary/60 transition-colors"
                     />
-                    {user?.id && (
-                      <button type="button" onClick={() => setManualUserId(String(user.id))}
-                        className="text-[11px] text-primary mt-1.5 underline underline-offset-2">
-                        Вставить мой ID: {user.id}
-                      </button>
-                    )}
                   </div>
                   <button type="submit"
-                    disabled={!manualUsername.trim()}
+                    disabled={!manualUsername.trim() || !manualPassword.trim()}
                     className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-all active:scale-95"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                     <LogIn size={15} />

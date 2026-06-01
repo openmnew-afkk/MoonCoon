@@ -75,13 +75,14 @@ if (process.env.ADMIN_USER_ID) {
 
 export const handleAdminLogin: RequestHandler = async (req, res) => {
   try {
-    const { username, userId } = req.body as {
+    const { username, userId, password } = req.body as {
       username?: string;
       userId?: string;
+      password?: string;
     };
 
-    if (!username || !userId) {
-      return res.status(400).json({ error: "Нужны username и userId" });
+    if (!username) {
+      return res.status(400).json({ error: "Нужен username" });
     }
 
     const cleanUsername = username.toLowerCase().replace("@", "");
@@ -89,8 +90,20 @@ export const handleAdminLogin: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, error: "Доступ запрещён" });
     }
 
-    adminUserIds.add(String(userId));
-    const sessionToken = createSession(String(userId));
+    // Validate password if ADMIN_PASSWORD is configured
+    const adminPassword = getAdminPassword();
+    if (adminPassword) {
+      if (!password) {
+        return res.status(403).json({ success: false, error: "Требуется пароль" });
+      }
+      if (!verifyPassword(password)) {
+        return res.status(403).json({ success: false, error: "Неверный пароль" });
+      }
+    }
+
+    const uid = userId ? String(userId) : cleanUsername;
+    adminUserIds.add(uid);
+    const sessionToken = createSession(uid);
 
     res.json({
       success: true,
