@@ -277,13 +277,13 @@ export default function AI() {
           <div style={{
             position: "absolute", bottom: "15%", left: "10%",
             width: "40vw", height: "40vw", borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(203,255,77,0.08) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)",
             filter: "blur(30px)",
           }} />
           <div style={{
             position: "absolute", top: "20%", right: "5%",
             width: "35vw", height: "35vw", borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(192,132,252,0.1) 0%, transparent 70%)",
             filter: "blur(30px)",
           }} />
         </div>
@@ -333,16 +333,17 @@ export default function AI() {
 
           {/* CTA */}
           <div className="flex flex-col items-center gap-2">
-            <div className="px-8 py-3 rounded-2xl font-bold text-sm flex items-center gap-2"
+            <div className="px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2"
               style={{
-                background: "linear-gradient(135deg, #8c50ff, #5a2dff)",
+                background: "linear-gradient(135deg, #9b59f7, #7c3aed)",
                 color: "white",
-                boxShadow: "0 8px 32px rgba(140,80,255,0.4)",
+                boxShadow: "0 8px 32px rgba(155,89,247,0.5), 0 0 0 1px rgba(155,89,247,0.2)",
+                letterSpacing: "0.02em",
               }}>
               <Sparkles size={16} />
-              Нажми, чтобы начать
+              Начать разговор
             </div>
-            <p className="text-[10px] text-muted-foreground">AI · {APP_NAME}</p>
+            <p className="text-[10px] text-muted-foreground">Адель · AI-ассистент {APP_NAME}</p>
           </div>
         </motion.button>
       </div>

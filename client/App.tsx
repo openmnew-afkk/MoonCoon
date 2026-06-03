@@ -26,15 +26,18 @@ import PhotoReports from "./pages/PhotoReports";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
+import BirthdayGreeting from "@/components/BirthdayGreeting";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { webApp, user, isReady } = useTelegram();
   const [showSplash, setShowSplash] = useState(true);
+  const [showGreeting, setShowGreeting] = useState(false);
   
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
+    setShowGreeting(true);
   }, []);
 
   useEffect(() => {
@@ -49,6 +52,10 @@ const AppContent = () => {
 
   if (showSplash) {
     return <Splash onComplete={handleSplashComplete} />;
+  }
+
+  if (showGreeting) {
+    return <BirthdayGreeting onComplete={() => setShowGreeting(false)} />;
   }
 
   return (
