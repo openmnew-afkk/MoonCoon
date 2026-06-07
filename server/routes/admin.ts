@@ -90,16 +90,17 @@ export const handleAdminLogin: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, error: "Доступ запрещён" });
     }
 
-    // Validate password if ADMIN_PASSWORD is configured
+    // Validate password only if ADMIN_PASSWORD env var is set and non-empty
     const adminPassword = getAdminPassword();
-    if (adminPassword) {
+    if (adminPassword && adminPassword.length > 0) {
       if (!password) {
-        return res.status(403).json({ success: false, error: "Требуется пароль" });
+        return res.status(200).json({ success: false, requiresPassword: true, error: "Требуется пароль" });
       }
       if (!verifyPassword(password)) {
         return res.status(403).json({ success: false, error: "Неверный пароль" });
       }
     }
+    // If no ADMIN_PASSWORD is configured, allow login by username match only
 
     const uid = userId ? String(userId) : cleanUsername;
     adminUserIds.add(uid);

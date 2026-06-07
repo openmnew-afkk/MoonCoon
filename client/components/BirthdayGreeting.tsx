@@ -1,288 +1,157 @@
-import { useEffect, useState, useRef } from "react";
-import { Heart, Sparkles, Gift, Star } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Sparkles, Gift } from "lucide-react";
+import { useTelegram } from "@/hooks/useTelegram";
 
-interface FloatingHeart {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  delay: number;
-  duration: number;
+const greetings = [
+  "Пусть этот день принесёт тебе столько радости, сколько звёзд на небе! ✨ Ты заслуживаешь самого лучшего.",
+  "Сегодня весь мир крутится вокруг тебя! 🌍 Пусть каждый миг будет наполнен счастьем и теплом.",
+  "В этот особенный день желаем, чтобы мечты сбывались быстрее, чем ты успеваешь их загадать! 🌟",
+  "Ты — уникальная звезда в нашей вселенной! 💫 Пусть этот год будет самым ярким и незабываемым.",
+  "Каждый день рождения — это новая глава. Пусть твоя будет наполнена приключениями и любовью! 📖💜",
+  "Сегодня мы празднуем тебя и всё прекрасное, что ты приносишь в этот мир! 🎉 С днём рождения!",
+  "Пусть удача будет твоим верным спутником, а улыбка никогда не сходит с лица! 😊🍀",
+  "В день рождения загадай самое смелое желание — вселенная сегодня слушает именно тебя! 🌌",
+  "Пусть каждый новый год жизни будет ещё лучше предыдущего! Ты — невероятный человек! 🚀",
+  "Желаем океан вдохновения, горы счастья и бесконечное небо возможностей! 🏔️🌊",
+];
+
+interface Confetti { id: number; x: number; size: number; color: string; delay: number; duration: number; rotation: number; }
+
+function makeConfetti(n: number): Confetti[] {
+  const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#f472b6", "#fbbf24", "#34d399"];
+  return Array.from({ length: n }, (_, i) => ({
+    id: i, x: Math.random() * 100, size: 4 + Math.random() * 8,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    delay: Math.random() * 3, duration: 3 + Math.random() * 4,
+    rotation: Math.random() * 360,
+  }));
 }
 
 export default function BirthdayGreeting({ onComplete }: { onComplete: () => void }) {
-  const fullText = "с днем рождения дорогая и любимая Ася.";
-  const [typedText, setTypedText] = useState("");
-  const [showCursor, setShowCursor] = useState(true);
-  const [animationStep, setAnimationStep] = useState(0); // 0: typing, 1: completed, showing button
-  const [hearts, setHearts] = useState<FloatingHeart[]>([]);
-  const greetingRef = useRef<HTMLDivElement>(null);
+  const { user } = useTelegram();
+  const [show, setShow] = useState(false);
+  const [cardShow, setCardShow] = useState(false);
+  const [isBirthday, setIsBirthday] = useState<boolean | null>(null);
+  const confetti = useMemo(() => makeConfetti(30), []);
+  const greeting = useMemo(() => greetings[Math.floor(Math.random() * greetings.length)], []);
 
-  // Typing effect
   useEffect(() => {
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < fullText.length) {
-        setTypedText((prev) => prev + fullText.charAt(index));
-        index++;
-      } else {
-        clearInterval(interval);
-        // Fade in button and extra sparkles after typing finishes
-        setTimeout(() => {
-          setAnimationStep(1);
-        }, 800);
-      }
-    }, 110); // slow typing as requested (110ms per char)
+    if (!user?.id) { setIsBirthday(false); return; }
+    fetch(`/api/users/${user.id}/birthday-check`)
+      .then(r => r.ok ? r.json() : { isBirthday: false })
+      .then(d => setIsBirthday(d.isBirthday ?? false))
+      .catch(() => setIsBirthday(false));
+  }, [user?.id]);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // Blinking cursor
   useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor((prev) => !prev);
-    }, 500);
-    return () => clearInterval(cursorInterval);
-  }, []);
+    if (isBirthday === false) { onComplete(); return; }
+    if (isBirthday === true) {
+      setTimeout(() => setShow(true), 200);
+      setTimeout(() => setCardShow(true), 600);
+    }
+  }, [isBirthday, onComplete]);
 
-  // Generate floating hearts
-  useEffect(() => {
-    const colors = ["#ec4899", "#f43f5e", "#a855f7", "#d946ef", "#fb7185"];
-    const initialHearts = Array.from({ length: 25 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: 100 + Math.random() * 20,
-      size: 12 + Math.random() * 24,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      delay: Math.random() * 5,
-      duration: 6 + Math.random() * 8,
-    }));
-    setHearts(initialHearts);
-  }, []);
+  if (isBirthday === null || isBirthday === false) return null;
 
-  // Allow manual heart spawning on screen tap/click
-  const handleTap = (e: React.MouseEvent) => {
-    if (!greetingRef.current) return;
-    const rect = greetingRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-    const colors = ["#ec4899", "#f43f5e", "#a855f7", "#d946ef", "#ffffff"];
-    const newHeart: FloatingHeart = {
-      id: Date.now(),
-      x,
-      y,
-      size: 16 + Math.random() * 20,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      delay: 0,
-      duration: 3 + Math.random() * 3,
-    };
-
-    setHearts((prev) => [...prev, newHeart]);
+  const handleClaim = async () => {
+    if (user?.id) {
+      try { await fetch(`/api/users/${user.id}/birthday-claim`, { method: "POST" }); } catch {}
+    }
+    onComplete();
   };
 
   return (
-    <div
-      ref={greetingRef}
-      onClick={handleTap}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "radial-gradient(ellipse at 50% 30%, #120422 0%, #080112 60%, #030007 100%)",
-        color: "#ffffff",
-        overflow: "hidden",
-        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-        userSelect: "none",
-      }}
-    >
-      {/* Background radial soft light blobs */}
-      <div style={{
-        position: "absolute",
-        top: "20%",
-        width: "80vw",
-        height: "80vw",
-        background: "radial-gradient(circle, rgba(236,72,153,0.12) 0%, rgba(155,89,247,0.06) 50%, transparent 100%)",
-        filter: "blur(40px)",
-        pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute",
-        bottom: "10%",
-        width: "60vw",
-        height: "60vw",
-        background: "radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(59,130,246,0.05) 50%, transparent 100%)",
-        filter: "blur(30px)",
-        pointerEvents: "none",
-      }} />
-
-      {/* Floating Hearts in background */}
-      {hearts.map((h) => (
-        <div
-          key={h.id}
-          style={{
-            position: "absolute",
-            left: `${h.x}%`,
-            top: `${h.y}%`,
-            transform: "translateY(0)",
-            color: h.color,
-            opacity: 0.6,
-            filter: "drop-shadow(0 0 8px rgba(236,72,153,0.3))",
-            animation: `floatUp ${h.duration}s linear infinite`,
-            animationDelay: `${h.delay}s`,
-            pointerEvents: "none",
-          }}
-        >
-          <Heart size={h.size} fill={h.color} strokeWidth={1} />
-        </div>
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 200,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "rgba(0,0,0,0.85)",
+      backdropFilter: "blur(20px)",
+      opacity: show ? 1 : 0, transition: "opacity 0.5s ease",
+      fontFamily: "Inter, system-ui, sans-serif",
+    }}>
+      {/* Confetti */}
+      {confetti.map(c => (
+        <div key={c.id} style={{
+          position: "absolute", top: -20, left: `${c.x}%`,
+          width: c.size, height: c.size * 1.5, borderRadius: 2,
+          background: c.color, transform: `rotate(${c.rotation}deg)`,
+          animationName: "bd-confetti-fall", animationDuration: `${c.duration}s`,
+          animationDelay: `${c.delay}s`, animationTimingFunction: "linear",
+          animationIterationCount: "infinite", animationFillMode: "both",
+          opacity: 0,
+        }} />
       ))}
 
-      {/* Greeting card container */}
-      <div
-        className="w-full max-w-[90%] md:max-w-md p-8 rounded-3xl border border-pink-500/20 backdrop-blur-2xl flex flex-col items-center text-center relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, rgba(20,10,35,0.7) 0%, rgba(10,5,20,0.85) 100%)",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.07)",
-          transform: "translateY(-10px)",
-          animation: "cardEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        }}
-        onClick={(e) => e.stopPropagation()} // Prevent spawning heart exactly under buttons when clicking container
-      >
-        {/* Decorative corner glows */}
+      {/* Ambient glow */}
+      <div style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%,-50%)", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
+
+      {/* Card */}
+      <div style={{
+        position: "relative", width: "88%", maxWidth: 380, borderRadius: 28,
+        background: "linear-gradient(145deg, rgba(15,15,25,0.95), rgba(10,10,18,0.98))",
+        border: "1px solid rgba(99,102,241,0.2)",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)",
+        padding: "40px 28px 32px", textAlign: "center",
+        transform: cardShow ? "translateY(0) scale(1)" : "translateY(40px) scale(0.9)",
+        opacity: cardShow ? 1 : 0, transition: "all 0.6s cubic-bezier(0.16,1,0.3,1)",
+      }}>
+        {/* Top accent line */}
+        <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 2, borderRadius: 2, background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)" }} />
+
+        {/* Emoji */}
+        <div style={{ fontSize: 48, marginBottom: 16, animation: "bd-bounce 2s ease-in-out infinite" }}>🎂</div>
+
+        {/* Title */}
+        <h1 style={{
+          fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 8px",
+          background: "linear-gradient(135deg, #e0e7ff, #a5b4fc)",
+          WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+        }}>С днём рождения! 🎉</h1>
+
+        <p style={{ fontSize: 13, color: "rgba(148,163,184,0.7)", lineHeight: 1.6, margin: "0 0 20px" }}>
+          {greeting}
+        </p>
+
+        {/* Premium gift */}
         <div style={{
-          position: "absolute", top: 0, left: 0, width: "30%", height: "2px",
-          background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.5), transparent)"
-        }} />
-        
-        {/* Animated Sparkles Header */}
-        <div className="relative mb-6">
-          <div className="absolute -inset-2 rounded-full bg-pink-500/25 blur-xl animate-pulse" />
-          <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center border border-pink-400/30"
-               style={{ boxShadow: "0 8px 32px rgba(236,72,153,0.4)" }}>
-            <Sparkles size={28} className="text-white animate-spin-slow" />
+          borderRadius: 16, padding: "16px 20px", marginBottom: 20,
+          background: "linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))",
+          border: "1px solid rgba(99,102,241,0.2)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+            <Gift size={16} style={{ color: "#a5b4fc" }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#c7d2fe" }}>Подарок для вас</span>
           </div>
+          <p style={{ fontSize: 12, color: "rgba(148,163,184,0.6)", margin: 0 }}>Premium на 3 дня — бесплатно!</p>
         </div>
 
-        {/* Typed Birthday Text */}
-        <div className="w-full min-h-[96px] flex items-center justify-center px-2">
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-relaxed"
-              style={{
-                background: "linear-gradient(135deg, #ffffff 10%, #f472b6 60%, #c084fc 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))",
-              }}>
-            {typedText}
-            <span
-              style={{
-                marginLeft: "2px",
-                borderRight: "3px solid #f472b6",
-                animation: "none",
-                opacity: showCursor ? 1 : 0,
-                display: "inline-block",
-                width: "2px",
-                height: "1.4em",
-                verticalAlign: "middle",
-              }}
-            />
-          </h1>
-        </div>
+        {/* CTA button */}
+        <button onClick={handleClaim} style={{
+          width: "100%", padding: "14px 24px", borderRadius: 14, border: "none",
+          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer",
+          boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          transition: "transform 0.15s", WebkitTapHighlightColor: "transparent",
+        }} className="active:scale-95">
+          <Sparkles size={16} /> Забрать подарок
+        </button>
 
-        {/* Beautiful Birthday Poem / Wish (Fades in slowly after typedText finishes) */}
-        <div
-          style={{
-            opacity: animationStep >= 1 ? 1 : 0,
-            transform: animationStep >= 1 ? "translateY(0)" : "translateY(15px)",
-            transition: "opacity 1s ease, transform 1s ease",
-            marginTop: "1.5rem",
-          }}
-          className="space-y-4"
-        >
-          <p className="text-sm text-pink-200/80 leading-relaxed font-medium">
-            Пусть каждый день будет наполнен волшебством, улыбками, теплом и самыми заветными мечтами. Ты заслуживаешь всего самого прекрасного в этом мире! 💖
-          </p>
-
-          <div className="flex items-center justify-center gap-3 py-1">
-            <Gift className="text-pink-400 animate-bounce" size={18} />
-            <span className="h-px w-12 bg-pink-500/30" />
-            <Heart className="text-purple-400 fill-purple-400/20 animate-pulse" size={18} />
-            <span className="h-px w-12 bg-pink-500/30" />
-            <Star className="text-yellow-400 animate-pulse" size={18} />
-          </div>
-        </div>
-
-        {/* Action Button (Fades in at step 1) */}
-        <div
-          style={{
-            opacity: animationStep >= 1 ? 1 : 0,
-            transform: animationStep >= 1 ? "translateY(0)" : "translateY(20px)",
-            transition: "opacity 1.2s ease 0.3s, transform 1.2s ease 0.3s",
-            width: "100%",
-            marginTop: "2rem",
-          }}
-        >
-          <button
-            type="button"
-            onClick={onComplete}
-            className="w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 relative overflow-hidden transition-all active:scale-[0.97]"
-            style={{
-              background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
-              boxShadow: "0 8px 24px rgba(236,72,153,0.35), 0 0 0 1px rgba(255,255,255,0.15)",
-              color: "#ffffff",
-            }}
-          >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
-            Открыть приложение ✨
-          </button>
-        </div>
+        <button onClick={onComplete} style={{
+          background: "none", border: "none", color: "rgba(148,163,184,0.4)",
+          fontSize: 12, marginTop: 16, cursor: "pointer",
+        }}>Пропустить</button>
       </div>
 
-      {/* Styled animation helper block */}
       <style>{`
-        @keyframes floatUp {
-          0% {
-            transform: translateY(120vh) rotate(0deg) scale(0.8);
-            opacity: 0;
-          }
-          10% {
-            opacity: 0.6;
-          }
-          90% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translateY(-20vh) rotate(360deg) scale(1.2);
-            opacity: 0;
-          }
+        @keyframes bd-confetti-fall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.8; }
+          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
         }
-        @keyframes cardEntrance {
-          from {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        .animate-spin-slow {
-          animation: spin 8s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 2.5s infinite;
+        @keyframes bd-bounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-8px) scale(1.05); }
         }
       `}</style>
     </div>

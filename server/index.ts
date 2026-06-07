@@ -171,6 +171,17 @@ export function createServer() {
   app.get("/api/users/:userId/premium", handlePremiumStatus);
   app.delete("/api/users/:userId", handleDeleteUser);
 
+  // Birthday API routes
+  app.get("/api/users/:userId/birthday-check", (req, res) => {
+    // In production, check if today matches user's stored birthday
+    // For now, always return false (no birthday) unless explicitly set
+    res.json({ isBirthday: false });
+  });
+  app.post("/api/users/:userId/birthday-claim", (req, res) => {
+    // In production, grant 3-day premium and mark as claimed
+    res.json({ success: true, premiumDays: 3 });
+  });
+
   // Premium API routes
   app.post("/api/premium/purchase", handlePremiumPurchase);
 

@@ -34,46 +34,46 @@ input[type="range"]::-webkit-slider-thumb {
     color-scheme: dark;
     --shadow-color: 270 35% 0%;
 
-    --background: 270 35% 4%;        /* #070510 deep almost-black violet */
+    --background: 230 20% 5%;        /* #0a0a0f deep near-black indigo */
     --foreground: 0 0% 96%;
 
-    --card: 270 30% 8%;              /* #100c1e dark purple card */
+    --card: 230 20% 8%;              /* #0f1018 dark indigo card */
     --card-foreground: 0 0% 96%;
 
     --popover: 270 30% 8%;
     --popover-foreground: 0 0% 96%;
 
-    /* Rich violet accent */
-    --primary: 270 85% 65%;          /* #9b59f7 */
-    --primary-foreground: 0 0% 100%; /* white text on violet */
+    /* Rich indigo accent */
+    --primary: 239 84% 67%;          /* #6366f1 */
+    --primary-foreground: 0 0% 100%; /* white text on indigo */
 
-    --secondary: 270 25% 12%;
+    --secondary: 230 20% 12%;
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 270 20% 15%;
-    --muted-foreground: 270 15% 55%;
+    --muted: 230 18% 15%;
+    --muted-foreground: 230 12% 55%;
 
-    --accent: 270 85% 65%;
+    --accent: 239 84% 67%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 270 30% 14%;           /* subtle purple border */
-    --input: 270 25% 12%;
-    --ring: 270 85% 65%;             /* matches primary */
+    --border: 230 20% 14%;           /* subtle indigo border */
+    --input: 230 20% 12%;
+    --ring: 239 84% 67%;             /* matches primary */
 
-    --glass: 270 30% 8%;
-    --glass-light: 270 25% 16%;
+    --glass: 230 20% 8%;
+    --glass-light: 230 18% 16%;
 
-    --gradient-from: 270 30% 6%;
-    --gradient-via: 270 25% 5%;
-    --gradient-to: 270 20% 4%;
+    --gradient-from: 230 20% 6%;
+    --gradient-via: 230 18% 5%;
+    --gradient-to: 230 15% 4%;
 
     --radius: 0.875rem;
 
-    --glow-primary: 270 85% 65%;
-    --glow-accent: 270 85% 65%;
+    --glow-primary: 239 84% 67%;
+    --glow-accent: 239 84% 67%;
 
     /* Safe area + Telegram native header clearance */
     --tg-safe-top: env(safe-area-inset-top, 0px);

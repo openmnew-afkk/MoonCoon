@@ -20,7 +20,7 @@ import Create from "./pages/Create";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
 import AI from "./pages/AI";
-import Goals from "./pages/Goals";
+import Music from "./pages/Music";
 import StarsHistory from "./pages/StarsHistory";
 import PhotoReports from "./pages/PhotoReports";
 import Admin from "./pages/Admin";
@@ -34,7 +34,7 @@ const AppContent = () => {
   const { webApp, user, isReady } = useTelegram();
   const [showSplash, setShowSplash] = useState(true);
   const [showGreeting, setShowGreeting] = useState(false);
-  
+
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
     setShowGreeting(true);
@@ -43,7 +43,6 @@ const AppContent = () => {
   useEffect(() => {
     enableAppProtection();
     initTheme(webApp ?? undefined);
-
     if (webApp) {
       webApp.expand();
       webApp.enableClosingConfirmation();
@@ -68,7 +67,7 @@ const AppContent = () => {
           <Route path="/explore" element={<Explore />} />
           <Route path="/create" element={<Create />} />
           <Route path="/ai" element={<AI />} />
-          <Route path="/goals" element={<Goals />} />
+          <Route path="/music" element={<Music />} />
           <Route path="/stars-history" element={<StarsHistory />} />
           <Route path="/photo-reports" element={<PhotoReports />} />
           <Route path="/profile" element={<Profile />} />
