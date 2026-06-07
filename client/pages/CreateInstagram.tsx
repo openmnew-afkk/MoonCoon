@@ -10,7 +10,6 @@ import {
   Zap,
   Clock,
   Video,
-  Target,
   Trash2,
 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -123,6 +122,9 @@ export default function CreateInstagram() {
           media: mediaData,
           mediaType: current.type,
           type: isStory ? "story" : "post",
+          authorName: [user.first_name, user.last_name].filter(Boolean).join(" ") || "Пользователь",
+          authorUsername: user.username ? `@${user.username}` : `@user${user.id}`,
+          authorAvatar: user.photo_url || `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.id}`,
         }),
       });
       if (response.ok) {
@@ -200,27 +202,18 @@ export default function CreateInstagram() {
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 w-full max-w-sm mt-2">
-            <div className="flex-1 h-px bg-border/40" />
-            <span className="text-xs text-muted-foreground font-medium">или</span>
-            <div className="flex-1 h-px bg-border/40" />
+          {/* Tip */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10, padding: 16,
+            borderRadius: 16,
+            background: "rgba(99,102,241,0.04)",
+            border: "1px solid rgba(99,102,241,0.08)",
+          }}>
+            <span style={{ fontSize: 24 }}>💡</span>
+            <p style={{ fontSize: 12, color: "rgba(148,163,184,0.5)", lineHeight: 1.5, margin: 0 }}>
+              Совет: добавь хэштеги к посту для большего охвата
+            </p>
           </div>
-
-          {/* Goal creation */}
-          <button
-            type="button"
-            onClick={() => navigate("/goals")}
-            className="w-full max-w-sm flex items-center gap-4 p-4 rounded-2xl border border-orange-400/30 bg-orange-400/5 hover:bg-orange-400/10 transition-all active:scale-[0.98]"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400/30 to-amber-400/20 flex items-center justify-center flex-shrink-0">
-              <Target size={24} className="text-orange-400" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold text-orange-400">Создать цель 🎯</p>
-              <p className="text-xs text-muted-foreground">Появится в ленте на 10 минут</p>
-            </div>
-          </button>
         </div>
       </div>
     );
