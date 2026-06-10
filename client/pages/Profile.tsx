@@ -81,11 +81,9 @@ export default function Profile() {
 
   return (
     <div style={{
-      minHeight: "100dvh", background: "#0a0a0f",
-      paddingBottom: 100, maxWidth: 480, margin: "0 auto",
+      background: "#0a0a0f",
+      paddingBottom: 20, maxWidth: 480, margin: "0 auto",
       fontFamily: "Inter, sans-serif",
-      overflowY: "auto", overflowX: "hidden",
-      WebkitOverflowScrolling: "touch",
     }}>
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
 
