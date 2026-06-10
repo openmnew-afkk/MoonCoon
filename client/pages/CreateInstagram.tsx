@@ -128,10 +128,9 @@ export default function CreateInstagram() {
         }),
       });
       if (response.ok) {
-        alert(isStory ? "✅ История опубликована!" : "✅ Пост опубликован!");
-        removeMedia();
+        navigate("/");
       } else {
-        alert("❌ Ошибка публикации");
+        alert("❌ Не удалось опубликовать. Попробуйте ещё раз.");
       }
     } catch {
       alert("❌ Ошибка сети");
