@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Settings, Camera, Crown, Edit3, ChevronRight, Star, ImageIcon, Shield } from "lucide-react";
+import { Settings, Camera, Crown, Edit3, ChevronRight, Star, Shield } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useAdmin } from "@/hooks/useAdmin";
 import { usePremium } from "@/hooks/usePremium";
@@ -58,180 +58,161 @@ export default function Profile() {
   };
 
   if (showStars) return (
-    <div style={{ minHeight: "100dvh", background: "hsl(var(--background))" }}>
-      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", borderBottom: "1px solid hsl(var(--border) / 0.3)" }}>
-        <button onClick={() => { setShowStars(false); loadData(); }} style={{ color: "#60a5fa", fontSize: 14, fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>← Назад</button>
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-20 border-b border-border/30"
+        style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)" }}>
+        <div className="flex items-center gap-2 px-4 h-12">
+          <button onClick={() => { setShowStars(false); loadData(); }} className="btn-ghost !px-3 !py-1.5 !text-sm !gap-1 !rounded-xl">
+            ← Назад
+          </button>
+        </div>
       </div>
       <StarsPayment userId={String(user?.id || "")} currentStars={starsBalance} onSuccess={() => { setShowStars(false); loadData(); }} />
     </div>
   );
 
   if (showPremium) return (
-    <div style={{ minHeight: "100dvh", background: "hsl(var(--background))" }}>
-      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", borderBottom: "1px solid hsl(var(--border) / 0.3)" }}>
-        <button onClick={() => setShowPremium(false)} style={{ color: "#60a5fa", fontSize: 14, fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>← Назад</button>
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-20 border-b border-border/30"
+        style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)" }}>
+        <div className="flex items-center gap-2 px-4 h-12">
+          <button onClick={() => setShowPremium(false)} className="btn-ghost !px-3 !py-1.5 !text-sm !gap-1 !rounded-xl">
+            ← Назад
+          </button>
+        </div>
       </div>
       <PremiumPurchase userId={String(user?.id || "")} currentStars={starsBalance} onSuccess={() => { setShowPremium(false); loadData(); }} />
     </div>
   );
 
   return (
-    <div style={{
-      background: "hsl(var(--background))",
-      paddingBottom: 20, maxWidth: 480, margin: "0 auto",
-      fontFamily: "Inter, sans-serif",
-    }}>
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarChange} />
+    <div className="max-w-lg mx-auto pb-20">
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
 
-      {/* Top Row */}
-      <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 16px", gap: 8 }}>
+      <div className="flex justify-end gap-2 px-4 pt-2 pb-1">
         {isAdmin && (
-          <Link to="/admin" style={{
-            width: 36, height: 36, borderRadius: 12,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", textDecoration: "none",
-          }}>
-            <Shield size={15} style={{ color: "#60a5fa" }} />
+          <Link to="/admin" className="btn-icon !w-9 !h-9">
+            <Shield size={15} style={{ color: "hsl(var(--primary))" }} />
           </Link>
         )}
-        <Link to="/settings" style={{
-          width: 36, height: 36, borderRadius: 12,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textDecoration: "none",
-        }}>
-          <Settings size={15} style={{ color: "rgba(148,163,184,0.5)" }} />
+        <Link to="/settings" className="btn-icon !w-9 !h-9">
+          <Settings size={15} style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
         </Link>
       </div>
 
-      {/* Avatar + Name */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "8px 20px 28px" }}>
-        <button type="button" onClick={() => fileRef.current?.click()} style={{ position: "relative", background: "none", border: "none", cursor: "pointer", marginBottom: 16 }}>
+      <div className="flex flex-col items-center text-center px-5 pt-2 pb-7">
+        <button type="button" onClick={() => fileRef.current?.click()} className="relative bg-transparent border-none cursor-pointer mb-4">
           {isPremium && (
-            <div style={{
-              position: "absolute", inset: -5, borderRadius: "50%",
-              background: "conic-gradient(from 0deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6)",
-              animation: "profile-ring 4s linear infinite",
-              boxShadow: "0 0 24px rgba(59,130,246,0.3)",
-            }} />
+            <div className="absolute -inset-1.5 rounded-full"
+              style={{
+                background: "conic-gradient(from 0deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6)",
+                animation: "profile-ring 4s linear infinite",
+                boxShadow: "0 0 28px hsl(var(--primary) / 0.3)",
+              }} />
           )}
-          <div style={{
-            position: "relative", width: 88, height: 88, borderRadius: "50%",
-            border: isPremium ? "3px solid hsl(var(--background))" : "2px solid rgba(59,130,246,0.2)",
-            overflow: "hidden",
-          }}>
-            <img src={avatarSrc} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div className="relative w-24 h-24 rounded-full overflow-hidden"
+            style={{
+              border: isPremium ? "3px solid hsl(var(--background))" : "2px solid hsl(var(--primary) / 0.2)",
+            }}>
+            <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
           </div>
-          <div style={{
-            position: "absolute", bottom: 0, right: -2, width: 28, height: 28, borderRadius: "50%",
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-            border: "2.5px solid hsl(var(--background))",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(59,130,246,0.4)",
-          }}>
+          <div className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+              border: "2.5px solid hsl(var(--background))",
+              boxShadow: "0 2px 10px hsl(var(--primary) / 0.4)",
+            }}>
             <Camera size={11} style={{ color: "white" }} />
           </div>
         </button>
 
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "hsl(var(--foreground))", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{displayName}</h1>
-        <p style={{ fontSize: 13, color: "#60a5fa", fontWeight: 500, margin: 0, opacity: 0.8 }}>{username}</p>
-        {bio && <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, maxWidth: 260, margin: "8px 0 0" }}>{bio}</p>}
+        <h1 className="text-2xl font-extrabold tracking-tight mb-1">{displayName}</h1>
+        <p className="text-[13px] font-medium" style={{ color: "hsl(var(--primary) / 0.8)" }}>{username}</p>
+        {bio && <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[260px] mt-2">{bio}</p>}
 
         {isPremium && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 14px", borderRadius: 20, background: "linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08))", border: "1px solid rgba(59,130,246,0.15)", marginTop: 10 }}>
-            <Crown size={12} style={{ color: "#a78bfa" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#a78bfa" }}>Premium</span>
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full mt-3"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--accent) / 0.06))",
+              border: "1px solid hsl(var(--primary) / 0.12)",
+            }}>
+            <Crown size={12} style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: "hsl(var(--accent))" }}>Premium</span>
           </div>
         )}
 
-        <Link to="/settings" style={{
-          display: "inline-flex", alignItems: "center", gap: 5, marginTop: 14,
-          padding: "8px 18px", borderRadius: 20,
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-          fontSize: 12, fontWeight: 600, color: "hsl(var(--muted-foreground))", textDecoration: "none",
-        }}>
+        <Link to="/settings" className="btn-ghost !px-4 !py-2 !text-xs !rounded-full mt-4">
           <Edit3 size={11} /> Редактировать
         </Link>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, margin: "0 16px 20px" }}>
+      <div className="grid grid-cols-3 gap-2 mx-4 mb-5">
         {[
-          { label: "Постов", value: stats.posts, color: "#3b82f6" },
-          { label: "Звёзд", value: starsBalance, color: "#f59e0b" },
-          { label: "Получено", value: stats.starsReceived, color: "#8b5cf6" },
+          { label: "Постов", value: stats.posts, color: "hsl(var(--primary))" },
+          { label: "Звёзд", value: starsBalance, color: "hsl(38,92%,50%)" },
+          { label: "Получено", value: stats.starsReceived, color: "hsl(var(--accent))" },
         ].map((s) => (
-          <div key={s.label} style={{
-            padding: "16px 10px", textAlign: "center", borderRadius: 16,
-            background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: "-0.02em" }}>{s.value}</div>
-            <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", fontWeight: 500, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
+          <div key={s.label} className="glass-card !p-4 !rounded-2xl text-center">
+            <div className="text-2xl font-extrabold tracking-tight" style={{ color: s.color }}>{s.value}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Actions */}
-      <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {/* Stars */}
-        <button onClick={() => setShowStars(true)} style={{
-          width: "100%", borderRadius: 16, padding: "14px 16px",
-          background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          cursor: "pointer", WebkitTapHighlightColor: "transparent",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          transition: "background 0.15s, border-color 0.15s",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 14, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⭐</div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "hsl(var(--foreground))" }}>Пополнить звёзды</div>
-              <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 1 }}>Баланс: {starsBalance} ⭐</div>
+      <div className="px-4 flex flex-col gap-2">
+        <button onClick={() => setShowStars(true)} className="section-card press-scale">
+          <div className="setting-row">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                style={{ background: "hsl(38,92%,50%,0.08)", border: "1px solid hsl(38,92%,50%,0.12)" }}>⭐</div>
+              <div className="text-left">
+                <div className="text-sm font-bold">Пополнить звёзды</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Баланс: {starsBalance} ⭐</div>
+              </div>
             </div>
+            <ChevronRight size={16} className="text-muted-foreground" />
           </div>
-          <ChevronRight size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
         </button>
 
-        {/* Premium */}
         {!isPremium && (
-          <button onClick={() => setShowPremium(true)} style={{
+          <button onClick={() => setShowPremium(true)} className="press-scale" style={{
             width: "100%", borderRadius: 16, padding: "14px 16px",
-            background: "linear-gradient(135deg, rgba(59,130,246,0.06), rgba(139,92,246,0.06))", border: "1px solid rgba(59,130,246,0.12)",
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.06), hsl(var(--accent) / 0.04))",
+            border: "1px solid hsl(var(--primary) / 0.1)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             cursor: "pointer", WebkitTapHighlightColor: "transparent",
-            boxShadow: "0 2px 12px rgba(59,130,246,0.06)",
+            boxShadow: "0 2px 16px hsl(var(--primary) / 0.04)",
             transition: "background 0.15s, border-color 0.15s",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 14, background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.12))", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Crown size={18} style={{ color: "#a78bfa" }} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.08))",
+                  border: "1px solid hsl(var(--primary) / 0.15)",
+                }}>
+                <Crown size={18} style={{ color: "hsl(var(--accent))" }} />
               </div>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#a78bfa" }}>Получить Premium</div>
-                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 1 }}>Эксклюзивные возможности</div>
+              <div className="text-left">
+                <div className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>Получить Premium</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Эксклюзивные возможности</div>
               </div>
             </div>
-            <ChevronRight size={16} style={{ color: "#a78bfa" }} />
+            <ChevronRight size={16} style={{ color: "hsl(var(--accent))" }} />
           </button>
         )}
 
-        {/* Create post */}
-        <Link to="/create" style={{
-          width: "100%", borderRadius: 16, padding: "14px 16px",
-          background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          textDecoration: "none", WebkitTapHighlightColor: "transparent",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          transition: "background 0.15s, border-color 0.15s",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 14, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📸</div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "hsl(var(--foreground))" }}>Создать публикацию</div>
-              <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 1 }}>Пост или история</div>
+        <Link to="/create" className="section-card press-scale" style={{ textDecoration: "none" }}>
+          <div className="setting-row">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                style={{ background: "hsl(var(--primary),0.08)", border: "1px solid hsl(var(--primary) / 0.1)" }}>📸</div>
+              <div className="text-left">
+                <div className="text-sm font-bold">Создать публикацию</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Пост или история</div>
+              </div>
             </div>
+            <ChevronRight size={16} className="text-muted-foreground" />
           </div>
-          <ChevronRight size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
         </Link>
       </div>
 

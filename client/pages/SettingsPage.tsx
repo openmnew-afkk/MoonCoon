@@ -9,10 +9,22 @@ import { cn } from "@/lib/utils";
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" onClick={() => onChange(!checked)}
-      className="relative w-11 h-6 rounded-full transition-colors"
-      style={{ background: checked ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))" }}>
-      <div className={cn("absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow-md",
-        checked ? "left-[22px]" : "left-0.5")} />
+      className="relative w-11 h-6 rounded-full transition-all duration-200"
+      style={{
+        background: checked
+          ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))"
+          : "hsl(var(--secondary))",
+        boxShadow: checked ? "0 0 16px hsl(var(--primary) / 0.2)" : "none",
+      }}>
+      <div className={cn(
+        "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all duration-200",
+        checked ? "left-[22px] shadow-md" : "left-0.5 shadow-sm"
+      )}
+        style={{
+          boxShadow: checked
+            ? "0 2px 8px rgba(0,0,0,0.3)"
+            : "0 1px 4px rgba(0,0,0,0.2)",
+        }} />
     </button>
   );
 }
@@ -35,9 +47,9 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="sticky top-0 z-20 border-b border-border/30"
-        style={{ background: "hsl(var(--background) / 0.92)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", paddingTop: safeTop }}>
+        style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", paddingTop: safeTop }}>
         <div className="flex items-center gap-2 px-4 h-12">
-          <Link to="/profile" className="w-9 h-9 flex items-center justify-center rounded-xl bg-secondary transition-colors hover:bg-secondary/80">
+          <Link to="/profile" className="btn-icon !w-9 !h-9">
             <ChevronLeft size={20} />
           </Link>
           <h1 className="text-lg font-bold">Настройки</h1>
@@ -46,11 +58,14 @@ export default function SettingsPage() {
 
       <div className="px-4 py-5 space-y-6 max-w-lg mx-auto">
         <section>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">О приложении</p>
-          <div className="rounded-2xl border border-border/50 p-4" style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+          <p className="section-label">О приложении</p>
+          <div className="section-card p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08))", border: "1px solid rgba(59,130,246,0.15)" }}>
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))",
+                  border: "1px solid hsl(var(--primary) / 0.12)",
+                }}>
                 <span className="text-lg font-black gradient-text">V</span>
               </div>
               <div>
@@ -62,13 +77,13 @@ export default function SettingsPage() {
               Мини-приложение Telegram: лента, истории, цели со звёздами, AI-помощник Адель.
               Профиль и баланс привязаны к вашему Telegram-аккаунту.
             </p>
-            <p className="text-[11px] text-muted-foreground/50 mt-3">Версия 1.2.0</p>
+            <p className="text-[11px] text-muted-foreground/40 mt-3">Версия 1.2.0</p>
           </div>
         </section>
 
         <section>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Внешний вид</p>
-          <div className="rounded-2xl border border-border/50 p-4" style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+          <p className="section-label">Внешний вид</p>
+          <div className="section-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Palette size={16} className="text-primary" />
               <span className="text-sm font-semibold">Тема</span>
@@ -78,9 +93,9 @@ export default function SettingsPage() {
         </section>
 
         <section>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Лента</p>
-          <div className="rounded-2xl border border-border/50 overflow-hidden" style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-            <div className="flex items-center justify-between px-4 py-3.5">
+          <p className="section-label">Лента</p>
+          <div className="section-card">
+            <div className="setting-row">
               <div className="flex items-center gap-3">
                 <Target size={18} className="text-primary" />
                 <span className="text-[15px]">Цели в ленте</span>
@@ -91,17 +106,17 @@ export default function SettingsPage() {
         </section>
 
         <section>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Уведомления и приватность</p>
-          <div className="rounded-2xl border border-border/50 overflow-hidden" style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-            <div className="flex items-center justify-between px-4 py-3.5">
+          <p className="section-label">Уведомления и приватность</p>
+          <div className="section-card">
+            <div className="setting-row">
               <div className="flex items-center gap-3">
                 <Bell size={18} className="text-primary" />
                 <span className="text-[15px]">Push-уведомления</span>
               </div>
               <Toggle checked={notifications} onChange={setNotifications} />
             </div>
-            <div className="h-px bg-border/30 mx-4" />
-            <div className="flex items-center justify-between px-4 py-3.5 opacity-50">
+            <div className="h-px mx-4" style={{ background: "hsl(var(--border) / 0.25)" }} />
+            <div className="setting-row opacity-40">
               <div className="flex items-center gap-3">
                 <Lock size={18} />
                 <span className="text-[15px]">Приватный аккаунт</span>
@@ -112,18 +127,26 @@ export default function SettingsPage() {
         </section>
 
         <section>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Помощь</p>
-          <div className="rounded-2xl border border-border/50 overflow-hidden" style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+          <p className="section-label">Помощь</p>
+          <div className="section-card">
             <a href="https://t.me/VexoraSupport" target="_blank" rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-3.5 text-[15px] transition-colors hover:bg-secondary/50">
-              <MessageCircle size={18} className="text-primary" />
-              <span className="flex-1">Поддержка в Telegram</span>
+              className="setting-row transition-colors"
+              style={{ textDecoration: "none", color: "inherit" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "hsl(var(--secondary) / 0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+            >
+              <div className="flex items-center gap-3">
+                <MessageCircle size={18} className="text-primary" />
+                <span className="text-[15px]">Поддержка в Telegram</span>
+              </div>
               <ExternalLink size={14} className="text-muted-foreground" />
             </a>
-            <div className="h-px bg-border/30 mx-4" />
-            <div className="flex items-center gap-3 px-4 py-3.5 text-[15px] text-muted-foreground">
-              <Info size={18} />
-              <span>Правила и конфиденциальность — в боте @VexoraSupport</span>
+            <div className="h-px mx-4" style={{ background: "hsl(var(--border) / 0.25)" }} />
+            <div className="setting-row">
+              <div className="flex items-center gap-3">
+                <Info size={18} />
+                <span className="text-[15px]">Правила и конфиденциальность — в боте @VexoraSupport</span>
+              </div>
             </div>
           </div>
         </section>
