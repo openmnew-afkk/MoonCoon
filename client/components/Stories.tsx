@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-/* ─── Types ─────────────────────────────────────────────────────────── */
 interface Slide { id: string; media: string; mediaType: string; }
 interface StoryUser {
   userId: string;
@@ -12,7 +11,6 @@ interface StoryUser {
   seen: boolean;
 }
 
-/* ─── Fake story data ────────────────────────────────────────────────── */
 const FAKE_STORIES: StoryUser[] = [
   {
     userId: "u1", name: "Алексей", seen: false,
@@ -62,26 +60,25 @@ const FAKE_STORIES: StoryUser[] = [
   },
 ];
 
-/* ─── Progress bar ───────────────────────────────────────────────────── */
 function ProgressBar({ active, done, paused, duration = 5000 }: {
   active: boolean; done: boolean; paused: boolean; duration?: number;
 }) {
   return (
-    <div className="h-[3px] flex-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.3)" }}>
+    <div className="h-[2.5px] flex-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.2)" }}>
       <div
         className="h-full rounded-full"
         style={{
-          background: "rgba(255,255,255,0.95)",
+          background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
           width: done ? "100%" : "0%",
           transition: active && !paused ? `width ${duration}ms linear` : "none",
           ...(active && !paused ? { width: "100%" } : {}),
+          boxShadow: "0 0 8px rgba(59,130,246,0.5)",
         }}
       />
     </div>
   );
 }
 
-/* ─── Preview card for adjacent user peek ────────────────────────────── */
 function PeekCard({ story }: { story: StoryUser }) {
   const slide = story.slides[0];
   return (
@@ -92,18 +89,17 @@ function PeekCard({ story }: { story: StoryUser }) {
         <img src={slide.media} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
       )}
       <div className="absolute inset-x-0 top-0 h-24"
-        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }} />
       <div className="absolute top-3 left-3 flex items-center gap-2">
         <div className="w-7 h-7 rounded-full overflow-hidden" style={{ boxShadow: "0 0 0 2px rgba(255,255,255,0.8)" }}>
           <img src={story.avatar} alt="" className="w-full h-full object-cover" />
         </div>
-        <p className="text-white text-[11px] font-bold">{story.name}</p>
+        <p className="text-white text-[11px] font-bold drop-shadow-lg">{story.name}</p>
       </div>
     </div>
   );
 }
 
-/* ─── Full-screen Story viewer ───────────────────────────────────────── */
 function StoryViewer({
   stories, startIndex, onClose,
 }: {
@@ -130,15 +126,13 @@ function StoryViewer({
   const current = stories[userIdx];
   const totalSlides = current?.slides.length ?? 0;
 
-  /* ── go to next/prev cleanly (no nested state setters) ── */
   const goNext = useCallback(() => {
     elapsedRef.current = 0;
     if (timerRef.current) clearTimeout(timerRef.current);
     setSlideIdx(s => {
       if (s < totalSlides - 1) return s + 1;
-      return s; // handled separately
+      return s;
     });
-    // If on last slide → move to next user or close
     setUserIdx(u => {
       const currentSlideIdx = slideIdx;
       const currentTotalSlides = stories[u]?.slides.length ?? 1;
@@ -147,7 +141,6 @@ function StoryViewer({
           setSlideIdx(0);
           return u + 1;
         }
-        // close — use timeout to avoid calling onClose inside state setter
         setTimeout(onClose, 0);
       }
       return u;
@@ -165,7 +158,6 @@ function StoryViewer({
     }
   }, [slideIdx, userIdx]);
 
-  /* ── Timer ── */
   const stopTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     elapsedRef.current += Date.now() - progressStartRef.current;
@@ -181,7 +173,6 @@ function StoryViewer({
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [userIdx, slideIdx, paused, draggingH, dragY]);
 
-  /* ── Touch handlers ── */
   const onTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
@@ -238,7 +229,6 @@ function StoryViewer({
         setPaused(false);
       }
     } else {
-      // tap
       setPaused(false);
       const touch = e.changedTouches[0];
       if (touch.clientX < screenW * 0.35) goPrev();
@@ -258,7 +248,6 @@ function StoryViewer({
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
       style={{ background: "#000", opacity: vOpacity }}
     >
-      {/* Previous user peek */}
       {userIdx > 0 && draggingH && dragX > 0 && (
         <div
           className="absolute inset-0 max-w-md mx-auto pointer-events-none"
@@ -271,7 +260,6 @@ function StoryViewer({
         </div>
       )}
 
-      {/* Next user peek */}
       {userIdx < stories.length - 1 && draggingH && dragX < 0 && (
         <div
           className="absolute inset-0 max-w-md mx-auto pointer-events-none"
@@ -284,7 +272,6 @@ function StoryViewer({
         </div>
       )}
 
-      {/* Current card */}
       <div
         className="relative w-full h-full max-w-md mx-auto select-none"
         style={{
@@ -300,16 +287,14 @@ function StoryViewer({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Gloss */}
         <div
           className="absolute inset-x-0 top-0 pointer-events-none z-10"
           style={{
             height: "35%",
-            background: "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%)",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%)",
           }}
         />
 
-        {/* Media */}
         {slide && (
           slide.mediaType === "video" ? (
             <video key={slide.id} src={slide.media}
@@ -322,11 +307,9 @@ function StoryViewer({
           )
         )}
 
-        {/* Top gradient */}
         <div className="absolute inset-x-0 top-0 h-40 pointer-events-none z-10"
-          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%)" }} />
+          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)" }} />
 
-        {/* Progress bars */}
         <div
           className="absolute top-0 left-0 right-0 flex gap-1 px-3 z-20 pointer-events-none"
           style={{ paddingTop: "calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 10px)" }}
@@ -336,7 +319,6 @@ function StoryViewer({
           ))}
         </div>
 
-        {/* Author row */}
         <div
           className="absolute left-0 right-0 flex items-center justify-between px-3 z-20"
           style={{ top: "calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 26px)" }}
@@ -347,9 +329,8 @@ function StoryViewer({
               <img src={current?.avatar} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
-              <p className="text-white text-[13px] font-bold leading-tight"
-                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{current?.name}</p>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>@{current?.userId}</p>
+              <p className="text-white text-[13px] font-bold leading-tight drop-shadow-lg">{current?.name}</p>
+              <p className="text-white/50 text-[11px]">@{current?.userId}</p>
             </div>
           </div>
           <button
@@ -361,25 +342,22 @@ function StoryViewer({
           </button>
         </div>
 
-        {/* Swipe-down hint */}
         {dragY > 50 && (
           <div className="absolute inset-0 flex items-end justify-center pb-20 pointer-events-none z-30">
             <div className="px-5 py-2 rounded-full"
-              style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)" }}>
+              style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(12px)" }}>
               <p className="text-white text-sm font-semibold">Отпустите, чтобы закрыть</p>
             </div>
           </div>
         )}
 
-        {/* Bottom gradient */}
         <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-10"
-          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }} />
+          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }} />
       </div>
     </div>
   );
 }
 
-/* ─── Story bubble ───────────────────────────────────────────────────── */
 function StoryBubble({ user, onClick }: { user: StoryUser; onClick: () => void }) {
   return (
     <button
@@ -387,22 +365,28 @@ function StoryBubble({ user, onClick }: { user: StoryUser; onClick: () => void }
       className="flex flex-col items-center gap-1.5 flex-shrink-0"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      <div className={`relative w-[68px] h-[68px] rounded-full p-[2.5px] ${user.seen ? "bg-foreground/20" : "bg-gradient-to-br from-primary via-accent to-pink-500"}`}>
+      <div className="relative w-[68px] h-[68px] rounded-full p-[2.5px]"
+        style={{
+          background: user.seen
+            ? "rgba(148,163,184,0.15)"
+            : "linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)",
+          boxShadow: user.seen ? "none" : "0 0 20px rgba(59,130,246,0.3), 0 0 40px rgba(139,92,246,0.1)",
+        }}>
         <div className="w-full h-full rounded-full overflow-hidden border-2 border-background">
           <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
         </div>
         {user.slides.length > 1 && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary border-2 border-background flex items-center justify-center">
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "2px solid hsl(var(--background))" }}>
             <span className="text-white text-[9px] font-bold">{user.slides.length}</span>
           </div>
         )}
       </div>
-      <span className="text-[11px] font-medium text-center w-16 truncate">{user.name}</span>
+      <span className="text-[11px] font-medium text-center w-16 truncate text-muted-foreground">{user.name}</span>
     </button>
   );
 }
 
-/* ─── Main Stories component ─────────────────────────────────────────── */
 export default function Stories({ onStoryClick }: { onStoryClick?: (id: string) => void }) {
   const navigate = useNavigate();
   const [storyUsers, setStoryUsers] = useState<StoryUser[]>(FAKE_STORIES);
@@ -446,7 +430,8 @@ export default function Stories({ onStoryClick }: { onStoryClick?: (id: string) 
             className="flex flex-col items-center gap-1.5 flex-shrink-0"
             style={{ WebkitTapHighlightColor: "transparent" }}
           >
-            <div className="w-[68px] h-[68px] rounded-full border-2 border-dashed border-primary/50 flex items-center justify-center bg-primary/[0.06] active:scale-90 transition-transform">
+            <div className="w-[68px] h-[68px] rounded-full border-2 border-dashed flex items-center justify-center active:scale-90 transition-transform"
+              style={{ borderColor: "rgba(59,130,246,0.4)", background: "rgba(59,130,246,0.04)" }}>
               <Plus size={24} className="text-primary" />
             </div>
             <span className="text-[11px] font-medium text-center w-16 truncate text-muted-foreground">История</span>

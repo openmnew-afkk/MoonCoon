@@ -51,6 +51,12 @@ export default {
           DEFAULT: "hsl(var(--glass))",
           light: "hsl(var(--glass-light))",
         },
+        neon: {
+          blue: "#3b82f6",
+          cyan: "#06b6d4",
+          magenta: "#a855f7",
+          pink: "#ec4899",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -81,11 +87,16 @@ export default {
             height: "0",
           },
         },
+        "glow-pulse": {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.8" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.35s ease-out forwards",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
       },
     },
   },

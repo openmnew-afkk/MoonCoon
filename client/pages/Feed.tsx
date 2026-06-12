@@ -196,48 +196,58 @@ export default function Feed() {
           autoPlay
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 pointer-events-none" />
 
-      <div className="absolute top-3 left-3 right-3 flex items-center gap-2 z-10">
-        <img
-          src={post.author.avatar}
-          alt=""
-          className="w-9 h-9 rounded-full ring-2 ring-white/80 object-cover"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-white text-sm font-semibold truncate">{post.author.name}</p>
-          <p className="text-white/60 text-xs truncate">{post.author.username}</p>
+      {/* Author info - top */}
+      <div className="absolute top-3 left-3 right-3 flex items-center gap-2.5 z-10">
+        <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/20 ring-offset-1 ring-offset-black/50">
+          <img
+            src={post.author.avatar}
+            alt=""
+            className="w-full h-full object-cover"
+          />
         </div>
-        <span className="text-white/50 text-[10px]">{post.timestamp}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-sm font-semibold truncate drop-shadow-lg">{post.author.name}</p>
+          <p className="text-white/50 text-xs truncate">{post.author.username}</p>
+        </div>
+        <span className="text-white/40 text-[10px] font-medium">{post.timestamp}</span>
       </div>
 
-      <div className="absolute right-2 bottom-16 flex flex-col items-center gap-3 z-10">
+      {/* Actions - right side */}
+      <div className="absolute right-2.5 bottom-20 flex flex-col items-center gap-3.5 z-10">
         <button
           type="button"
           onClick={() => toggleLike(post.id)}
-          className="flex flex-col items-center gap-0.5"
+          className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <Heart
-            size={24}
-            className={cn("text-white", post.liked && "fill-red-500 text-red-500")}
-          />
-          <span className="text-[10px] text-white font-medium">{post.likes}</span>
+          <div className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${post.liked ? 'bg-red-500/20' : 'bg-black/30'}`}>
+            <Heart
+              size={22}
+              className={cn("text-white drop-shadow-lg", post.liked && "fill-red-500 text-red-500")}
+            />
+          </div>
+          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.likes}</span>
         </button>
         <button
           type="button"
           onClick={() => setShowCommentSheet(post.id)}
-          className="flex flex-col items-center gap-0.5"
+          className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <MessageCircle size={24} className="text-white" />
-          <span className="text-[10px] text-white font-medium">{post.comments}</span>
+          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <MessageCircle size={22} className="text-white drop-shadow-lg" />
+          </div>
+          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.comments}</span>
         </button>
         <button
           type="button"
           onClick={() => setShowStarModal(post.id)}
-          className="flex flex-col items-center gap-0.5"
+          className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <Star size={24} className="text-amber-400 fill-amber-400" />
-          <span className="text-[10px] text-white font-medium">{post.stars || ""}</span>
+          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <Star size={22} className="text-amber-400 fill-amber-400 drop-shadow-lg" />
+          </div>
+          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.stars || ""}</span>
         </button>
         <button
           type="button"
@@ -245,15 +255,21 @@ export default function Feed() {
             const url = `https://t.me/share/url?url=${encodeURIComponent(`post/${post.id}`)}`;
             webApp?.openTelegramLink?.(url);
           }}
+          className="post-action-btn"
         >
-          <Share2 size={22} className="text-white" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <Share2 size={20} className="text-white drop-shadow-lg" />
+          </div>
         </button>
       </div>
 
+      {/* Caption - bottom */}
       {post.caption && (
-        <p className="absolute bottom-3 left-3 right-14 text-white text-[13px] leading-snug line-clamp-2 z-10">
-          {post.caption}
-        </p>
+        <div className="absolute bottom-3 left-3 right-16 z-10">
+          <p className="text-white text-[13px] leading-snug line-clamp-2 drop-shadow-lg">
+            {post.caption}
+          </p>
+        </div>
       )}
     </div>
   );
@@ -268,7 +284,8 @@ export default function Feed() {
         <button
           type="button"
           onClick={() => navigate("/goals")}
-          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2 rounded-xl bg-primary/15 text-primary text-xs font-semibold"
+          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/20 text-amber-400 text-xs font-semibold"
+          style={{ boxShadow: "0 0 20px rgba(245,158,11,0.1)" }}
         >
           <Target size={14} /> {liveGoals.length} активных целей
         </button>
@@ -276,12 +293,19 @@ export default function Feed() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-muted-foreground" size={28} />
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="animate-spin text-primary" size={28} />
+            <span className="text-xs text-muted-foreground">Загружаем ленту...</span>
+          </div>
         </div>
       ) : posts.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center">
-          <p className="text-lg font-semibold mb-2">Лента пуста</p>
-          <p className="text-sm text-muted-foreground mb-6">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4"
+            style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08))", border: "1px solid rgba(59,130,246,0.15)" }}>
+            <Plus size={32} className="text-primary" />
+          </div>
+          <p className="text-lg font-bold mb-2">Лента пуста</p>
+          <p className="text-sm text-muted-foreground mb-6 max-w-[260px]">
             Создайте первый пост — он появится здесь для всех подписчиков {APP_NAME}.
           </p>
           <Link to="/create" className="btn-premium px-6 py-3 text-sm inline-flex items-center gap-2">
@@ -296,14 +320,18 @@ export default function Feed() {
             onIndexChange={setCurrentIndex}
             renderCard={renderCard}
           />
-          <div className="flex justify-center gap-1.5 pb-4 pt-1">
+          <div className="flex justify-center gap-1.5 pb-3 pt-1">
             {posts.map((_, i) => (
               <div
                 key={i}
-                className={cn(
-                  "h-1 rounded-full transition-all",
-                  i === currentIndex ? "w-5 bg-primary" : "w-1 bg-muted-foreground/40",
-                )}
+                className="h-1 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentIndex ? 20 : 4,
+                  background: i === currentIndex
+                    ? "linear-gradient(90deg, #3b82f6, #8b5cf6)"
+                    : "rgba(148,163,184,0.2)",
+                  boxShadow: i === currentIndex ? "0 0 8px rgba(59,130,246,0.4)" : "none",
+                }}
               />
             ))}
           </div>
@@ -315,12 +343,16 @@ export default function Feed() {
 
       {showCommentSheet && (
         <div className="fixed inset-0 z-50 flex items-end" onClick={() => setShowCommentSheet(null)}>
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative z-10 w-full rounded-t-3xl bg-card max-h-[70vh] overflow-hidden"
+            className="relative z-10 w-full rounded-t-3xl overflow-hidden"
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)", boxShadow: "0 -8px 40px rgba(0,0,0,0.4)" }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="px-4 py-3 border-b border-border font-semibold">Комментарии</div>
+            <div className="px-4 py-3.5 border-b border-border/50 font-semibold flex items-center gap-2">
+              <MessageCircle size={16} className="text-primary" />
+              Комментарии
+            </div>
             <div className="overflow-y-auto max-h-[55vh]">
               <Comments postId={showCommentSheet} onClose={() => setShowCommentSheet(null)} />
             </div>
@@ -330,26 +362,30 @@ export default function Feed() {
 
       {showStarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowStarModal(null)}>
-          <div className="absolute inset-0 bg-black/60" />
-          <div className="relative z-10 w-full max-w-sm rounded-2xl p-5 bg-card" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold mb-1">Поддержать ⭐</h3>
-            <p className="text-sm text-muted-foreground mb-4">Баланс: {starsBalance}</p>
-            <div className="flex flex-wrap gap-2 mb-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative z-10 w-full max-w-sm rounded-3xl p-6" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)", boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-lg mb-1">Поддержать</h3>
+            <p className="text-sm text-muted-foreground mb-5">Баланс: {starsBalance} ⭐</p>
+            <div className="flex flex-wrap gap-2 mb-5">
               {[1, 5, 10, 25, 50].map(n => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setStarAmount(n)}
-                  className={cn(
-                    "px-3 py-2 rounded-lg text-sm font-medium",
-                    starAmount === n ? "bg-primary text-primary-foreground" : "bg-muted",
-                  )}
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: starAmount === n
+                      ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
+                      : "hsl(var(--secondary))",
+                    color: starAmount === n ? "white" : "hsl(var(--secondary-foreground))",
+                    boxShadow: starAmount === n ? "0 4px 16px rgba(59,130,246,0.3)" : "none",
+                  }}
                 >
-                  {n}
+                  {n} ⭐
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => handleSendStar(showStarModal)} className="btn-premium w-full py-3 text-sm">
+            <button type="button" onClick={() => handleSendStar(showStarModal)} className="btn-premium w-full py-3.5 text-sm">
               Отправить {starAmount} ⭐
             </button>
           </div>

@@ -1,2 +1,2 @@
 export const APP_NAME = "Vexora";
-export const APP_TAGLINE = "Соцсеть в Telegram";
+export const APP_TAGLINE = "Социальная сеть нового поколения";

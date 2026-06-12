@@ -24,7 +24,6 @@ export default function Comments({ postId, onClose }: CommentsProps) {
 
   const [newComment, setNewComment] = useState("");
 
-  // Load comments on mount
   useEffect(() => {
     const loadComments = async () => {
       setLoading(true);
@@ -86,48 +85,47 @@ export default function Comments({ postId, onClose }: CommentsProps) {
   };
 
   return (
-    <div className="glass-card">
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-glass-light/10">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <MessageCircle className="text-primary" size={20} />
+    <div className="px-4 py-3">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/30">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <MessageCircle className="text-primary" size={16} />
           Комментарии ({comments.length})
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-xl"
+            className="text-muted-foreground hover:text-foreground text-xl transition-colors"
           >
             ✕
           </button>
         )}
       </div>
 
-      {/* Comments List */}
-      <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
+      <div className="space-y-3.5 mb-4 max-h-64 overflow-y-auto">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3">
             <img
               src={comment.avatar}
               alt={comment.author}
-              className="w-8 h-8 rounded-full flex-shrink-0"
+              className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-border/50"
             />
             <div className="flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold">{comment.author}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     {comment.timestamp}
                   </p>
                 </div>
               </div>
-              <p className="text-sm mt-1 text-foreground">{comment.text}</p>
+              <p className="text-sm mt-1 text-foreground/90 leading-relaxed">{comment.text}</p>
               <div className="flex items-center gap-3 mt-2">
                 <button
                   onClick={() => toggleCommentLike(comment.id)}
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
                   <Heart
-                    size={14}
+                    size={13}
                     className={comment.liked ? "fill-red-500 text-red-500" : ""}
                   />
                   <span>{comment.likes > 0 ? comment.likes : ""}</span>
@@ -141,12 +139,11 @@ export default function Comments({ postId, onClose }: CommentsProps) {
         ))}
       </div>
 
-      {/* Add Comment Input */}
-      <div className="border-t border-glass-light/10 pt-4 flex gap-2">
+      <div className="border-t border-border/30 pt-3 flex gap-2">
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
           alt="Your avatar"
-          className="w-8 h-8 rounded-full flex-shrink-0"
+          className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-border/50"
         />
         <div className="flex-1 flex gap-2">
           <input
@@ -157,12 +154,21 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               if (e.key === "Enter") handleAddComment();
             }}
             placeholder="Добавить комментарий..."
-            className="flex-1 glass-morphism rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex-1 rounded-full px-4 py-2 text-sm outline-none transition-all"
+            style={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border) / 0.5)",
+            }}
           />
           <button
             onClick={handleAddComment}
             disabled={!newComment.trim()}
-            className="glass-button rounded-full p-2.5 bg-primary/20 text-primary hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="rounded-full p-2.5 transition-all disabled:opacity-30"
+            style={{
+              background: newComment.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))",
+              color: newComment.trim() ? "white" : "hsl(var(--muted-foreground))",
+              boxShadow: newComment.trim() ? "0 2px 12px rgba(59,130,246,0.3)" : "none",
+            }}
           >
             <Send size={16} />
           </button>

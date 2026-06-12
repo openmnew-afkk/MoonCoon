@@ -8,7 +8,7 @@ import {
 } from "framer-motion";
 
 const SWIPE_RATIO = 0.26;
-const ROTATION_FACTOR = 12; // degrees at full swipe
+const ROTATION_FACTOR = 12;
 
 interface FeedCardStackProps<T> {
   items: T[];
@@ -33,28 +33,21 @@ export default function FeedCardStack<T>({
   const hasPrev = index > 0;
   const nextItem = hasNext ? items[index + 1] : null;
   const prevItem = hasPrev ? items[index - 1] : null;
-  // Card behind next (2 levels deep)
   const nextNextItem = index < items.length - 2 ? items[index + 2] : null;
 
-  // Rotation follows drag direction
   const rotate = useTransform(x, [-cardWidth, 0, cardWidth], [-ROTATION_FACTOR, 0, ROTATION_FACTOR]);
 
-  // Current card fades/scales out
   const opacity = useTransform(x, (v) => {
     const p = Math.min(Math.abs(v) / cardWidth, 1);
     return 1 - p * 0.3;
   });
 
-  // LIKE label opacity (drag right = like)
   const likeOpacity = useTransform(x, [0, cardWidth * 0.25, cardWidth * 0.5], [0, 0.8, 1]);
-  // NOPE label opacity (drag left = nope)
   const nopeOpacity = useTransform(x, [-cardWidth * 0.5, -cardWidth * 0.25, 0], [1, 0.8, 0]);
 
-  // Next card scales up as current slides away
   const nextScale = useTransform(x, [-cardWidth, 0, cardWidth], [1, 0.93, 1]);
   const nextOpacity = useTransform(x, [-cardWidth, -cardWidth * 0.2, 0, cardWidth * 0.2, cardWidth], [1, 0.7, 0.5, 0.7, 1]);
 
-  // Stack card behind next
   const stackScale = useTransform(x, [-cardWidth, 0, cardWidth], [0.96, 0.87, 0.96]);
   const stackOpacity = useTransform(x, [-cardWidth, 0, cardWidth], [0.6, 0.3, 0.6]);
 
@@ -95,7 +88,6 @@ export default function FeedCardStack<T>({
   return (
     <div className="relative w-full flex-1 flex items-center justify-center px-4 min-h-0 py-3">
 
-      {/* Stack shadow — 2 levels deep */}
       {nextNextItem && (
         <motion.div
           className="absolute z-0 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden pointer-events-none"
@@ -105,7 +97,6 @@ export default function FeedCardStack<T>({
         </motion.div>
       )}
 
-      {/* Next card (peek behind) */}
       {(nextItem || prevItem) && (
         <motion.div
           className="absolute z-[1] w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden pointer-events-none"
@@ -119,11 +110,13 @@ export default function FeedCardStack<T>({
         </motion.div>
       )}
 
-      {/* Current draggable card */}
       <motion.div
         ref={cardRef}
-        className="feed-card-frame relative z-10 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border border-white/[0.07]"
-        style={{ x, rotate, opacity }}
+        className="feed-card-frame relative z-10 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden"
+        style={{
+          x, rotate, opacity,
+          boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)",
+        }}
         drag={animating ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.12}
@@ -134,20 +127,18 @@ export default function FeedCardStack<T>({
       >
         {renderCard(current)}
 
-        {/* НРАВИТСЯ label */}
         <motion.div
           className="swipe-label-like"
           style={{ opacity: likeOpacity }}
         >
-          ❤️ Нравится
+          Нравится
         </motion.div>
 
-        {/* ПРОПУСТИТЬ label */}
         <motion.div
           className="swipe-label-nope"
           style={{ opacity: nopeOpacity }}
         >
-          Пропустить ✕
+          Пропустить
         </motion.div>
       </motion.div>
     </div>

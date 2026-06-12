@@ -10,11 +10,10 @@ interface Message {
   time: string;
 }
 
-/* ── Sound effect ─────────────────────────────────────────── */
 function playIntroSound() {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -47,7 +46,6 @@ function playMessageSound() {
   } catch {}
 }
 
-/* ── Smart AI ─────────────────────────────────────────────── */
 const KB: Record<string, string[]> = {
   greeting: [
     "Привет! 👋 Рада видеть тебя. Чем помочь сегодня?",
@@ -96,7 +94,6 @@ const KB: Record<string, string[]> = {
     "Хм, давай разберёмся! Уточни вопрос, и я дам развёрнутый ответ.",
     "Услышала! Могу помочь с контентом, хэштегами, Premium — просто спроси 😊",
     "Спасибо за вопрос! Дай больше деталей — так ответ будет точнее 💡",
-    "Ого, интересная тема! Давай углубимся. Что конкретно хочешь узнать?",
   ],
 };
 
@@ -131,7 +128,6 @@ const QUICK_CHIPS = [
   { emoji: "📈", text: "Как набрать аудиторию?" },
 ];
 
-/* ── Component ──────────────────────────────────────────────── */
 export default function AI() {
   const { user } = useTelegram();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -149,7 +145,6 @@ export default function AI() {
 
   useEffect(() => { scrollToBottom(); }, [messages, typing, scrollToBottom]);
 
-  // Intro animation sequence
   useEffect(() => {
     if (!showIntro) return;
     const timers = [
@@ -173,7 +168,6 @@ export default function AI() {
     setMessages(p => [...p, userMsg]);
     setTyping(true);
 
-    // Try server AI first
     let reply: string | null = null;
     try {
       const res = await fetch("/api/ai/chat", {
@@ -181,7 +175,7 @@ export default function AI() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: msg,
-          systemPrompt: `Ты — Адель, дружелюбный AI-помощник в ${APP_NAME}. Отвечай на русском, подробно но структурировано (используй списки и эмодзи). Помогай с подписями, хэштегами, контент-стратегией. Будь тёплой и профессиональной.`,
+          systemPrompt: `Ты — Адель, дружелюбный AI-помощник в ${APP_NAME}. Отвечай на русском, подробно но структурировано. Помогай с подписями, хэштегами, контент-стратегией. Будь тёплой и профессиональной.`,
         }),
       });
       if (res.ok) {
@@ -202,46 +196,41 @@ export default function AI() {
   }, [input]);
 
   const name = user?.first_name || "друг";
-  const ACCENT = "#CBFF4D";
 
-  /* ── Intro overlay ── */
   if (showIntro) {
     return (
       <div style={{
         position: "fixed", inset: 0, zIndex: 100,
-        background: "#0a0a0f",
+        background: "hsl(var(--background))",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         fontFamily: "Inter, sans-serif",
       }}>
-        {/* Ambient glow */}
         <div style={{
           position: "absolute", top: "35%", left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 200, height: 200, borderRadius: "50%",
-          background: `radial-gradient(circle, ${ACCENT}15 0%, transparent 70%)`,
+          width: 220, height: 220, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)",
           filter: "blur(60px)", pointerEvents: "none",
           opacity: introStep >= 1 ? 1 : 0,
           transition: "opacity 0.8s ease",
         }} />
 
-        {/* Icon */}
         <div style={{
-          width: 64, height: 64, borderRadius: 20,
-          background: `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}08)`,
-          border: `1px solid ${ACCENT}25`,
+          width: 68, height: 68, borderRadius: 20,
+          background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.06))",
+          border: "1px solid rgba(59,130,246,0.2)",
           display: "flex", alignItems: "center", justifyContent: "center",
           opacity: introStep >= 1 ? 1 : 0,
           transform: introStep >= 2 ? "scale(1) translateY(0)" : "scale(0.8) translateY(20px)",
           transition: "all 0.6s cubic-bezier(0.16,1,0.3,1)",
         }}>
-          <Sparkles size={28} style={{ color: ACCENT }} />
+          <Sparkles size={28} style={{ color: "#60a5fa" }} />
         </div>
 
-        {/* Name */}
         <h1 style={{
-          fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em",
-          background: `linear-gradient(135deg, #f0fdf4, ${ACCENT})`,
+          fontSize: 30, fontWeight: 900, letterSpacing: "-0.03em",
+          background: "linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899)",
           WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
           margin: "16px 0 6px",
           opacity: introStep >= 2 ? 1 : 0,
@@ -250,18 +239,17 @@ export default function AI() {
         }}>Адель</h1>
 
         <p style={{
-          fontSize: 13, color: "rgba(148,163,184,0.5)",
+          fontSize: 13, color: "hsl(var(--muted-foreground))",
           opacity: introStep >= 3 ? 1 : 0,
           transition: "opacity 0.5s ease 0.2s",
         }}>AI-помощник • {APP_NAME}</p>
 
-        {/* Particles */}
         {introStep >= 3 && [0,1,2,3,4].map(i => (
           <div key={i} style={{
             position: "absolute",
             top: "50%", left: "50%",
             width: 3, height: 3, borderRadius: "50%",
-            background: ACCENT,
+            background: ["#3b82f6", "#8b5cf6", "#ec4899", "#60a5fa", "#a78bfa"][i],
             animation: `adel-particle-${i} 1s ease-out forwards`,
           }} />
         ))}
@@ -287,7 +275,6 @@ export default function AI() {
       height: "calc(100dvh - var(--tg-safe-top, 0px) - var(--tg-chrome-top, 52px) - 48px - 4.5rem)",
       maxWidth: 480, margin: "0 auto", fontFamily: "Inter, sans-serif",
     }}>
-      {/* Messages area */}
       <div ref={scrollRef} style={{
         flex: 1, overflowY: "auto", padding: "16px 16px 8px",
         WebkitOverflowScrolling: "touch",
@@ -299,32 +286,34 @@ export default function AI() {
             padding: "0 20px",
           }}>
             <div style={{
-              width: 52, height: 52, borderRadius: 16,
-              background: `linear-gradient(135deg, ${ACCENT}12, ${ACCENT}06)`,
-              border: `1px solid ${ACCENT}15`,
+              width: 56, height: 56, borderRadius: 18,
+              background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.06))",
+              border: "1px solid rgba(59,130,246,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              marginBottom: 14,
+              marginBottom: 16,
+              boxShadow: "0 0 30px rgba(59,130,246,0.1)",
             }}>
-              <Sparkles size={22} style={{ color: ACCENT }} />
+              <Sparkles size={24} style={{ color: "#60a5fa" }} />
             </div>
 
             <h2 style={{
-              fontSize: 18, fontWeight: 800,
-              background: `linear-gradient(135deg, #f0fdf4, ${ACCENT})`,
+              fontSize: 20, fontWeight: 900,
+              background: "linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899)",
               WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
               margin: "0 0 6px",
             }}>Привет, {name}!</h2>
-            <p style={{ fontSize: 12, color: "rgba(148,163,184,0.45)", lineHeight: 1.5, maxWidth: 260, margin: "0 0 24px" }}>
+            <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, maxWidth: 260, margin: "0 0 28px" }}>
               Я Адель — AI-помощник {APP_NAME}. Помогу с контентом, подписями и стратегией.
             </p>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", maxWidth: 320 }}>
               {QUICK_CHIPS.map(chip => (
                 <button key={chip.text} onClick={() => send(chip.text)} style={{
-                  padding: "7px 12px", borderRadius: 18,
-                  background: `${ACCENT}08`, border: `1px solid ${ACCENT}12`,
-                  color: `${ACCENT}cc`, fontSize: 11, fontWeight: 500,
+                  padding: "8px 14px", borderRadius: 20,
+                  background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.1)",
+                  color: "#60a5fa", fontSize: 11, fontWeight: 500,
                   cursor: "pointer", WebkitTapHighlightColor: "transparent",
+                  transition: "background 0.15s, border-color 0.15s",
                 }} className="active:scale-95">{chip.emoji} {chip.text}</button>
               ))}
             </div>
@@ -336,18 +325,20 @@ export default function AI() {
                 <div style={{
                   maxWidth: "84%", padding: "10px 14px", borderRadius: 18,
                   ...(msg.role === "user" ? {
-                    background: `linear-gradient(135deg, ${ACCENT}, #a3e635)`,
-                    borderBottomRightRadius: 6, color: "#0a0a0f",
+                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                    borderBottomRightRadius: 6, color: "white",
+                    boxShadow: "0 2px 12px rgba(59,130,246,0.25)",
                   } : {
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(203,255,77,0.06)",
-                    borderBottomLeftRadius: 6, color: "#e2e8f0",
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border) / 0.5)",
+                    borderBottomLeftRadius: 6, color: "hsl(var(--foreground))",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   }),
                 }}>
                   <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.text}</p>
                   <p style={{
                     fontSize: 10, margin: "4px 0 0", textAlign: "right",
-                    color: msg.role === "user" ? "rgba(0,0,0,0.4)" : "rgba(148,163,184,0.25)",
+                    color: msg.role === "user" ? "rgba(255,255,255,0.5)" : "hsl(var(--muted-foreground))",
                   }}>{msg.time}</p>
                 </div>
               </div>
@@ -356,12 +347,14 @@ export default function AI() {
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <div style={{
                   padding: "12px 18px", borderRadius: 18, borderBottomLeftRadius: 6,
-                  background: "rgba(255,255,255,0.04)", border: `1px solid ${ACCENT}08`,
+                  background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
                   display: "flex", gap: 5, alignItems: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}>
                   {[0,1,2].map(i => (
                     <div key={i} style={{
-                      width: 6, height: 6, borderRadius: "50%", background: ACCENT,
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                       animation: `adel-dot 1.2s ease-in-out infinite ${i * 0.15}s`,
                     }} />
                   ))}
@@ -373,24 +366,24 @@ export default function AI() {
         )}
       </div>
 
-      {/* Input */}
-      <div style={{ padding: "8px 12px 12px", borderTop: `1px solid ${ACCENT}06`, background: "rgba(10,10,15,0.95)" }}>
+      <div style={{ padding: "8px 12px 12px", borderTop: "1px solid hsl(var(--border) / 0.3)", background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(24px)" }}>
         <form onSubmit={e => { e.preventDefault(); send(); }} style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "6px 6px 6px 16px", borderRadius: 24,
-          background: "rgba(255,255,255,0.04)", border: `1px solid ${ACCENT}08`,
+          background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
         }}>
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
             placeholder="Напишите Адели..."
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 14 }}
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "hsl(var(--foreground))", fontSize: 14 }}
           />
           <button type="submit" disabled={!input.trim()} style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: input.trim() ? `linear-gradient(135deg, ${ACCENT}, #a3e635)` : `${ACCENT}10`,
+            width: 38, height: 38, borderRadius: "50%",
+            background: input.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))",
             border: "none", display: "flex", alignItems: "center", justifyContent: "center",
             cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s",
+            boxShadow: input.trim() ? "0 2px 12px rgba(59,130,246,0.3)" : "none",
           }}>
-            <Send size={15} style={{ color: input.trim() ? "#0a0a0f" : "rgba(148,163,184,0.2)", marginLeft: 1 }} />
+            <Send size={15} style={{ color: input.trim() ? "white" : "hsl(var(--muted-foreground))", marginLeft: 1 }} />
           </button>
         </form>
       </div>
