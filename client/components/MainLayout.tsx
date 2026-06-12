@@ -7,7 +7,7 @@ interface MainLayoutProps { children: React.ReactNode; }
 
 const NAV = [
   { path: "/", icon: Home, label: "Лента", exact: true },
-  { path: "/ai", icon: Sparkles, label: "AI" },
+  { path: "/ai", icon: Sparkles, label: "Адель" },
   { path: "/create", icon: Plus, label: "", isCreate: true },
   { path: "/music", icon: Music, label: "Музыка" },
   { path: "/profile", icon: User, label: "Профиль" },
@@ -19,48 +19,27 @@ function NavItem({ path, icon: Icon, label, exact, isCreate }: any) {
 
   if (isCreate) {
     return (
-      <Link to={path} style={{ textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
-        <div className="fab-create">
-          <Plus size={24} strokeWidth={2.5} color="white" />
+      <Link to={path} style={{ textDecoration: "none" }}>
+        <div className="fab-create active:scale-90">
+          <Plus size={24} strokeWidth={2.5} color="#000" />
         </div>
       </Link>
     );
   }
 
   return (
-    <Link to={path} style={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      gap: 2, width: 56, padding: "6px 0",
-      textDecoration: "none", WebkitTapHighlightColor: "transparent",
-    }} className="active:scale-90">
-      <div style={{
-        position: "relative",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Icon size={22} strokeWidth={active ? 2.5 : 1.8}
-          style={{
-            color: active
-              ? "hsl(var(--primary))"
-              : "hsl(var(--muted-foreground) / 0.4)",
-            transition: "color 0.2s, filter 0.2s",
-            filter: active ? "drop-shadow(0 0 8px hsl(var(--primary) / 0.5))" : "none"
-          }} />
+    <Link to={path} className="flex flex-col items-center gap-1 w-14 py-1.5 no-underline active:scale-90"
+      style={{ WebkitTapHighlightColor: "transparent", textDecoration: "none" }}>
+      <div className="relative">
+        <Icon size={22} strokeWidth={active ? 2.5 : 1.7}
+          className={`transition-all duration-200 ${active ? "text-[#FBBF24] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "text-white/20"}`} />
         {active && (
-          <div style={{
-            position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)",
-            width: 4, height: 4, borderRadius: "50%",
-            background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
-            boxShadow: "0 0 8px hsl(var(--primary) / 0.6)",
-          }} />
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#F97316] shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
         )}
       </div>
-      <span style={{
-        fontSize: 10, fontWeight: active ? 700 : 500,
-        color: active
-          ? "hsl(var(--primary))"
-          : "hsl(var(--muted-foreground) / 0.3)",
-        transition: "color 0.2s",
-      }}>{label}</span>
+      <span className={`text-[10px] font-semibold transition-colors duration-200 ${active ? "text-[#FBBF24]" : "text-white/18"}`}>
+        {label}
+      </span>
     </Link>
   );
 }
@@ -75,47 +54,25 @@ function ExploreOverlay({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div
-      className="animate-fade-up"
-      style={{ position: "fixed", inset: 0, zIndex: 200, background: "hsl(var(--background) / 0.92)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)" }}
-      onClick={onClose}
-    >
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "80px 20px" }} onClick={e => e.stopPropagation()}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "14px 16px", borderRadius: 16,
-          background: "hsl(var(--card) / 0.6)",
-          border: "1.5px solid hsl(var(--border) / 0.4)",
-          marginBottom: 20,
-        }}>
-          <Search size={18} style={{ color: "hsl(var(--primary) / 0.6)" }} />
-          <input placeholder="Поиск..." autoFocus className="flex-1 bg-transparent border-none outline-none text-foreground text-[15px]" style={{ fontFamily: "inherit" }} />
-          <button onClick={onClose} className="btn-icon !w-8 !h-8">
-            <X size={16} style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
+    <div className="fixed inset-0 z-200 bg-black/80 backdrop-blur-xl" onClick={onClose}>
+      <div className="max-w-lg mx-auto px-5 pt-20" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.06] mb-5">
+          <Search size={18} className="text-[#F59E0B]/50" />
+          <input placeholder="Поиск..." autoFocus className="flex-1 bg-transparent border-none outline-none text-white text-[15px]" />
+          <button onClick={onClose} className="bg-transparent border-none cursor-pointer p-1">
+            <X size={18} className="text-white/30" />
           </button>
         </div>
-        <h3 style={{
-          fontSize: 11, fontWeight: 700,
-          color: "hsl(var(--primary))",
-          letterSpacing: "0.08em", textTransform: "uppercase",
-          margin: "0 0 12px", display: "flex", alignItems: "center", gap: 6,
-        }}><TrendingUp size={14} /> Тренды</h3>
+        <h3 className="text-[11px] font-bold text-[#FBBF24] tracking-[0.1em] uppercase mb-3 flex items-center gap-1.5">
+          <TrendingUp size={14} /> Тренды
+        </h3>
         {tags.map(t => (
-          <button key={t.tag} className="w-full text-left" style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "14px 16px", borderRadius: 16,
-            background: "hsl(var(--card) / 0.4)",
-            border: "1px solid hsl(var(--border) / 0.25)",
-            cursor: "pointer", marginBottom: 6,
-            WebkitTapHighlightColor: "transparent",
-            transition: "background 0.15s, border-color 0.15s",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "hsl(var(--secondary) / 0.5)"; e.currentTarget.style.borderColor = "hsl(var(--primary) / 0.15)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "hsl(var(--card) / 0.4)"; e.currentTarget.style.borderColor = "hsl(var(--border) / 0.25)"; }}
-          >
-            <span style={{ fontSize: 22 }}>{t.emoji}</span>
-            <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))" }}>{t.tag}</span>
-            <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground) / 0.3)" }}>{t.n}</span>
+          <button key={t.tag}
+            className="flex items-center gap-3 w-full py-3.5 px-4 rounded-xl bg-white/[0.02] border border-white/[0.03] cursor-pointer text-left mb-1.5 active:scale-[0.98] transition-all hover:bg-white/[0.04] hover:border-white/[0.06]"
+            style={{ WebkitTapHighlightColor: "transparent" }}>
+            <span className="text-xl">{t.emoji}</span>
+            <span className="flex-1 text-sm font-semibold text-white/90">{t.tag}</span>
+            <span className="text-xs text-white/25">{t.n}</span>
           </button>
         ))}
       </div>
@@ -129,34 +86,38 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const hideNav = ["/create", "/messages"].some(p => pathname.startsWith(p));
 
   const HEADER_H = 52;
-  const NAV_H = 68;
+  const NAV_H = 72;
 
   return (
-    <div className="app-shell">
-      <header style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        background: "hsl(var(--background) / 0.78)",
-        backdropFilter: "blur(48px) saturate(2)",
-        WebkitBackdropFilter: "blur(48px) saturate(2)",
-        borderBottom: "1px solid hsl(var(--border) / 0.3)",
-        paddingTop: "env(safe-area-inset-top, 0px)",
-      }}>
-        <div style={{
-          maxWidth: 480, margin: "0 auto", padding: "0 20px",
-          height: HEADER_H, display: "flex", alignItems: "center", justifyContent: "space-between",
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50"
+        style={{
+          height: HEADER_H,
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          background: "hsl(30 15% 3% / 0.88)",
+          backdropFilter: "blur(40px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(40px) saturate(1.8)",
+          borderBottom: "1px solid hsl(40 20% 50% / 0.06)",
         }}>
-          <span className="gradient-text" style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em" }}>
+        <div className="max-w-lg mx-auto px-5 h-full flex items-center justify-between">
+          <span className="text-[22px] font-bold tracking-[-0.04em] gradient-text"
+            style={{ fontFamily: "Space Grotesk, sans-serif" }}>
             {APP_NAME}
           </span>
-          <button onClick={() => setShowExplore(true)} className="btn-icon !w-9 !h-9" style={{
-            background: "hsl(var(--primary) / 0.06)",
-            border: "1px solid hsl(var(--primary) / 0.1)",
-          }}>
-            <Search size={16} style={{ color: "hsl(var(--primary) / 0.6)" }} />
+          <button onClick={() => setShowExplore(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-all"
+            style={{
+              background: "rgba(245,158,11,0.06)",
+              border: "1px solid rgba(245,158,11,0.1)",
+              WebkitTapHighlightColor: "transparent",
+            }}>
+            <Search size={16} className="text-[#F59E0B]/50" />
           </button>
         </div>
       </header>
 
+      {/* Content */}
       <main style={{
         paddingTop: `calc(env(safe-area-inset-top, 0px) + ${HEADER_H}px)`,
         paddingBottom: hideNav ? "env(safe-area-inset-bottom, 0px)" : `calc(env(safe-area-inset-bottom, 0px) + ${NAV_H}px)`,
@@ -165,18 +126,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         {children}
       </main>
 
+      {/* Bottom Nav */}
       {!hideNav && (
-        <nav style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-          className="nav-glass"
-        >
-          <div style={{
-            maxWidth: 480, margin: "0 auto",
-            height: NAV_H, padding: "0 8px",
-            display: "flex", alignItems: "center", justifyContent: "space-around",
+        <nav className="fixed bottom-0 left-0 right-0 z-50 nav-glass"
+          style={{
+            paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            height: NAV_H,
           }}>
+          <div className="max-w-lg mx-auto h-full px-2 flex items-center justify-around">
             {NAV.map(item => <NavItem key={item.path} {...item} />)}
           </div>
         </nav>
