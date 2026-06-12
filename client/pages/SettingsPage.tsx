@@ -4,27 +4,13 @@ import { useState } from "react";
 import ThemeSelector from "@/components/ThemeSelector";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
-import { cn } from "@/lib/utils";
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" onClick={() => onChange(!checked)}
-      className="relative w-11 h-6 rounded-full transition-all duration-200"
-      style={{
-        background: checked
-          ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))"
-          : "hsl(var(--secondary))",
-        boxShadow: checked ? "0 0 16px hsl(var(--primary) / 0.2)" : "none",
-      }}>
-      <div className={cn(
-        "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all duration-200",
-        checked ? "left-[22px] shadow-md" : "left-0.5 shadow-sm"
-      )}
-        style={{
-          boxShadow: checked
-            ? "0 2px 8px rgba(0,0,0,0.3)"
-            : "0 1px 4px rgba(0,0,0,0.2)",
-        }} />
+      className="toggle-luxe"
+      data-state={checked ? "checked" : "unchecked"}>
+      <div className="toggle-luxe-thumb" />
     </button>
   );
 }
@@ -46,10 +32,10 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="sticky top-0 z-20 border-b border-border/30"
-        style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", paddingTop: safeTop }}>
+      <div className="glass sticky top-0 z-20 border-b border-white/5"
+        style={{ paddingTop: safeTop }}>
         <div className="flex items-center gap-2 px-4 h-12">
-          <Link to="/profile" className="btn-icon !w-9 !h-9">
+          <Link to="/profile" className="btn-icon-luxe !w-9 !h-9">
             <ChevronLeft size={20} />
           </Link>
           <h1 className="text-lg font-bold">Настройки</h1>
@@ -63,21 +49,21 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{
-                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))",
-                  border: "1px solid hsl(var(--primary) / 0.12)",
+                  background: "linear-gradient(135deg, hsl(280 60% 75% / 0.1), rgba(251,191,36,0.06))",
+                  border: "1px solid hsl(280 60% 75% / 0.12)",
                 }}>
-                <span className="text-lg font-black gradient-text">V</span>
+                <span className="text-lg font-black text-gradient">V</span>
               </div>
               <div>
                 <p className="font-bold text-lg">{APP_NAME}</p>
-                <p className="text-xs text-muted-foreground">{APP_TAGLINE}</p>
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{APP_TAGLINE}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
               Мини-приложение Telegram: лента, истории, цели со звёздами, AI-помощник Адель.
               Профиль и баланс привязаны к вашему Telegram-аккаунту.
             </p>
-            <p className="text-[11px] text-muted-foreground/40 mt-3">Версия 1.2.0</p>
+            <p className="text-[11px] mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>Версия 1.2.0</p>
           </div>
         </section>
 
@@ -85,7 +71,7 @@ export default function SettingsPage() {
           <p className="section-label">Внешний вид</p>
           <div className="section-card p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Palette size={16} className="text-primary" />
+              <Palette size={16} style={{ color: "#E8B4F8" }} />
               <span className="text-sm font-semibold">Тема</span>
             </div>
             <ThemeSelector value={mode} onChange={setTheme} />
@@ -97,7 +83,7 @@ export default function SettingsPage() {
           <div className="section-card">
             <div className="setting-row">
               <div className="flex items-center gap-3">
-                <Target size={18} className="text-primary" />
+                <Target size={18} style={{ color: "#E8B4F8" }} />
                 <span className="text-[15px]">Цели в ленте</span>
               </div>
               <Toggle checked={goalsInFeed} onChange={onGoalsToggle} />
@@ -110,18 +96,17 @@ export default function SettingsPage() {
           <div className="section-card">
             <div className="setting-row">
               <div className="flex items-center gap-3">
-                <Bell size={18} className="text-primary" />
+                <Bell size={18} style={{ color: "#E8B4F8" }} />
                 <span className="text-[15px]">Push-уведомления</span>
               </div>
               <Toggle checked={notifications} onChange={setNotifications} />
             </div>
-            <div className="h-px mx-4" style={{ background: "hsl(var(--border) / 0.25)" }} />
             <div className="setting-row opacity-40">
               <div className="flex items-center gap-3">
                 <Lock size={18} />
                 <span className="text-[15px]">Приватный аккаунт</span>
               </div>
-              <span className="text-xs text-muted-foreground">скоро</span>
+              <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>скоро</span>
             </div>
           </div>
         </section>
@@ -136,12 +121,11 @@ export default function SettingsPage() {
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
             >
               <div className="flex items-center gap-3">
-                <MessageCircle size={18} className="text-primary" />
+                <MessageCircle size={18} style={{ color: "#E8B4F8" }} />
                 <span className="text-[15px]">Поддержка в Telegram</span>
               </div>
-              <ExternalLink size={14} className="text-muted-foreground" />
+              <ExternalLink size={14} style={{ color: "hsl(var(--muted-foreground))" }} />
             </a>
-            <div className="h-px mx-4" style={{ background: "hsl(var(--border) / 0.25)" }} />
             <div className="setting-row">
               <div className="flex items-center gap-3">
                 <Info size={18} />

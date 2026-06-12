@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { usePremium } from "@/hooks/usePremium";
-import { cn } from "@/lib/utils";
 
 type Stage = "select" | "share";
 
@@ -125,12 +124,12 @@ export default function CreateInstagram() {
 
   if (stage === "select") {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col" style={{ background: "#08080c" }}>
         <header
-          className="border-b border-border/30 px-4 py-3 flex items-center justify-between"
-          style={{ background: "hsl(var(--background) / 0.92)", backdropFilter: "blur(32px)", paddingTop: "env(safe-area-inset-top)" }}
+          className="glass px-4 py-3 flex items-center justify-between"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
         >
-          <button type="button" onClick={() => window.history.back()} className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors">
+          <button type="button" onClick={() => window.history.back()} className="btn-icon-luxe">
             <X size={22} />
           </button>
           <h1 className="font-bold text-base">Новая публикация</h1>
@@ -147,24 +146,26 @@ export default function CreateInstagram() {
             if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
           }}
         >
-          <div className={cn(
-            "w-full max-w-sm rounded-3xl border-2 border-dashed p-10 flex flex-col items-center gap-5 transition-all duration-300",
-            dragOver
-              ? "border-primary bg-primary/5 scale-[1.02]"
-              : "border-border/60 hover:border-primary/40"
-          )}
-            style={{ boxShadow: dragOver ? "0 0 40px rgba(59,130,246,0.1)" : "none" }}
+          <div className={dragOver
+            ? "w-full max-w-sm rounded-3xl border-2 border-dashed border-[#E8B4F8] p-10 flex flex-col items-center gap-5 transition-all duration-300 scale-[1.02]"
+            : "w-full max-w-sm rounded-3xl border-2 border-dashed p-10 flex flex-col items-center gap-5 transition-all duration-300"
+          }
+            style={{
+              background: dragOver ? "hsl(var(--card) / 0.9)" : "hsl(var(--card))",
+              borderColor: dragOver ? "#E8B4F8" : "hsl(240 12% 20% / 0.4)",
+              boxShadow: dragOver ? "0 0 40px rgba(232,180,248,0.1)" : "0 4px 24px rgba(0,0,0,0.15)",
+            }}
           >
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.08))", border: "1px solid rgba(59,130,246,0.15)" }}>
-              <ImageIcon size={36} className="text-primary" />
+              style={{ background: "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.08))", border: "1px solid rgba(232,180,248,0.15)" }}>
+              <ImageIcon size={36} style={{ color: "#E8B4F8" }} />
             </div>
             <div className="text-center">
-              <h2 className="text-lg font-bold mb-1">Создать публикацию</h2>
-              <p className="text-sm text-muted-foreground mb-1">
+              <h2 className="text-lg font-bold mb-1" style={{ color: "#fff" }}>Создать публикацию</h2>
+              <p className="text-sm mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                 Выберите фото или видео
               </p>
-              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+              <p className="text-xs flex items-center justify-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <Video size={12} />
                 Видео до {maxDuration >= 60 ? `${Math.floor(maxDuration / 60)} мин` : `${maxDuration} сек`}
               </p>
@@ -172,12 +173,7 @@ export default function CreateInstagram() {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                color: "white",
-                boxShadow: "0 4px 16px rgba(59,130,246,0.3)",
-              }}
+              className="btn-luxe w-full"
             >
               Выбрать из галереи
             </button>
@@ -193,9 +189,9 @@ export default function CreateInstagram() {
           />
 
           <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl mt-6"
-            style={{ background: "rgba(59,130,246,0.04)", border: "1px solid rgba(59,130,246,0.08)" }}>
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(240 12% 20% / 0.3)" }}>
             <span className="text-lg">💡</span>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
               Совет: добавь хэштеги к посту для большего охвата
             </p>
           </div>
@@ -205,15 +201,16 @@ export default function CreateInstagram() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col" style={{ background: "#08080c" }}>
       <header
-        className="border-b border-border/30 px-4 py-3 flex items-center justify-between z-20"
-        style={{ background: "hsl(var(--background) / 0.92)", backdropFilter: "blur(32px)", paddingTop: "env(safe-area-inset-top)" }}
+        className="glass px-4 py-3 flex items-center justify-between z-20"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <button
           type="button"
           onClick={() => setStage("select")}
-          className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors flex items-center gap-1"
+          className="flex items-center gap-1 press-scale"
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#fff" }}
         >
           <ChevronLeft size={20} />
           <span className="text-sm font-medium">Назад</span>
@@ -223,15 +220,11 @@ export default function CreateInstagram() {
           type="button"
           onClick={publish}
           disabled={uploading || !current}
-          className="px-4 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-50 active:scale-[0.97] transition-all"
-          style={{
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-            boxShadow: "0 4px 16px rgba(59,130,246,0.3)",
-          }}
+          className="btn-luxe text-sm px-4 py-2 disabled:opacity-50"
         >
           {uploading ? (
             <span className="flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               Публикуем…
             </span>
           ) : (
@@ -246,15 +239,16 @@ export default function CreateInstagram() {
       <div className="flex-1 overflow-y-auto pb-28">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
           {current && (
-            <div className="relative rounded-2xl overflow-hidden" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.15)" }}>
+            <div className="card-luxe overflow-hidden" style={{ padding: 0 }}>
               {current.type === "image" ? (
                 <img
                   src={current.url}
                   alt=""
-                  className="w-full max-h-[50vh] object-contain bg-black/5"
+                  className="w-full max-h-[50vh] object-contain"
+                  style={{ background: "#12121a" }}
                 />
               ) : (
-                <div className="relative bg-black rounded-2xl">
+                <div style={{ background: "#12121a", borderRadius: 16 }}>
                   <video
                     src={current.url}
                     className="w-full max-h-[50vh] object-contain"
@@ -266,7 +260,8 @@ export default function CreateInstagram() {
               <button
                 type="button"
                 onClick={removeMedia}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center press-scale"
+                style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", color: "#fff" }}
               >
                 <Trash2 size={14} />
               </button>
@@ -277,12 +272,12 @@ export default function CreateInstagram() {
             <button
               type="button"
               onClick={() => setIsStory(false)}
-              className="py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border"
+              className="py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border press-scale"
               style={{
-                borderColor: !isStory ? "rgba(59,130,246,0.4)" : "hsl(var(--border) / 0.5)",
-                background: !isStory ? "rgba(59,130,246,0.08)" : "hsl(var(--card))",
-                color: !isStory ? "#60a5fa" : "hsl(var(--muted-foreground))",
-                boxShadow: !isStory ? "0 2px 12px rgba(59,130,246,0.1)" : "none",
+                borderColor: !isStory ? "rgba(232,180,248,0.3)" : "hsl(240 12% 20% / 0.4)",
+                background: !isStory ? "rgba(232,180,248,0.08)" : "hsl(var(--card))",
+                color: !isStory ? "#E8B4F8" : "hsl(var(--muted-foreground))",
+                boxShadow: !isStory ? "0 2px 12px rgba(232,180,248,0.1)" : "none",
               }}
             >
               <ImageIcon size={16} />
@@ -291,12 +286,12 @@ export default function CreateInstagram() {
             <button
               type="button"
               onClick={() => setIsStory(true)}
-              className="py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border"
+              className="py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border press-scale"
               style={{
-                borderColor: isStory ? "rgba(139,92,246,0.4)" : "hsl(var(--border) / 0.5)",
-                background: isStory ? "rgba(139,92,246,0.08)" : "hsl(var(--card))",
-                color: isStory ? "#a78bfa" : "hsl(var(--muted-foreground))",
-                boxShadow: isStory ? "0 2px 12px rgba(139,92,246,0.1)" : "none",
+                borderColor: isStory ? "rgba(129,140,248,0.3)" : "hsl(240 12% 20% / 0.4)",
+                background: isStory ? "rgba(129,140,248,0.08)" : "hsl(var(--card))",
+                color: isStory ? "#818CF8" : "hsl(var(--muted-foreground))",
+                boxShadow: isStory ? "0 2px 12px rgba(129,140,248,0.1)" : "none",
               }}
             >
               <Zap size={16} />
@@ -304,26 +299,27 @@ export default function CreateInstagram() {
             </button>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}>
-            <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
+          <div className="card-luxe">
+            <label className="block text-[11px] font-bold uppercase tracking-widest mb-2"
+              style={{ color: "hsl(var(--muted-foreground))" }}>
               {isStory ? "Подпись к истории" : "Описание"}
             </label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={isStory ? "Добавьте текст к вашей истории…" : "Напишите описание… #хештеги @упоминания"}
-              className="w-full bg-transparent text-sm min-h-[80px] outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed"
+              className="input-luxe w-full min-h-[80px] resize-none leading-relaxed"
+              style={{ background: "transparent", border: "none", padding: 0 }}
               maxLength={2200}
             />
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
-              <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center justify-between mt-2 pt-2" style={{ borderTop: "1px solid hsl(240 12% 20% / 0.3)" }}>
+              <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {caption.length} / 2200
               </span>
               {caption.match(/#[\w\u0400-\u04FF]+/g) && (
                 <div className="flex gap-1 flex-wrap justify-end">
                   {caption.match(/#[\w\u0400-\u04FF]+/g)?.slice(0, 5).map((tag, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: "rgba(59,130,246,0.1)", color: "#60a5fa" }}>
+                    <span key={i} className="badge-neon">
                       {tag}
                     </span>
                   ))}
@@ -332,8 +328,9 @@ export default function CreateInstagram() {
             </div>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}>
-            <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
+          <div className="card-luxe">
+            <label className="block text-[11px] font-bold uppercase tracking-widest mb-3"
+              style={{ color: "hsl(var(--muted-foreground))" }}>
               Видимость
             </label>
             <div className="space-y-2">
@@ -345,26 +342,26 @@ export default function CreateInstagram() {
                   key={opt.value}
                   type="button"
                   onClick={() => setVisibility(opt.value)}
-                  className="w-full p-3.5 rounded-xl flex items-center gap-3 border transition-all text-left"
+                  className="w-full p-3.5 rounded-xl flex items-center gap-3 border transition-all text-left press-scale"
                   style={{
-                    borderColor: visibility === opt.value ? "rgba(59,130,246,0.3)" : "transparent",
-                    background: visibility === opt.value ? "rgba(59,130,246,0.04)" : "transparent",
+                    borderColor: visibility === opt.value ? "rgba(232,180,248,0.3)" : "transparent",
+                    background: visibility === opt.value ? "rgba(232,180,248,0.04)" : "transparent",
                   }}
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                     style={{
-                      background: visibility === opt.value ? "rgba(59,130,246,0.12)" : "hsl(var(--secondary))",
+                      background: visibility === opt.value ? "rgba(232,180,248,0.12)" : "hsl(var(--secondary))",
                     }}>
-                    <opt.icon size={18} style={{ color: visibility === opt.value ? "#60a5fa" : "hsl(var(--muted-foreground))" }} />
+                    <opt.icon size={18} style={{ color: visibility === opt.value ? "#E8B4F8" : "hsl(var(--muted-foreground))" }} />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold">{opt.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
+                    <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>{opt.desc}</p>
                   </div>
                   {visibility === opt.value && (
                     <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                      style={{ background: "linear-gradient(135deg, #E8B4F8, #818CF8)" }}>
+                      <div className="w-2 h-2 rounded-full bg-black" />
                     </div>
                   )}
                 </button>
@@ -374,10 +371,10 @@ export default function CreateInstagram() {
 
           {isStory && (
             <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl"
-              style={{ background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.12)" }}>
-              <Clock size={16} className="text-accent flex-shrink-0" />
-              <p className="text-xs text-muted-foreground">
-                История будет видна <span className="text-accent font-semibold">24 часа</span>
+              style={{ background: "rgba(129,140,248,0.05)", border: "1px solid rgba(129,140,248,0.12)" }}>
+              <Clock size={16} style={{ color: "#818CF8", flexShrink: 0 }} />
+              <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                История будет видна <span className="font-semibold" style={{ color: "#818CF8" }}>24 часа</span>
               </p>
             </div>
           )}

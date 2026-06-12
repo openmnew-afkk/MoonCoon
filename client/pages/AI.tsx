@@ -235,111 +235,61 @@ const KB: Record<string, string[]> = {
 function getSmartReply(msg: string, history: Message[]): string {
   const l = msg.toLowerCase().trim();
 
-  // Farewell
   if (/пока|до свидан|бай|bye|see ya|увидимся|прощай|уйду|отдох/.test(l)) return pick(KB.farewell);
-  // Thanks
   if (/спасибо|благодар|сенкс|thanks|thx|мерси/.test(l)) return pick(KB.thanks);
-  // Greeting (longer patterns first)
   if (/доброе утро|добрый вечер|добрый день/.test(l)) return pick(KB.greeting);
   if (/привет|хай|hello|здравс|добр|йо|хеллоу|здаров|салют|хэй/.test(l)) return pick(KB.greeting);
-  // How are you
   if (/как (ты|дела|жизнь|настр|поживаешь|себячувствуешь)/.test(l)) return pick(KB.howAreYou);
   if (/что (нового|у тебя|с тобой)/.test(l)) return pick(KB.howAreYou);
   if (/как сам|как дела|как поживаешь/.test(l)) return pick(KB.howAreYou);
-  // Name
   if (/как (тебя|зовут|твоё имя)|твое имя|имя|тебя зовут/.test(l)) return pick(KB.name);
-  // Age
   if (/сколько (тебе|лет|возраст)|твой возраст/.test(l)) return pick(KB.age);
-  // Purpose
   if (/зачем|зачем ты|для чего|что ты тут|чем занимаешься|миссия/.test(l)) return pick(KB.purpose);
-  // Compliment
   if (/ты (круто|молодец|супер|класс|лчшая|лучший|умная)/.test(l)) return pick(KB.compliment);
   if (/красавица|умница|талант|шик/.test(l)) return pick(KB.compliment);
-  // Love
   if (/люблю|love|обожаю|милота/.test(l)) return pick(KB.love);
-  // Mood
   if (/грустн|плохо|тоска|депресс|хандра|печаль|не настроение/.test(l)) return pick(KB.mood);
   if (/весело|хорошо|отлично|супер|класс|кайф/.test(l)) return pick(KB.mood);
-  // Caption generation (specific)
   if (/придумай подпис|напиши подпис|генер.+подпис|создай подпис|сделай подпис/.test(l)) return pick(KB.captionGenerate);
-  // Caption (general)
   if (/подпис|caption|опис|текст к фото|текст к видео/.test(l)) return pick(KB.caption);
-  // Hashtags
   if (/хэштег|хештег|тег|hashtag|хештэг/.test(l)) return pick(KB.hashtags);
-  // Premium
   if (/premium|премиум|подписк|премиум подпис/.test(l)) return pick(KB.premium);
-  // Stars
   if (/звёзд|звезд|star|баланс|валют/.test(l)) return pick(KB.stars);
-  // Reel
   if (/reel|рилс|рил|видео коротк|короткое видео/.test(l)) return pick(KB.reel);
-  // Story
   if (/сторис|story|stories|история/.test(l)) return pick(KB.story);
-  // Live
   if (/live|лайв|трансляц|стрим|прямой эфир/.test(l)) return pick(KB.live);
-  // Post
   if (/пост|публик|создать пост|разместить|запостить/.test(l)) return pick(KB.post);
-  // Music
   if (/музык|трек|плейлист|song|песн|аудио/.test(l)) return pick(KB.music);
-  // Profile
   if (/профиль|аккаунт|био|аватар|фото профиля/.test(l)) return pick(KB.profile);
-  // Settings
   if (/настройк|setting|configure|конфиг/.test(l)) return pick(KB.settings);
-  // Notifications
   if (/уведомлен|нотификац|push|оповещен/.test(l)) return pick(KB.notifications);
-  // Privacy
   if (/приватн|закрытый|открытый|закрыть аккаунт/.test(l)) return pick(KB.privacy);
-  // Analytics
   if (/аналитик|статистик|охват|views|reach|engagement|вовлечённ|вовлеченн/.test(l)) return pick(KB.analytics);
-  // Filters
   if (/фильтр|редактор|обработк|редактир/.test(l)) return pick(KB.filter);
-  // Photo tips
   if (/фото|снимок|фотк|камер|сфотк|фотограф/.test(l)) return pick(KB.photo);
-  // Video tips
   if (/видео(?!с)|снять видео|съемка|съёмка/.test(l)) return pick(KB.video);
-  // Content advice
   if (/контент|совет|tip|рекоменд|идеи|идея|что постить|чем занять/.test(l)) return pick(KB.content);
-  // Growth
   if (/рост|аудитор|подписчик|набрать|раскрут|продвиж/.test(l)) return pick(KB.growth);
-  // Engagement
   if (/вовлечен|комментар|лайк|互动|реакц/.test(l)) return pick(KB.engagement);
-  // Monetization
   if (/монетиз|заработ|деньги|доход|куш|прочин/.test(l)) return pick(KB.monetization);
-  // Trends
   if (/тренд|trend|вирусн|viral|в тренде/.test(l)) return pick(KB.trends);
-  // Collaborate
   if (/коллаборац|сотрудничеств|вместе|коллаб|партнер/.test(l)) return pick(KB.collaborate);
-  // Jokes
   if (/шутк|смеш|анекдот|весел|юмор|joke|смех|посмеять/.test(l)) return pick(KB.joke);
-  // Birthday
   if (/день рожд|birthday|роджен/.test(l)) return pick(KB.birthday);
-  // Holiday
   if (/праздник|holiday|новый год|дата|праздну/.test(l)) return pick(KB.holiday);
-  // Subscribe
   if (/подписаться|подписчики|набрать подписчиков/.test(l)) return pick(KB.subscribe);
-  // Unfollow
   if (/отписаться|отписка|отпис/.test(l)) return pick(KB.unfollow);
-  // Block
   if (/блок|заблокир/.test(l)) return pick(KB.blocked);
-  // Report
   if (/жалоб|report|нарушен/.test(l)) return pick(KB.report);
-  // Dark mode
   if (/тёмная тема|тёмный|dark mode|ночной/.test(l)) return pick(KB.darkMode);
-  // Language
   if (/язык|language|перевод|lang/.test(l)) return pick(KB.language);
-  // Bug
   if (/баг|bug|ошибка|error|глюч|вылет|краш|не работает/.test(l)) return pick(KB.bug);
-  // Support
   if (/поддержка|support|помощь|связаться|контакт/.test(l)) return pick(KB.support);
-  // Changelog
   if (/что нового|changelog|обновлен|нововведен/.test(l)) return pick(KB.changelog);
-  // Update
   if (/обновить|обновись|update|апдейт/.test(l)) return pick(KB.update);
-  // Terms
   if (/правил|условия|terms|бан/.test(l)) return pick(KB.terms);
-  // Help (broad catch)
   if (/помо|умеешь|можешь|функци|help|что ты|чем пом|что умеешь/.test(l)) return pick(KB.help);
 
-  // Context-aware: if last AI message asked a question, try to use it
   if (history.length >= 2) {
     const lastAi = [...history].reverse().find(m => m.role === "ai");
     if (lastAi) {
@@ -445,66 +395,59 @@ export default function AI() {
     return (
       <div style={{
         position: "fixed", inset: 0, zIndex: 100,
-        background: "hsl(var(--background))",
+        background: "#08080c",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
       }}>
-        {/* Pulsing glow ring */}
         <div style={{
           position: "absolute", top: "42%", left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 260, height: 260, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, rgba(139,92,246,0.06) 40%, transparent 70%)",
+          width: 280, height: 280, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(232,180,248,0.1) 0%, rgba(129,140,248,0.06) 40%, transparent 70%)",
           filter: "blur(40px)", pointerEvents: "none",
           opacity: introStep >= 1 ? 0.8 : 0,
           transition: "opacity 1s ease",
           animation: introStep >= 1 ? "adel-glow 2s ease-in-out infinite" : "none",
         }} />
 
-        {/* Expanding ring */}
         {introStep >= 3 && (
           <div style={{
             position: "absolute", top: "42%", left: "50%",
             transform: "translate(-50%, -50%)",
             width: 80, height: 80, borderRadius: "50%",
-            border: "2px solid rgba(96,165,250,0.3)",
+            border: "2px solid rgba(232,180,248,0.3)",
             animation: "adel-ring 1.5s ease-out forwards",
             pointerEvents: "none",
           }} />
         )}
 
-        {/* Icon */}
         <div style={{
           width: 72, height: 72, borderRadius: 22,
-          background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.08))",
-          border: "1px solid rgba(59,130,246,0.25)",
+          background: "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.08))",
+          border: "1px solid rgba(232,180,248,0.25)",
           display: "flex", alignItems: "center", justifyContent: "center",
           opacity: introStep >= 1 ? 1 : 0,
           transform: introStep >= 2 ? "scale(1) translateY(0)" : "scale(0.6) translateY(24px)",
           transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)",
-          boxShadow: introStep >= 2 ? "0 0 40px rgba(59,130,246,0.2)" : "none",
+          boxShadow: introStep >= 2 ? "0 0 40px rgba(129,140,248,0.25), 0 0 80px rgba(232,180,248,0.1)" : "none",
         }}>
           <Sparkles size={30} style={{
-            color: "#60a5fa",
+            color: "#E8B4F8",
             transform: introStep >= 2 ? "rotate(0deg) scale(1)" : "rotate(-30deg) scale(0.5)",
             transition: "all 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s",
           }} />
         </div>
 
-        {/* Name */}
-        <h1 style={{
+        <h1 className="text-gradient" style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.03em",
-          background: "linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899)",
-          WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
           margin: "18px 0 6px",
           opacity: introStep >= 2 ? 1 : 0,
           transform: introStep >= 3 ? "translateY(0)" : "translateY(12px)",
           transition: "all 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s",
         }}>Адель</h1>
 
-        {/* Subtitle */}
         <p style={{
           fontSize: 13, color: "hsl(var(--muted-foreground))",
           opacity: introStep >= 3 ? 1 : 0,
@@ -512,7 +455,6 @@ export default function AI() {
           transition: "all 0.5s ease 0.15s",
         }}>AI-помощник • {APP_NAME}</p>
 
-        {/* Loading dots */}
         {introStep >= 4 && (
           <div style={{
             display: "flex", gap: 6, marginTop: 24,
@@ -522,20 +464,19 @@ export default function AI() {
             {[0,1,2].map(i => (
               <div key={i} style={{
                 width: 5, height: 5, borderRadius: "50%",
-                background: ["#3b82f6", "#8b5cf6", "#a78bfa"][i],
+                background: ["#E8B4F8", "#818CF8", "#FB7185"][i],
                 animation: `adel-load-dot 1s ease-in-out infinite ${i * 0.2}s`,
               }} />
             ))}
           </div>
         )}
 
-        {/* Particles */}
         {introStep >= 3 && Array.from({length: 12}).map((_, i) => (
           <div key={i} style={{
             position: "absolute",
             top: "42%", left: "50%",
             width: 4, height: 4, borderRadius: "50%",
-            background: ["#3b82f6", "#8b5cf6", "#ec4899", "#60a5fa", "#a78bfa", "#f472b6"][i % 6],
+            background: ["#E8B4F8", "#818CF8", "#FB7185", "#FBBF24", "#a78bfa", "#c084fc"][i % 6],
             animation: `adel-particle-${i} ${0.8 + (i % 3) * 0.3}s ease-out forwards`,
             animationDelay: `${i * 0.06}s`,
           }} />
@@ -587,19 +528,17 @@ export default function AI() {
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 18,
-              background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.06))",
-              border: "1px solid rgba(59,130,246,0.12)",
+              background: "linear-gradient(135deg, rgba(232,180,248,0.1), rgba(129,140,248,0.06))",
+              border: "1px solid rgba(232,180,248,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
               marginBottom: 16,
-              boxShadow: "0 0 30px rgba(59,130,246,0.1)",
+              boxShadow: "0 0 30px rgba(129,140,248,0.1)",
             }}>
-              <Sparkles size={24} style={{ color: "#60a5fa" }} />
+              <Sparkles size={24} style={{ color: "#E8B4F8" }} />
             </div>
 
-            <h2 style={{
+            <h2 className="text-gradient" style={{
               fontSize: 20, fontWeight: 900,
-              background: "linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899)",
-              WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
               margin: "0 0 6px",
             }}>Привет, {name}!</h2>
             <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, maxWidth: 260, margin: "0 0 28px" }}>
@@ -608,13 +547,15 @@ export default function AI() {
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", maxWidth: 320 }}>
               {QUICK_CHIPS.map(chip => (
-                <button key={chip.text} onClick={() => send(chip.text)} style={{
-                  padding: "8px 14px", borderRadius: 20,
-                  background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.1)",
-                  color: "#60a5fa", fontSize: 11, fontWeight: 500,
-                  cursor: "pointer", WebkitTapHighlightColor: "transparent",
-                  transition: "background 0.15s, border-color 0.15s",
-                }} className="active:scale-95">{chip.emoji} {chip.text}</button>
+                <button key={chip.text} onClick={() => send(chip.text)} className="active:scale-95"
+                  style={{
+                    padding: "8px 14px", borderRadius: 20,
+                    background: "hsl(280 60% 75% / 0.06)",
+                    border: "1px solid hsl(280 60% 75% / 0.12)",
+                    color: "#E8B4F8", fontSize: 11, fontWeight: 500,
+                    cursor: "pointer", WebkitTapHighlightColor: "transparent",
+                    transition: "background 0.15s, border-color 0.15s",
+                  }}>{chip.emoji} {chip.text}</button>
               ))}
             </div>
           </div>
@@ -622,40 +563,33 @@ export default function AI() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {messages.map(msg => (
               <div key={msg.id} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                <div style={{
-                  maxWidth: "84%", padding: "10px 14px", borderRadius: 18,
-                  ...(msg.role === "user" ? {
-                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                    borderBottomRightRadius: 6, color: "white",
-                    boxShadow: "0 2px 12px rgba(59,130,246,0.25)",
-                  } : {
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border) / 0.5)",
-                    borderBottomLeftRadius: 6, color: "hsl(var(--foreground))",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                  }),
-                }}>
+                <div className={msg.role === "user" ? "ai-bubble-user" : "ai-bubble-ai"}
+                  style={{
+                    maxWidth: "84%", padding: "10px 14px", borderRadius: 18,
+                    ...(msg.role === "user"
+                      ? { borderBottomRightRadius: 6, boxShadow: "0 2px 12px rgba(129,140,248,0.25)" }
+                      : { borderBottomLeftRadius: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }),
+                  }}>
                   <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.text}</p>
                   <p style={{
                     fontSize: 10, margin: "4px 0 0", textAlign: "right",
-                    color: msg.role === "user" ? "rgba(255,255,255,0.5)" : "hsl(var(--muted-foreground))",
+                    color: msg.role === "user" ? "rgba(0,0,0,0.4)" : "hsl(var(--muted-foreground))",
                   }}>{msg.time}</p>
                 </div>
               </div>
             ))}
             {typing && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{
+                <div className="ai-bubble-ai" style={{
                   padding: "12px 18px", borderRadius: 18, borderBottomLeftRadius: 6,
-                  background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
                   display: "flex", gap: 5, alignItems: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   animation: "adel-typing-in 0.3s ease-out",
                 }}>
                   {[0,1,2].map(i => (
                     <div key={i} style={{
                       width: 7, height: 7, borderRadius: "50%",
-                      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                      background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
                       animation: `adel-dot 1.2s ease-in-out infinite ${i * 0.2}s`,
                     }} />
                   ))}
@@ -671,11 +605,11 @@ export default function AI() {
         )}
       </div>
 
-      <div style={{ padding: "8px 12px 12px", borderTop: "1px solid hsl(var(--border) / 0.3)", background: "hsl(var(--background) / 0.95)", backdropFilter: "blur(24px)" }}>
+      <div style={{ padding: "8px 12px 12px", borderTop: "1px solid hsl(240 12% 20% / 0.3)", background: "hsl(240 20% 4% / 0.95)", backdropFilter: "blur(24px)" }}>
         <form onSubmit={e => { e.preventDefault(); send(); }} style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "6px 6px 6px 16px", borderRadius: 24,
-          background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)",
+          background: "hsl(var(--card))", border: "1px solid hsl(240 12% 20% / 0.4)",
         }}>
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
             placeholder="Напишите Адели..."
@@ -683,12 +617,12 @@ export default function AI() {
           />
           <button type="submit" disabled={!input.trim()} style={{
             width: 38, height: 38, borderRadius: "50%",
-            background: input.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))",
+            background: input.trim() ? "linear-gradient(135deg, #E8B4F8, #818CF8)" : "hsl(var(--muted))",
             border: "none", display: "flex", alignItems: "center", justifyContent: "center",
             cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s",
-            boxShadow: input.trim() ? "0 2px 12px rgba(59,130,246,0.3)" : "none",
+            boxShadow: input.trim() ? "0 2px 12px rgba(129,140,248,0.3)" : "none",
           }}>
-            <Send size={15} style={{ color: input.trim() ? "white" : "hsl(var(--muted-foreground))", marginLeft: 1 }} />
+            <Send size={15} style={{ color: input.trim() ? "#000" : "hsl(var(--muted-foreground))", marginLeft: 1 }} />
           </button>
         </form>
       </div>

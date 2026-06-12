@@ -176,7 +176,7 @@ export default function Feed() {
   };
 
   const renderCard = (post: Post) => (
-    <div className="relative w-full h-full bg-black">
+    <div className="relative w-full h-full bg-[#08080c]">
       {post.image && (
         <img
           src={post.image}
@@ -198,13 +198,13 @@ export default function Feed() {
       )}
       <div className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.35) 100%)",
+          background: "linear-gradient(to top, rgba(8,8,12,0.92) 0%, rgba(8,8,12,0.15) 40%, rgba(8,8,12,0.3) 100%)",
         }}
       />
 
       <div className="absolute top-3 left-3 right-3 flex items-center gap-2.5 z-10">
         <div className="story-ring">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-background">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#12121a]">
             <img
               src={post.author.avatar}
               alt=""
@@ -251,8 +251,8 @@ export default function Feed() {
           className="flex flex-col items-center gap-0.5 post-action-btn"
         >
           <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/25 backdrop-blur-sm"
-            style={{ border: "1px solid rgba(245,158,11,0.15)" }}>
-            <Star size={22} className="text-amber-400 fill-amber-400 drop-shadow-lg" />
+            style={{ border: "1px solid rgba(251,191,36,0.15)" }}>
+            <Star size={22} className="text-[#FBBF24] fill-[#FBBF24] drop-shadow-lg" />
           </div>
           <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.stars || ""}</span>
         </button>
@@ -291,12 +291,12 @@ export default function Feed() {
         <button
           type="button"
           onClick={() => navigate("/goals")}
-          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-xs font-semibold"
+          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-semibold press-scale"
           style={{
-            background: "linear-gradient(135deg, hsl(38,92%,50%,0.1), hsl(25,95%,53%,0.08))",
-            borderColor: "hsl(38,92%,50%,0.2)",
-            color: "hsl(38,92%,50%)",
-            boxShadow: "0 0 24px hsl(38,92%,50%,0.06)",
+            background: "linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.06))",
+            border: "1px solid rgba(251,191,36,0.2)",
+            color: "#FBBF24",
+            boxShadow: "0 0 24px rgba(251,191,36,0.06)",
           }}
         >
           <Target size={14} /> {liveGoals.length} активных целей
@@ -307,29 +307,29 @@ export default function Feed() {
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
-              <Loader2 className="animate-spin text-primary" size={28} />
+              <Loader2 className="animate-spin text-[#E8B4F8]" size={28} />
               <div className="absolute inset-0 animate-ping opacity-20">
-                <Loader2 className="text-primary" size={28} />
+                <Loader2 className="text-[#E8B4F8]" size={28} />
               </div>
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Загружаем ленту...</span>
+            <span className="text-xs text-[#555] font-medium">Загружаем ленту...</span>
           </div>
         </div>
       ) : posts.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center animate-fade-up">
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5"
             style={{
-              background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))",
-              border: "1px solid hsl(var(--primary) / 0.12)",
-              boxShadow: "0 0 40px hsl(var(--primary) / 0.05)",
+              background: "linear-gradient(135deg, rgba(232,180,248,0.1), rgba(129,140,248,0.06))",
+              border: "1px solid rgba(232,180,248,0.12)",
+              boxShadow: "0 0 40px rgba(232,180,248,0.05)",
             }}>
-            <Plus size={32} className="text-primary" />
+            <Plus size={32} className="text-[#E8B4F8]" />
           </div>
           <p className="text-lg font-bold mb-2">Лента пуста</p>
-          <p className="text-sm text-muted-foreground mb-6 max-w-[260px]">
+          <p className="text-sm text-[#555] mb-6 max-w-[260px]">
             Создайте первый пост — он появится здесь для всех подписчиков {APP_NAME}.
           </p>
-          <Link to="/create" className="btn-premium px-6 py-3 text-sm inline-flex items-center gap-2">
+          <Link to="/create" className="btn-luxe px-6 py-3 text-sm inline-flex items-center gap-2">
             <Plus size={18} /> Создать пост
           </Link>
         </div>
@@ -349,14 +349,14 @@ export default function Feed() {
                 style={{
                   width: i === currentIndex ? 24 : 4,
                   background: i === currentIndex
-                    ? "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))"
-                    : "hsl(var(--muted-foreground) / 0.2)",
-                  boxShadow: i === currentIndex ? "0 0 10px hsl(var(--primary) / 0.35)" : "none",
+                    ? "linear-gradient(90deg, #E8B4F8, #FBBF24)"
+                    : "rgba(85,85,85,0.2)",
+                  boxShadow: i === currentIndex ? "0 0 10px rgba(232,180,248,0.35)" : "none",
                 }}
               />
             ))}
           </div>
-          <p className="text-center text-[11px] text-muted-foreground pb-2 font-medium">
+          <p className="text-center text-[11px] text-[#555] pb-2 font-medium">
             Свайп влево / вправо · {currentIndex + 1} / {posts.length}
           </p>
         </>
@@ -366,15 +366,15 @@ export default function Feed() {
         <div className="fixed inset-0 z-50 flex items-end" onClick={() => setShowCommentSheet(null)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative z-10 w-full rounded-t-3xl overflow-hidden profile-sheet-up"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.35)", boxShadow: "0 -8px 48px rgba(0,0,0,0.4)" }}
+            className="relative z-10 w-full rounded-t-3xl overflow-hidden glass-card"
+            style={{ boxShadow: "0 -8px 48px rgba(0,0,0,0.4)", borderRadius: "1.5rem 1.5rem 0 0", padding: 0 }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
+              <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
-            <div className="px-4 py-3 border-b border-border/30 font-semibold flex items-center gap-2 text-sm">
-              <MessageCircle size={16} className="text-primary" />
+            <div className="px-4 py-3 border-b border-white/5 font-semibold flex items-center gap-2 text-sm">
+              <MessageCircle size={16} className="text-[#E8B4F8]" />
               Комментарии
             </div>
             <div className="overflow-y-auto max-h-[55vh]">
@@ -387,36 +387,32 @@ export default function Feed() {
       {showStarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowStarModal(null)}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-sm rounded-3xl p-6 animate-fade-up" style={{
-            background: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border) / 0.35)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 60px hsl(var(--primary) / 0.06)",
-          }} onClick={e => e.stopPropagation()}>
+          <div className="relative z-10 w-full max-w-sm rounded-3xl p-6 animate-fade-up glass-card" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold text-lg mb-1">Поддержать</h3>
-            <p className="text-sm text-muted-foreground mb-5">Баланс: {starsBalance} ⭐</p>
+            <p className="text-sm text-[#555] mb-5">Баланс: {starsBalance} ⭐</p>
             <div className="flex flex-wrap gap-2 mb-5">
               {[1, 5, 10, 25, 50].map(n => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setStarAmount(n)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all press-scale"
                   style={{
                     background: starAmount === n
-                      ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))"
-                      : "hsl(var(--secondary))",
-                    color: starAmount === n ? "white" : "hsl(var(--secondary-foreground))",
+                      ? "linear-gradient(135deg, #E8B4F8, #818CF8)"
+                      : "hsl(240 12% 12%)",
+                    color: starAmount === n ? "#000" : "hsl(220 10% 80%)",
                     boxShadow: starAmount === n
-                      ? "0 4px 20px hsl(var(--primary) / 0.3), inset 0 1px 0 rgba(255,255,255,0.12)"
+                      ? "0 4px 20px rgba(129,140,248,0.3), inset 0 1px 0 rgba(255,255,255,0.12)"
                       : "none",
-                    border: starAmount === n ? "none" : "1px solid hsl(var(--border) / 0.3)",
+                    border: starAmount === n ? "none" : "1px solid hsl(240 12% 20% / 0.4)",
                   }}
                 >
                   {n} ⭐
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => handleSendStar(showStarModal)} className="btn-premium w-full py-3.5 text-sm">
+            <button type="button" onClick={() => handleSendStar(showStarModal)} className="btn-luxe w-full py-3.5 text-sm">
               Отправить {starAmount} ⭐
             </button>
           </div>

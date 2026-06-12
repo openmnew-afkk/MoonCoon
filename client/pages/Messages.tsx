@@ -15,28 +15,40 @@ interface Conversation {
 
 const mockConversations: Conversation[] = [
   {
-    id: "1", name: "Sarah Chen",
+    id: "1",
+    name: "Sarah Chen",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
     lastMessage: "That sounds amazing! Can't wait 🎉",
-    timestamp: "2 мин", unread: true, online: true,
+    timestamp: "2 мин",
+    unread: true,
+    online: true,
   },
   {
-    id: "2", name: "Design Squad",
+    id: "2",
+    name: "Design Squad",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=squad",
     lastMessage: "Check out the new design files",
-    timestamp: "1 час", unread: false, online: true,
+    timestamp: "1 час",
+    unread: false,
+    online: true,
   },
   {
-    id: "3", name: "Creative Team",
+    id: "3",
+    name: "Creative Team",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=creative",
     lastMessage: "Let's sync up tomorrow",
-    timestamp: "5 часов", unread: false, online: false,
+    timestamp: "5 часов",
+    unread: false,
+    online: false,
   },
   {
-    id: "4", name: "Alex Studio",
+    id: "4",
+    name: "Alex Studio",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
     lastMessage: "Thanks for the feedback!",
-    timestamp: "1 день", unread: false, online: false,
+    timestamp: "1 день",
+    unread: false,
+    online: false,
   },
 ];
 
@@ -113,20 +125,28 @@ export default function Messages() {
     c.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const activeConvo = mockConversations.find((c) => c.id === selectedConversation);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="fixed top-0 left-0 right-0 z-30 border-b border-border/30"
-        style={{ background: "hsl(var(--background) / 0.92)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", paddingTop: "env(safe-area-inset-top)" }}>
+    <div className="min-h-screen" style={{ background: "#08080c" }}>
+      <div
+        className="fixed top-0 left-0 right-0 z-30 glass"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+            <Search
+              className="absolute left-3.5 top-1/2 transform -translate-y-1/2"
+              size={16}
+              style={{ color: "hsl(var(--muted-foreground))" }}
+            />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Поиск..."
-              className="w-full rounded-2xl pl-10 pr-4 py-3 text-sm outline-none transition-all"
-              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}
+              className="input-luxe"
+              style={{ paddingLeft: "2.5rem" }}
             />
           </div>
         </div>
@@ -134,59 +154,110 @@ export default function Messages() {
 
       <div className="max-w-2xl mx-auto pt-28 h-[calc(100vh-5rem)] flex flex-col pb-24">
         {notifications > 0 && (
-          <div className="fixed top-20 right-4 rounded-2xl px-3 py-2 flex items-center gap-2 animate-pulse z-40"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
-            <Bell className="text-primary" size={16} />
+          <div
+            className="fixed top-20 right-4 glass-card px-3 py-2 flex items-center gap-2 animate-pulse z-40"
+            style={{ borderRadius: "1rem" }}
+          >
+            <Bell size={16} style={{ color: "#E8B4F8" }} />
             <span className="text-sm font-semibold">{notifications} новых</span>
           </div>
         )}
 
         {selectedConversation ? (
           <div className="flex flex-col h-full">
-            <div className="rounded-2xl border border-border/50 mb-4 mx-4 overflow-hidden"
-              style={{ background: "hsl(var(--card))", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-              {mockConversations.filter((c) => c.id === selectedConversation).map((conversation) => (
-                <div key={conversation.id} className="flex items-center gap-3 p-4">
+            <div className="card-luxe mb-4 mx-4 overflow-hidden">
+              {activeConvo && (
+                <div className="flex items-center gap-3 p-4">
                   <div className="relative">
-                    <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full ring-1 ring-border/50" />
-                    {conversation.online && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ background: "#22c55e", borderColor: "hsl(var(--card))" }} />
+                    <img
+                      src={activeConvo.avatar}
+                      alt={activeConvo.name}
+                      className="w-12 h-12 rounded-full"
+                      style={{ border: "1px solid hsl(240 12% 20% / 0.4)" }}
+                    />
+                    {activeConvo.online && (
+                      <div
+                        className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
+                        style={{ background: "#34D399", borderColor: "hsl(var(--card))" }}
+                      />
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold">{conversation.name}</p>
-                    <p className="text-xs text-muted-foreground">{conversation.online ? "Онлайн" : "Был(а) недавно"}</p>
+                    <p className="font-semibold">{activeConvo.name}</p>
+                    <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      {activeConvo.online ? "Онлайн" : "Был(а) недавно"}
+                    </p>
                   </div>
-                  <button onClick={() => setSelectedConversation(null)}
-                    className="text-muted-foreground hover:text-foreground transition-colors">✕</button>
+                  <button
+                    onClick={() => setSelectedConversation(null)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ✕
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-3 px-4 mb-4">
+            <div className="flex-1 overflow-y-auto space-y-3 px-4 mb-4 scrollbar-hide">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-                    style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.12)" }}>
-                    <MessageCircle className="text-primary" size={24} />
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                    style={{
+                      background: "rgba(129,140,248,0.08)",
+                      border: "1px solid rgba(129,140,248,0.12)",
+                    }}
+                  >
+                    <MessageCircle size={24} style={{ color: "#E8B4F8" }} />
                   </div>
-                  <p className="text-muted-foreground font-semibold">Нет сообщений</p>
-                  <p className="text-xs text-muted-foreground mt-1">Начните диалог!</p>
+                  <p className="font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    Нет сообщений
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    Начните диалог!
+                  </p>
                 </div>
               ) : (
                 messages.map((msg) => (
-                  <div key={msg.id} className={cn("flex", msg.senderId === user?.id?.toString() ? "justify-end" : "justify-start")}>
-                    <div className="max-w-xs rounded-2xl px-4 py-2.5" style={{
-                      background: msg.senderId === user?.id?.toString()
-                        ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
-                        : "hsl(var(--card))",
-                      border: msg.senderId === user?.id?.toString() ? "none" : "1px solid hsl(var(--border) / 0.5)",
-                      color: msg.senderId === user?.id?.toString() ? "white" : "hsl(var(--foreground))",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    }}>
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex",
+                      msg.senderId === user?.id?.toString() ? "justify-end" : "justify-start",
+                    )}
+                  >
+                    <div
+                      className="max-w-xs rounded-2xl px-4 py-2.5"
+                      style={{
+                        background:
+                          msg.senderId === user?.id?.toString()
+                            ? "linear-gradient(135deg, #E8B4F8, #818CF8)"
+                            : "hsl(var(--card))",
+                        border:
+                          msg.senderId === user?.id?.toString()
+                            ? "none"
+                            : "1px solid hsl(240 12% 20% / 0.4)",
+                        color:
+                          msg.senderId === user?.id?.toString()
+                            ? "#000"
+                            : "hsl(var(--foreground))",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                      }}
+                    >
                       <p className="text-sm">{msg.text}</p>
-                      <p className="text-[10px] mt-1" style={{ color: msg.senderId === user?.id?.toString() ? "rgba(255,255,255,0.5)" : "hsl(var(--muted-foreground))" }}>
-                        {new Date(msg.timestamp).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
+                      <p
+                        className="text-[10px] mt-1"
+                        style={{
+                          color:
+                            msg.senderId === user?.id?.toString()
+                              ? "rgba(0,0,0,0.45)"
+                              : "hsl(var(--muted-foreground))",
+                        }}
+                      >
+                        {new Date(msg.timestamp).toLocaleTimeString("ru-RU", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                   </div>
@@ -202,16 +273,20 @@ export default function Messages() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 placeholder="Напишите сообщение..."
-                className="flex-1 rounded-2xl px-4 py-3 text-sm outline-none transition-all"
-                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}
+                className="input-luxe flex-1"
               />
-              <button onClick={handleSendMessage}
-                className="rounded-full p-3 transition-all active:scale-95"
+              <button
+                onClick={handleSendMessage}
+                className={cn(
+                  "rounded-full p-3 transition-all active:scale-95 flex items-center justify-center",
+                  message.trim() ? "btn-luxe" : "btn-ghost-luxe",
+                )}
                 style={{
-                  background: message.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))",
-                  color: message.trim() ? "white" : "hsl(var(--muted-foreground))",
-                  boxShadow: message.trim() ? "0 2px 12px rgba(59,130,246,0.3)" : "none",
-                }}>
+                  width: "44px",
+                  height: "44px",
+                  padding: 0,
+                }}
+              >
                 <Send size={18} />
               </button>
             </div>
@@ -220,31 +295,57 @@ export default function Messages() {
           <div className="space-y-2 px-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Диалоги не найдены</p>
+                <p style={{ color: "hsl(var(--muted-foreground))" }}>Диалоги не найдены</p>
               </div>
             ) : (
               filteredConversations.map((conversation) => (
                 <button
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation.id)}
-                  className="w-full rounded-2xl flex items-center gap-3 p-3 transition-all text-left"
-                  style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+                  className="w-full card-luxe-hover flex items-center gap-3 p-3 text-left"
                 >
                   <div className="relative">
-                    <img src={conversation.avatar} alt={conversation.name} className="w-12 h-12 rounded-full ring-1 ring-border/50" />
+                    <img
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                      className="w-12 h-12 rounded-full"
+                      style={{ border: "1px solid hsl(240 12% 20% / 0.4)" }}
+                    />
                     {conversation.online && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ background: "#22c55e", borderColor: "hsl(var(--card))" }} />
+                      <div
+                        className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
+                        style={{ background: "#34D399", borderColor: "hsl(var(--card))" }}
+                      />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className={cn("font-semibold", conversation.unread && "text-primary")}>{conversation.name}</p>
-                      <span className="text-xs text-muted-foreground">{conversation.timestamp}</span>
+                      <p
+                        className={cn("font-semibold", conversation.unread && "text-gradient-gold")}
+                        style={
+                          !conversation.unread
+                            ? { color: "hsl(var(--foreground))" }
+                            : undefined
+                        }
+                      >
+                        {conversation.name}
+                      </p>
+                      <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                        {conversation.timestamp}
+                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{conversation.lastMessage}</p>
+                    <p
+                      className="text-sm truncate"
+                      style={{ color: "hsl(var(--muted-foreground))" }}
+                    >
+                      {conversation.lastMessage}
+                    </p>
                   </div>
                   {conversation.unread && (
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }} />
+                    <div
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ background: "linear-gradient(135deg, #E8B4F8, #818CF8)" }}
+                    />
                   )}
                 </button>
               ))

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, Send } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 
 interface Comment {
@@ -86,51 +86,51 @@ export default function Comments({ postId, onClose }: CommentsProps) {
 
   return (
     <div className="px-4 py-3">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/30">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <MessageCircle className="text-primary" size={16} />
           Комментарии ({comments.length})
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-xl transition-colors"
+            className="text-[#555] hover:text-white text-xl transition-colors"
           >
             ✕
           </button>
         )}
       </div>
 
-      <div className="space-y-3.5 mb-4 max-h-64 overflow-y-auto">
+      <div className="space-y-3.5 mb-4 max-h-64 overflow-y-auto scrollbar-hide">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3">
             <img
               src={comment.avatar}
               alt={comment.author}
-              className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-border/50"
+              className="w-8 h-8 rounded-full flex-shrink-0"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
             />
             <div className="flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold">{comment.author}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[11px] text-[#555]">
                     {comment.timestamp}
                   </p>
                 </div>
               </div>
-              <p className="text-sm mt-1 text-foreground/90 leading-relaxed">{comment.text}</p>
+              <p className="text-sm mt-1 text-white/90 leading-relaxed">{comment.text}</p>
               <div className="flex items-center gap-3 mt-2">
                 <button
                   onClick={() => toggleCommentLike(comment.id)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  className="flex items-center gap-1 text-xs text-[#555] hover:text-[#E8B4F8] transition-colors press-scale"
                 >
                   <Heart
                     size={13}
-                    className={comment.liked ? "fill-red-500 text-red-500" : ""}
+                    className={comment.liked ? "fill-[#FB7185] text-[#FB7185]" : ""}
                   />
                   <span>{comment.likes > 0 ? comment.likes : ""}</span>
                 </button>
-                <button className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                <button className="text-xs text-[#555] hover:text-[#E8B4F8] transition-colors press-scale">
                   Ответить
                 </button>
               </div>
@@ -139,11 +139,12 @@ export default function Comments({ postId, onClose }: CommentsProps) {
         ))}
       </div>
 
-      <div className="border-t border-border/30 pt-3 flex gap-2">
+      <div className="border-t border-white/5 pt-3 flex gap-2">
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
           alt="Your avatar"
-          className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-border/50"
+          className="w-8 h-8 rounded-full flex-shrink-0"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
         />
         <div className="flex-1 flex gap-2">
           <input
@@ -154,20 +155,16 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               if (e.key === "Enter") handleAddComment();
             }}
             placeholder="Добавить комментарий..."
-            className="flex-1 rounded-full px-4 py-2 text-sm outline-none transition-all"
-            style={{
-              background: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border) / 0.5)",
-            }}
+            className="input-luxe flex-1 text-sm"
           />
           <button
             onClick={handleAddComment}
             disabled={!newComment.trim()}
-            className="rounded-full p-2.5 transition-all disabled:opacity-30"
+            className="rounded-full w-10 h-10 flex items-center justify-center transition-all disabled:opacity-30"
             style={{
-              background: newComment.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "hsl(var(--secondary))",
-              color: newComment.trim() ? "white" : "hsl(var(--muted-foreground))",
-              boxShadow: newComment.trim() ? "0 2px 12px rgba(59,130,246,0.3)" : "none",
+              background: newComment.trim() ? "linear-gradient(135deg, #E8B4F8, #818CF8)" : "hsl(240 12% 12%)",
+              color: newComment.trim() ? "#000" : "hsl(220 10% 50%)",
+              boxShadow: newComment.trim() ? "0 2px 12px rgba(129,140,248,0.3)" : "none",
             }}
           >
             <Send size={16} />

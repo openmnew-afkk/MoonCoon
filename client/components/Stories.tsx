@@ -64,15 +64,15 @@ function ProgressBar({ active, done, paused, duration = 5000 }: {
   active: boolean; done: boolean; paused: boolean; duration?: number;
 }) {
   return (
-    <div className="h-[2.5px] flex-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.2)" }}>
+    <div className="h-[2.5px] flex-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.15)" }}>
       <div
         className="h-full rounded-full"
         style={{
-          background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
+          background: "linear-gradient(90deg, #E8B4F8, #818CF8)",
           width: done ? "100%" : "0%",
           transition: active && !paused ? `width ${duration}ms linear` : "none",
           ...(active && !paused ? { width: "100%" } : {}),
-          boxShadow: "0 0 8px rgba(59,130,246,0.5)",
+          boxShadow: "0 0 8px rgba(232,180,248,0.5)",
         }}
       />
     </div>
@@ -89,7 +89,7 @@ function PeekCard({ story }: { story: StoryUser }) {
         <img src={slide.media} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
       )}
       <div className="absolute inset-x-0 top-0 h-24"
-        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(180deg, rgba(8,8,12,0.7) 0%, transparent 100%)" }} />
       <div className="absolute top-3 left-3 flex items-center gap-2">
         <div className="w-7 h-7 rounded-full overflow-hidden" style={{ boxShadow: "0 0 0 2px rgba(255,255,255,0.8)" }}>
           <img src={story.avatar} alt="" className="w-full h-full object-cover" />
@@ -246,7 +246,7 @@ function StoryViewer({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
-      style={{ background: "#000", opacity: vOpacity }}
+      style={{ background: "#08080c", opacity: vOpacity }}
     >
       {userIdx > 0 && draggingH && dragX > 0 && (
         <div
@@ -280,7 +280,7 @@ function StoryViewer({
           borderRadius: dragY > 15 || draggingH ? 28 : 0,
           overflow: "hidden",
           boxShadow: draggingH
-            ? "0 24px 40px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 2px rgba(255,255,255,0.12)"
+            ? "0 24px 40px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.08)"
             : "none",
         }}
         onTouchStart={onTouchStart}
@@ -291,7 +291,7 @@ function StoryViewer({
           className="absolute inset-x-0 top-0 pointer-events-none z-10"
           style={{
             height: "35%",
-            background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%)",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)",
           }}
         />
 
@@ -308,7 +308,7 @@ function StoryViewer({
         )}
 
         <div className="absolute inset-x-0 top-0 h-40 pointer-events-none z-10"
-          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)" }} />
+          style={{ background: "linear-gradient(180deg, rgba(8,8,12,0.75) 0%, transparent 100%)" }} />
 
         <div
           className="absolute top-0 left-0 right-0 flex gap-1 px-3 z-20 pointer-events-none"
@@ -334,8 +334,8 @@ function StoryViewer({
             </div>
           </div>
           <button
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)", WebkitTapHighlightColor: "transparent" }}
+            className="btn-icon-luxe"
+            style={{ width: 32, height: 32, background: "rgba(8,8,12,0.5)", WebkitTapHighlightColor: "transparent" }}
             onClick={e => { e.stopPropagation(); onClose(); }}
           >
             <X size={16} className="text-white" />
@@ -344,15 +344,14 @@ function StoryViewer({
 
         {dragY > 50 && (
           <div className="absolute inset-0 flex items-end justify-center pb-20 pointer-events-none z-30">
-            <div className="px-5 py-2 rounded-full"
-              style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(12px)" }}>
+            <div className="px-5 py-2 rounded-full glass">
               <p className="text-white text-sm font-semibold">Отпустите, чтобы закрыть</p>
             </div>
           </div>
         )}
 
         <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-10"
-          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }} />
+          style={{ background: "linear-gradient(0deg, rgba(8,8,12,0.65) 0%, transparent 100%)" }} />
       </div>
     </div>
   );
@@ -362,27 +361,24 @@ function StoryBubble({ user, onClick }: { user: StoryUser; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-1.5 flex-shrink-0"
+      className="flex flex-col items-center gap-1.5 flex-shrink-0 press-scale"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      <div className="relative w-[68px] h-[68px] rounded-full p-[2.5px]"
+      <div className={`relative w-[68px] h-[68px] rounded-full p-[2.5px] ${user.seen ? 'story-ring-seen' : 'story-ring'}`}
         style={{
-          background: user.seen
-            ? "rgba(148,163,184,0.15)"
-            : "linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)",
-          boxShadow: user.seen ? "none" : "0 0 20px rgba(59,130,246,0.3), 0 0 40px rgba(139,92,246,0.1)",
+          boxShadow: user.seen ? "none" : "0 0 20px rgba(232,180,248,0.3), 0 0 40px rgba(129,140,248,0.1)",
         }}>
-        <div className="w-full h-full rounded-full overflow-hidden border-2 border-background">
+        <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#08080c]">
           <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
         </div>
         {user.slides.length > 1 && (
           <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "2px solid hsl(var(--background))" }}>
+            style={{ background: "linear-gradient(135deg, #E8B4F8, #818CF8)", border: "2px solid #08080c" }}>
             <span className="text-white text-[9px] font-bold">{user.slides.length}</span>
           </div>
         )}
       </div>
-      <span className="text-[11px] font-medium text-center w-16 truncate text-muted-foreground">{user.name}</span>
+      <span className="text-[11px] font-medium text-center w-16 truncate text-[#555]">{user.name}</span>
     </button>
   );
 }
@@ -423,18 +419,17 @@ export default function Stories({ onStoryClick }: { onStoryClick?: (id: string) 
   return (
     <>
       <div className="w-full mb-4 overflow-hidden">
-        <div className="flex gap-3 px-4 py-2 overflow-x-auto"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div className="flex gap-3 px-4 py-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => navigate("/create")}
-            className="flex flex-col items-center gap-1.5 flex-shrink-0"
+            className="flex flex-col items-center gap-1.5 flex-shrink-0 press-scale"
             style={{ WebkitTapHighlightColor: "transparent" }}
           >
-            <div className="w-[68px] h-[68px] rounded-full border-2 border-dashed flex items-center justify-center active:scale-90 transition-transform"
-              style={{ borderColor: "rgba(59,130,246,0.4)", background: "rgba(59,130,246,0.04)" }}>
-              <Plus size={24} className="text-primary" />
+            <div className="w-[68px] h-[68px] rounded-full border-2 border-dashed flex items-center justify-center"
+              style={{ borderColor: "rgba(232,180,248,0.3)", background: "rgba(232,180,248,0.04)" }}>
+              <Plus size={24} className="text-[#E8B4F8]" />
             </div>
-            <span className="text-[11px] font-medium text-center w-16 truncate text-muted-foreground">История</span>
+            <span className="text-[11px] font-medium text-center w-16 truncate text-[#555]">История</span>
           </button>
 
           {storyUsers.map((user, idx) => (

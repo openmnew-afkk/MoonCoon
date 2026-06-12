@@ -29,32 +29,27 @@ export default function PhotoReports() {
       return;
     }
     setVotedIds((prev) => new Set(prev).add(goalId));
-    setGoals((prev) =>
-      prev.map((g) => (g.id === goalId ? result.goal : g)),
-    );
+    setGoals((prev) => prev.map((g) => (g.id === goalId ? result.goal : g)));
     if (detail?.id === goalId) setDetail(result.goal);
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#08080c" }}>
       <header
-        className="fixed top-0 left-0 right-0 z-30 border-b border-white/5 glass-morphism"
+        className="fixed top-0 left-0 right-0 z-30 glass"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link
-            to="/profile"
-            className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center"
-          >
+          <Link to="/profile" className="btn-icon-luxe">
             <ArrowLeft size={18} />
           </Link>
           <div className="flex-1">
             <h1 className="text-base font-bold">Фотоотчёты</h1>
-            <p className="text-caption">
+            <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
               Голосуй: &gt;50% «Да» и минимум 3 голоса
             </p>
           </div>
-          <Camera className="text-accent" size={22} />
+          <Camera size={22} style={{ color: "#FBBF24" }} />
         </div>
       </header>
 
@@ -63,13 +58,14 @@ export default function PhotoReports() {
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 5rem)" }}
       >
         {goals.length === 0 ? (
-          <div className="glass-surface-v2 p-8 text-center animate-fade-up">
-            <p className="text-sm text-white/50">
+          <div className="card-luxe p-8 text-center animate-fade-up">
+            <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
               Нет активных фотоотчётов на голосовании
             </p>
             <Link
               to="/goals"
-              className="inline-block mt-3 text-sm text-primary font-medium"
+              className="inline-block mt-3 text-sm font-medium"
+              style={{ color: "#E8B4F8" }}
             >
               Перейти к целям →
             </Link>
@@ -80,10 +76,7 @@ export default function PhotoReports() {
               key={goal.id}
               goal={goal}
               isOwn={goal.userId === String(user?.id)}
-              hasVoted={
-                votedIds.has(goal.id) ||
-                goal.voterIds?.includes(String(user?.id))
-              }
+              hasVoted={votedIds.has(goal.id) || goal.voterIds?.includes(String(user?.id))}
               onVote={handleVote}
               onSubmitProof={() => {}}
               onDetail={() => setDetail(goal)}
@@ -101,13 +94,16 @@ export default function PhotoReports() {
           role="presentation"
         >
           <div
-            className="w-full max-w-lg rounded-t-3xl p-6 pb-10 glass-surface-v2 border-t border-white/10 max-h-[80vh] overflow-y-auto"
+            className="glass-card w-full max-w-lg p-6 pb-10 max-h-[80vh] overflow-y-auto scrollbar-hide"
+            style={{ borderRadius: "1.5rem 1.5rem 0 0", borderTop: "1px solid hsl(240 12% 20% / 0.4)" }}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={() => {}}
             role="dialog"
           >
             <h2 className="text-lg font-bold mb-2">{detail.title}</h2>
-            <p className="text-caption mb-4">{detail.proofDescription}</p>
+            <p className="text-sm mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>
+              {detail.proofDescription}
+            </p>
             {detail.proofImage && (
               <img
                 src={detail.proofImage}

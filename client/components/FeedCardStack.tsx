@@ -112,7 +112,7 @@ export default function FeedCardStack<T>({
 
       <motion.div
         ref={cardRef}
-        className="feed-card-frame relative z-10 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden"
+        className="feed-card relative z-10 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden"
         style={{
           x, rotate, opacity,
           boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)",
@@ -128,14 +128,14 @@ export default function FeedCardStack<T>({
         {renderCard(current)}
 
         <motion.div
-          className="swipe-label-like"
+          className="swipe-like"
           style={{ opacity: likeOpacity }}
         >
           Нравится
         </motion.div>
 
         <motion.div
-          className="swipe-label-nope"
+          className="swipe-nope"
           style={{ opacity: nopeOpacity }}
         >
           Пропустить
