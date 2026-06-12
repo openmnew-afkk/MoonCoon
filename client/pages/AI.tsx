@@ -395,61 +395,37 @@ export default function AI() {
     return (
       <div style={{
         position: "fixed", inset: 0, zIndex: 100,
-        background: "#08080c",
+        background: "var(--bg)",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
       }}>
         <div style={{
-          position: "absolute", top: "42%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 280, height: 280, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(232,180,248,0.1) 0%, rgba(129,140,248,0.06) 40%, transparent 70%)",
-          filter: "blur(40px)", pointerEvents: "none",
-          opacity: introStep >= 1 ? 0.8 : 0,
-          transition: "opacity 1s ease",
-          animation: introStep >= 1 ? "adel-glow 2s ease-in-out infinite" : "none",
-        }} />
-
-        {introStep >= 3 && (
-          <div style={{
-            position: "absolute", top: "42%", left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 80, height: 80, borderRadius: "50%",
-            border: "2px solid rgba(232,180,248,0.3)",
-            animation: "adel-ring 1.5s ease-out forwards",
-            pointerEvents: "none",
-          }} />
-        )}
-
-        <div style={{
-          width: 72, height: 72, borderRadius: 22,
-          background: "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.08))",
-          border: "1px solid rgba(232,180,248,0.25)",
+          width: 72, height: 72, borderRadius: 18,
+          background: "var(--bg-tertiary)",
           display: "flex", alignItems: "center", justifyContent: "center",
           opacity: introStep >= 1 ? 1 : 0,
           transform: introStep >= 2 ? "scale(1) translateY(0)" : "scale(0.6) translateY(24px)",
           transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)",
-          boxShadow: introStep >= 2 ? "0 0 40px rgba(129,140,248,0.25), 0 0 80px rgba(232,180,248,0.1)" : "none",
         }}>
           <Sparkles size={30} style={{
-            color: "#E8B4F8",
+            color: "var(--text-secondary)",
             transform: introStep >= 2 ? "rotate(0deg) scale(1)" : "rotate(-30deg) scale(0.5)",
             transition: "all 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s",
           }} />
         </div>
 
-        <h1 className="text-gradient" style={{
+        <h1 style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.03em",
-          margin: "18px 0 6px",
+          margin: "18px 0 6px", color: "var(--text-primary)",
           opacity: introStep >= 2 ? 1 : 0,
           transform: introStep >= 3 ? "translateY(0)" : "translateY(12px)",
           transition: "all 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s",
         }}>Адель</h1>
 
         <p style={{
-          fontSize: 13, color: "hsl(var(--muted-foreground))",
+          fontSize: 13, color: "var(--text-tertiary)",
           opacity: introStep >= 3 ? 1 : 0,
           transform: introStep >= 3 ? "translateY(0)" : "translateY(6px)",
           transition: "all 0.5s ease 0.15s",
@@ -464,47 +440,18 @@ export default function AI() {
             {[0,1,2].map(i => (
               <div key={i} style={{
                 width: 5, height: 5, borderRadius: "50%",
-                background: ["#E8B4F8", "#818CF8", "#FB7185"][i],
+                background: "var(--text-tertiary)",
                 animation: `adel-load-dot 1s ease-in-out infinite ${i * 0.2}s`,
               }} />
             ))}
           </div>
         )}
 
-        {introStep >= 3 && Array.from({length: 12}).map((_, i) => (
-          <div key={i} style={{
-            position: "absolute",
-            top: "42%", left: "50%",
-            width: 4, height: 4, borderRadius: "50%",
-            background: ["#E8B4F8", "#818CF8", "#FB7185", "#FBBF24", "#a78bfa", "#c084fc"][i % 6],
-            animation: `adel-particle-${i} ${0.8 + (i % 3) * 0.3}s ease-out forwards`,
-            animationDelay: `${i * 0.06}s`,
-          }} />
-        ))}
-
         <style>{`
-          @keyframes adel-glow {
-            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-          }
-          @keyframes adel-ring {
-            0% { width: 80px; height: 80px; opacity: 0.8; }
-            100% { width: 200px; height: 200px; opacity: 0; }
-          }
           @keyframes adel-load-dot {
             0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
             30% { opacity: 1; transform: scale(1.2); }
           }
-          ${Array.from({length: 12}).map((_, i) => {
-            const angle = (i / 12) * Math.PI * 2;
-            const dist = 60 + (i % 3) * 30;
-            const x = Math.cos(angle) * dist;
-            const y = Math.sin(angle) * dist;
-            return `@keyframes adel-particle-${i} {
-              0% { transform: translate(0, 0) scale(1); opacity: 1; }
-              100% { transform: translate(${x}px, ${y}px) scale(0); opacity: 0; }
-            }`;
-          }).join('\n')}
         `}</style>
       </div>
     );
@@ -527,35 +474,28 @@ export default function AI() {
             padding: "0 20px",
           }}>
             <div style={{
-              width: 56, height: 56, borderRadius: 18,
-              background: "linear-gradient(135deg, rgba(232,180,248,0.1), rgba(129,140,248,0.06))",
-              border: "1px solid rgba(232,180,248,0.12)",
+              width: 56, height: 56, borderRadius: 14,
+              background: "var(--bg-tertiary)",
               display: "flex", alignItems: "center", justifyContent: "center",
               marginBottom: 16,
-              boxShadow: "0 0 30px rgba(129,140,248,0.1)",
             }}>
-              <Sparkles size={24} style={{ color: "#E8B4F8" }} />
+              <Sparkles size={24} style={{ color: "var(--text-secondary)" }} />
             </div>
 
-            <h2 className="text-gradient" style={{
-              fontSize: 20, fontWeight: 900,
-              margin: "0 0 6px",
+            <h2 style={{
+              fontSize: 20, fontWeight: 900, margin: "0 0 6px",
+              color: "var(--text-primary)",
             }}>Привет, {name}!</h2>
-            <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, maxWidth: 260, margin: "0 0 28px" }}>
+            <p style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.5, maxWidth: 260, margin: "0 0 28px" }}>
               Я Адель — AI-помощник {APP_NAME}. Помогу с контентом, подписями и стратегией.
             </p>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", maxWidth: 320 }}>
               {QUICK_CHIPS.map(chip => (
-                <button key={chip.text} onClick={() => send(chip.text)} className="active:scale-95"
-                  style={{
-                    padding: "8px 14px", borderRadius: 20,
-                    background: "hsl(280 60% 75% / 0.06)",
-                    border: "1px solid hsl(280 60% 75% / 0.12)",
-                    color: "#E8B4F8", fontSize: 11, fontWeight: 500,
-                    cursor: "pointer", WebkitTapHighlightColor: "transparent",
-                    transition: "background 0.15s, border-color 0.15s",
-                  }}>{chip.emoji} {chip.text}</button>
+                <button key={chip.text} onClick={() => send(chip.text)} className="ios-btn-ghost"
+                  style={{ padding: "8px 14px", borderRadius: 20, fontSize: 11 }}>
+                  {chip.emoji} {chip.text}
+                </button>
               ))}
             </div>
           </div>
@@ -567,13 +507,13 @@ export default function AI() {
                   style={{
                     maxWidth: "84%", padding: "10px 14px", borderRadius: 18,
                     ...(msg.role === "user"
-                      ? { borderBottomRightRadius: 6, boxShadow: "0 2px 12px rgba(129,140,248,0.25)" }
-                      : { borderBottomLeftRadius: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }),
+                      ? { borderBottomRightRadius: 6 }
+                      : { borderBottomLeftRadius: 6 }),
                   }}>
                   <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.text}</p>
                   <p style={{
                     fontSize: 10, margin: "4px 0 0", textAlign: "right",
-                    color: msg.role === "user" ? "rgba(0,0,0,0.4)" : "hsl(var(--muted-foreground))",
+                    color: msg.role === "user" ? "rgba(0,0,0,0.4)" : "var(--text-tertiary)",
                   }}>{msg.time}</p>
                 </div>
               </div>
@@ -583,18 +523,17 @@ export default function AI() {
                 <div className="ai-bubble-ai" style={{
                   padding: "12px 18px", borderRadius: 18, borderBottomLeftRadius: 6,
                   display: "flex", gap: 5, alignItems: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   animation: "adel-typing-in 0.3s ease-out",
                 }}>
                   {[0,1,2].map(i => (
                     <div key={i} style={{
                       width: 7, height: 7, borderRadius: "50%",
-                      background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
+                      background: "var(--text-tertiary)",
                       animation: `adel-dot 1.2s ease-in-out infinite ${i * 0.2}s`,
                     }} />
                   ))}
                   <span style={{
-                    fontSize: 11, color: "hsl(var(--muted-foreground))",
+                    fontSize: 11, color: "var(--text-tertiary)",
                     marginLeft: 4, fontStyle: "italic",
                   }}>Адель печатает</span>
                 </div>
@@ -605,24 +544,23 @@ export default function AI() {
         )}
       </div>
 
-      <div style={{ padding: "8px 12px 12px", borderTop: "1px solid hsl(240 12% 20% / 0.3)", background: "hsl(240 20% 4% / 0.95)", backdropFilter: "blur(24px)" }}>
+      <div style={{ padding: "8px 12px 12px", borderTop: "0.5px solid var(--separator)", background: "var(--bg)" }}>
         <form onSubmit={e => { e.preventDefault(); send(); }} style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "6px 6px 6px 16px", borderRadius: 24,
-          background: "hsl(var(--card))", border: "1px solid hsl(240 12% 20% / 0.4)",
+          background: "var(--bg-secondary)", border: "0.5px solid var(--separator)",
         }}>
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
             placeholder="Напишите Адели..."
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "hsl(var(--foreground))", fontSize: 14 }}
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--text-primary)", fontSize: 14 }}
           />
           <button type="submit" disabled={!input.trim()} style={{
             width: 38, height: 38, borderRadius: "50%",
-            background: input.trim() ? "linear-gradient(135deg, #E8B4F8, #818CF8)" : "hsl(var(--muted))",
+            background: input.trim() ? "var(--blue)" : "var(--bg-tertiary)",
             border: "none", display: "flex", alignItems: "center", justifyContent: "center",
             cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s",
-            boxShadow: input.trim() ? "0 2px 12px rgba(129,140,248,0.3)" : "none",
           }}>
-            <Send size={15} style={{ color: input.trim() ? "#000" : "hsl(var(--muted-foreground))", marginLeft: 1 }} />
+            <Send size={15} style={{ color: input.trim() ? "#fff" : "var(--text-tertiary)", marginLeft: 1 }} />
           </button>
         </form>
       </div>

@@ -86,14 +86,15 @@ export default function Comments({ postId, onClose }: CommentsProps) {
 
   return (
     <div className="px-4 py-3">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: "0.5px solid var(--separator)" }}>
+        <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
           Комментарии ({comments.length})
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-[#555] hover:text-white text-xl transition-colors"
+            className="text-xl transition-colors"
+            style={{ color: "var(--text-secondary)" }}
           >
             ✕
           </button>
@@ -107,30 +108,31 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               src={comment.avatar}
               alt={comment.author}
               className="w-8 h-8 rounded-full flex-shrink-0"
-              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ border: "0.5px solid var(--separator)" }}
             />
             <div className="flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold">{comment.author}</p>
-                  <p className="text-[11px] text-[#555]">
+                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{comment.author}</p>
+                  <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                     {comment.timestamp}
                   </p>
                 </div>
               </div>
-              <p className="text-sm mt-1 text-white/90 leading-relaxed">{comment.text}</p>
+              <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--text-primary)" }}>{comment.text}</p>
               <div className="flex items-center gap-3 mt-2">
                 <button
                   onClick={() => toggleCommentLike(comment.id)}
-                  className="flex items-center gap-1 text-xs text-[#555] hover:text-[#E8B4F8] transition-colors press-scale"
+                  className="flex items-center gap-1 text-xs transition-colors"
+                  style={{ color: comment.liked ? "var(--red)" : "var(--text-secondary)" }}
                 >
                   <Heart
                     size={13}
-                    className={comment.liked ? "fill-[#FB7185] text-[#FB7185]" : ""}
+                    className={comment.liked ? "fill-[var(--red)]" : ""}
                   />
                   <span>{comment.likes > 0 ? comment.likes : ""}</span>
                 </button>
-                <button className="text-xs text-[#555] hover:text-[#E8B4F8] transition-colors press-scale">
+                <button className="text-xs transition-colors" style={{ color: "var(--text-secondary)" }}>
                   Ответить
                 </button>
               </div>
@@ -139,12 +141,12 @@ export default function Comments({ postId, onClose }: CommentsProps) {
         ))}
       </div>
 
-      <div className="border-t border-white/5 pt-3 flex gap-2">
+      <div className="pt-3 flex gap-2" style={{ borderTop: "0.5px solid var(--separator)" }}>
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
           alt="Your avatar"
           className="w-8 h-8 rounded-full flex-shrink-0"
-          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ border: "0.5px solid var(--separator)" }}
         />
         <div className="flex-1 flex gap-2">
           <input
@@ -155,16 +157,16 @@ export default function Comments({ postId, onClose }: CommentsProps) {
               if (e.key === "Enter") handleAddComment();
             }}
             placeholder="Добавить комментарий..."
-            className="input-luxe flex-1 text-sm"
+            className="ios-input flex-1 text-sm"
           />
           <button
             onClick={handleAddComment}
             disabled={!newComment.trim()}
             className="rounded-full w-10 h-10 flex items-center justify-center transition-all disabled:opacity-30"
             style={{
-              background: newComment.trim() ? "linear-gradient(135deg, #E8B4F8, #818CF8)" : "hsl(240 12% 12%)",
-              color: newComment.trim() ? "#000" : "hsl(220 10% 50%)",
-              boxShadow: newComment.trim() ? "0 2px 12px rgba(129,140,248,0.3)" : "none",
+              background: newComment.trim() ? "var(--blue)" : "var(--bg-tertiary)",
+              color: newComment.trim() ? "#FFFFFF" : "var(--text-secondary)",
+              border: `0.5px solid ${newComment.trim() ? "var(--blue)" : "var(--separator)"}`,
             }}
           >
             <Send size={16} />

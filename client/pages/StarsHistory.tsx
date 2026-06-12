@@ -4,7 +4,6 @@ import { ArrowLeft, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { fetchLedger } from "@/lib/goalsApi";
 import type { StarLedgerEntry } from "@shared/api";
-import { cn } from "@/lib/utils";
 
 const typeLabels: Record<string, string> = {
   stake: "Ставка",
@@ -41,43 +40,36 @@ export default function StarsHistory() {
   const filtered = filter === "all" ? entries : entries.filter((e) => e.type === filter);
 
   return (
-    <div className="min-h-screen" style={{ background: "#08080c" }}>
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <header
-        className="fixed top-0 left-0 right-0 z-30 glass"
+        className="fixed top-0 left-0 right-0 z-30 ios-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link to="/profile" className="btn-icon-luxe">
+          <Link to="/profile" className="ios-icon-btn">
             <ArrowLeft size={18} />
           </Link>
           <div className="flex-1">
-            <h1 className="text-base font-bold">Рейтинг звёзд</h1>
-            <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-              История ставок и переводов
-            </p>
+            <h1 className="ios-title">Рейтинг звёзд</h1>
+            <p className="ios-caption">История ставок и переводов</p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-bold" style={{ color: "#E8B4F8" }}>
+            <p className="ios-headline" style={{ color: "var(--text-primary)" }}>
               {balance} ⭐
             </p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-              В фонде: {fundTotal}
-            </p>
+            <p className="ios-caption">В фонде: {fundTotal}</p>
           </div>
         </div>
-        <div className="max-w-2xl mx-auto px-4 pb-3 flex gap-1">
+        <div className="max-w-2xl mx-auto px-4 pb-3 flex gap-1" style={{ borderBottom: "1px solid var(--separator)" }}>
           {filterTabs.map(([key, label]) => (
             <button
               key={key}
               type="button"
               onClick={() => setFilter(key)}
-              className="flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all"
+              className="flex-1 py-2 text-xs font-semibold transition-all"
               style={{
-                background:
-                  filter === key
-                    ? "linear-gradient(135deg, rgba(232,180,248,0.12), rgba(129,140,248,0.08))"
-                    : "transparent",
-                color: filter === key ? "#E8B4F8" : "hsl(var(--muted-foreground))",
+                color: filter === key ? "var(--text-primary)" : "var(--text-secondary)",
+                borderBottom: filter === key ? "2px solid var(--text-primary)" : "2px solid transparent",
               }}
             >
               {label}
@@ -87,59 +79,52 @@ export default function StarsHistory() {
       </header>
 
       <div
-        className="max-w-2xl mx-auto px-4 pb-28 section-gap"
+        className="max-w-2xl mx-auto px-4 pb-28"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 7.5rem)" }}
       >
         {filtered.length === 0 ? (
-          <div className="card-luxe p-8 text-center animate-fade-up">
-            <Wallet className="mx-auto mb-3" size={32} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="ios-card p-8 text-center">
+            <Wallet className="mx-auto mb-3" size={32} style={{ color: "var(--text-tertiary)" }} />
+            <p className="ios-body" style={{ color: "var(--text-secondary)" }}>
               Пока нет операций. Создай цель или поставь звёзды!
             </p>
           </div>
         ) : (
-          filtered.map((entry, i) => (
-            <div
-              key={entry.id}
-              className="card-luxe p-4 flex items-start gap-3 animate-fade-up mb-2"
-              style={{ animationDelay: `${i * 40}ms` }}
-            >
+          <div className="ios-card-grouped">
+            {filtered.map((entry, i) => (
               <div
-                className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                  entry.amount >= 0
-                    ? "bg-emerald-500/15 text-emerald-400"
-                    : "bg-red-500/15 text-red-400",
-                )}
+                key={entry.id}
+                className="ios-card-row"
               >
-                {entry.amount >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">{typeLabels[entry.type] || entry.type}</p>
-                <p
-                  className="text-[11px] truncate"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: entry.amount >= 0 ? "rgba(48,209,88,0.12)" : "rgba(255,69,58,0.12)",
+                    color: entry.amount >= 0 ? "var(--green)" : "var(--red)",
+                  }}
                 >
-                  {entry.description}
-                </p>
+                  {entry.amount >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="ios-headline">{typeLabels[entry.type] || entry.type}</p>
+                  <p className="ios-caption truncate">{entry.description}</p>
+                  <p className="ios-footnote">
+                    {new Date(entry.createdAt).toLocaleString("ru-RU")}
+                  </p>
+                </div>
                 <p
-                  className="text-[10px] mt-1"
-                  style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}
+                  className="ios-headline flex-shrink-0"
+                  style={{ color: entry.amount >= 0 ? "var(--green)" : "var(--red)" }}
                 >
-                  {new Date(entry.createdAt).toLocaleString("ru-RU")}
+                  {entry.amount >= 0 ? "+" : ""}
+                  {entry.amount} ⭐
                 </p>
-              </div>
-              <p
-                className={cn(
-                  "text-sm font-bold flex-shrink-0",
-                  entry.amount >= 0 ? "text-emerald-400" : "text-red-400",
+                {i < filtered.length - 1 && (
+                  <div className="ios-separator" style={{ position: "absolute", bottom: 0, left: 56, right: 0 }} />
                 )}
-              >
-                {entry.amount >= 0 ? "+" : ""}
-                {entry.amount} ⭐
-              </p>
-            </div>
-          ))
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

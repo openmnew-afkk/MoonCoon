@@ -111,35 +111,32 @@ export default function Goals() {
   const filtered = tab === "my" ? goals.filter((g) => g.userId === userId) : goals.filter((g) => g.userId !== userId);
 
   return (
-    <div className="min-h-screen" style={{ background: "#08080c" }}>
-      <div className="fixed top-0 left-0 right-0 z-30 glass"
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+      <div className="fixed top-0 left-0 right-0 z-30 ios-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center btn-gold" style={{ padding: 0 }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--yellow)" }}>
                 <Target size={16} style={{ color: "#000" }} />
               </div>
               <div>
-                <h1 className="text-base font-bold leading-none">Цели</h1>
-                <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Баланс: {starsBalance} ⭐
-                </p>
+                <h1 className="ios-title-large">Цели</h1>
+                <p className="ios-caption">Баланс: {starsBalance} ⭐</p>
               </div>
             </div>
             <button type="button" onClick={() => setShowCreate(true)}
-              className="btn-gold text-xs px-3 py-2 rounded-xl">
+              className="ios-btn">
               <Plus size={14} /> Создать
             </button>
           </div>
-          <div className="flex gap-1 rounded-xl p-1" style={{ background: "hsl(var(--secondary))" }}>
+          <div className="flex gap-1 rounded-xl p-1" style={{ background: "var(--bg-secondary)" }}>
             {(["community", "my"] as const).map((t) => (
               <button key={t} type="button" onClick={() => setTab(t)}
                 className="flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all"
                 style={{
-                  background: tab === t ? "hsl(var(--card))" : "transparent",
-                  color: tab === t ? "#fff" : "hsl(var(--muted-foreground))",
-                  boxShadow: tab === t ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
+                  background: tab === t ? "var(--bg-tertiary)" : "transparent",
+                  color: tab === t ? "var(--text-primary)" : "var(--text-secondary)",
                 }}>
                 {t === "community" ? "Сообщество" : "Мои цели"}
               </button>
@@ -151,10 +148,9 @@ export default function Goals() {
       <div className="max-w-2xl mx-auto px-4 pb-28"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 8rem)" }}>
         {filtered.length === 0 ? (
-          <div className="card-luxe p-8 text-center"
-            style={{ border: "1px solid hsl(240 12% 20% / 0.3)" }}>
-            <Target size={36} className="mx-auto mb-3" style={{ color: "#FBBF24" }} />
-            <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="ios-card p-8 text-center">
+            <Target size={36} className="mx-auto mb-3" style={{ color: "var(--text-tertiary)" }} />
+            <p className="ios-body" style={{ color: "var(--text-secondary)" }}>
               {tab === "my" ? "Создай первую цель" : "Цели сообщества появятся здесь"}
             </p>
           </div>
@@ -169,30 +165,28 @@ export default function Goals() {
       </div>
 
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+        <div className="fixed inset-0 z-50 flex items-end ios-blur"
+          style={{ background: "rgba(0,0,0,0.7)" }}
           onClick={() => setShowCreate(false)} role="presentation">
-          <div className="w-full max-w-lg rounded-t-3xl p-6 pb-10 glass-surface-v2"
+          <div className="w-full max-w-lg rounded-t-3xl p-6 pb-10"
+            style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--separator)" }}
             onClick={(e) => e.stopPropagation()} role="dialog">
-            <h2 className="text-lg font-bold mb-4">Новая цель</h2>
+            <h2 className="ios-title-large mb-4">Новая цель</h2>
             <div className="space-y-4">
               <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Например: Пробежать 10 км"
-                className="input-luxe" />
+                className="ios-input" />
               <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} placeholder="Описание..."
-                className="input-luxe resize-none" />
+                className="ios-input resize-none" />
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest block mb-1.5"
-                  style={{ color: "hsl(var(--muted-foreground))" }}>Ставка (мин. 100 ⭐)</label>
+                <label className="ios-caption block mb-1.5">Ставка (мин. 100 ⭐)</label>
                 <div className="flex gap-2 flex-wrap mb-2">
                   {[100, 250, 500, 1000, 5000].map((amt) => (
                     <button key={amt} type="button" onClick={() => { setStarsInput(String(amt)); setStarsError(""); }}
-                      className="press-scale"
+                      className="ios-badge touch-manipulation"
                       style={{
-                        padding: "6px 12px", borderRadius: 12, fontSize: 12, fontWeight: 600,
-                        border: `1px solid ${parsedStars() === amt ? "rgba(251,191,36,0.4)" : "hsl(240 12% 20% / 0.4)"}`,
-                        color: parsedStars() === amt ? "#FBBF24" : "hsl(var(--muted-foreground))",
-                        background: parsedStars() === amt ? "rgba(251,191,36,0.08)" : "hsl(var(--card))",
-                        cursor: "pointer",
+                        background: parsedStars() === amt ? "var(--bg-quaternary)" : "var(--bg-tertiary)",
+                        color: parsedStars() === amt ? "var(--yellow)" : "var(--text-secondary)",
                       }}>
                       {amt} ⭐
                     </button>
@@ -201,16 +195,15 @@ export default function Goals() {
                 <input type="text" inputMode="numeric" value={starsInput}
                   onChange={(e) => { setStarsInput(e.target.value.replace(/[^\d]/g, "")); setStarsError(""); }}
                   placeholder="Введите сумму (от 100)"
-                  className="input-luxe" />
-                {starsError && <p className="text-xs mt-1" style={{ color: "#FB7185" }}>{starsError}</p>}
+                  className="ios-input" />
+                {starsError && <p className="ios-caption mt-1" style={{ color: "var(--red)" }}>{starsError}</p>}
               </div>
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest block mb-1"
-                  style={{ color: "hsl(var(--muted-foreground))" }}>Срок: {newDays} дн.</label>
+                <label className="ios-caption block mb-1">Срок: {newDays} дн.</label>
                 <input type="range" min={1} max={30} value={newDays} onChange={(e) => setNewDays(Number(e.target.value))} className="w-full" />
               </div>
               <button type="button" onClick={handleCreate} disabled={!newTitle.trim() || creating}
-                className="btn-gold w-full">
+                className="ios-btn w-full">
                 {creating ? "Создаём..." : `Создать — ${Number.isNaN(parsedStars()) ? "…" : parsedStars()} ⭐`}
               </button>
             </div>
@@ -219,30 +212,32 @@ export default function Goals() {
       )}
 
       {showProof && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+        <div className="fixed inset-0 z-50 flex items-end ios-blur"
+          style={{ background: "rgba(0,0,0,0.7)" }}
           onClick={() => setShowProof(null)} role="presentation">
-          <div className="w-full max-w-lg rounded-t-3xl p-6 pb-10 glass-surface-v2"
+          <div className="w-full max-w-lg rounded-t-3xl p-6 pb-10"
+            style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--separator)" }}
             onClick={(e) => e.stopPropagation()} role="dialog">
             <div className="flex justify-between mb-4">
-              <h2 className="text-lg font-bold">Фото-отчёт</h2>
-              <button type="button" onClick={() => setShowProof(null)} className="btn-icon-luxe" style={{ width: 32, height: 32 }}>
+              <h2 className="ios-title-large">Фото-отчёт</h2>
+              <button type="button" onClick={() => setShowProof(null)} className="ios-icon-btn" style={{ width: 32, height: 32 }}>
                 <X size={16} />
               </button>
             </div>
             {proofImg ? (
-              <div className="relative rounded-2xl overflow-hidden mb-3" style={{ border: "1px solid hsl(240 12% 20% / 0.3)" }}>
+              <div className="relative rounded-2xl overflow-hidden mb-3">
                 <img src={proofImg} alt="" className="w-full h-40 object-cover" />
               </div>
             ) : (
               <button type="button" onClick={() => proofFileRef.current?.click()}
-                className="w-full h-32 rounded-2xl flex flex-col items-center justify-center gap-2 mb-3 transition-all press-scale"
+                className="w-full h-32 rounded-2xl flex flex-col items-center justify-center gap-2 mb-3 touch-manipulation"
                 style={{
-                  border: "2px dashed hsl(240 12% 20% / 0.4)",
-                  color: "hsl(var(--muted-foreground))",
-                  background: "hsl(var(--card))",
+                  border: "1px dashed var(--separator-opaque)",
+                  color: "var(--text-secondary)",
+                  background: "var(--bg-tertiary)",
                 }}>
                 <Camera size={28} />
-                <span className="text-xs">Загрузить фото</span>
+                <span className="ios-caption">Загрузить фото</span>
               </button>
             )}
             <input ref={proofFileRef} type="file" accept="image/*" className="hidden"
@@ -252,11 +247,11 @@ export default function Goals() {
               }} />
             <textarea value={proofDesc} onChange={(e) => setProofDesc(e.target.value)} rows={3}
               placeholder="Описание обязательно: что сделано и что на фото"
-              className="input-luxe resize-none mb-3" />
-            <p className="text-[11px] mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>ИИ проверит фото. При отклонении — цель провалена.</p>
+              className="ios-input resize-none mb-3" />
+            <p className="ios-caption mb-3" style={{ color: "var(--text-tertiary)" }}>ИИ проверит фото. При отклонении — цель провалена.</p>
             <button type="button" onClick={() => handleSubmitProof(showProof)}
               disabled={!proofImg || !proofDesc.trim() || submittingProof}
-              className="btn-luxe w-full">
+              className="ios-btn w-full">
               {submittingProof ? "Проверка ИИ..." : "Отправить на голосование"}
             </button>
           </div>

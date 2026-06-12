@@ -11,14 +11,12 @@ import {
   Search,
   X,
   Loader2,
-  RefreshCw,
   Settings2,
   LogIn,
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
-import { cn } from "@/lib/utils";
 
 interface StatCard {
   label: string;
@@ -41,10 +39,10 @@ interface AdminUser {
 const ADMIN_USERNAME = "mikysauce";
 
 const stats: StatCard[] = [
-  { label: "Пользователей", value: "12.5K", change: "+12% неделя", color: "#818CF8", icon: <Users size={20} /> },
-  { label: "Активных постов", value: "3.2K", change: "+24% неделя", color: "#E8B4F8", icon: <TrendingUp size={20} /> },
-  { label: "Лайков", value: "125K", change: "+18% неделя", color: "#FB7185", icon: <Heart size={20} /> },
-  { label: "Сообщений", value: "45.6K", change: "+31% неделя", color: "#34D399", icon: <MessageSquare size={20} /> },
+  { label: "Пользователей", value: "12.5K", change: "+12% неделя", color: "var(--blue)", icon: <Users size={20} /> },
+  { label: "Активных постов", value: "3.2K", change: "+24% неделя", color: "var(--purple)", icon: <TrendingUp size={20} /> },
+  { label: "Лайков", value: "125K", change: "+18% неделя", color: "var(--pink)", icon: <Heart size={20} /> },
+  { label: "Сообщений", value: "45.6K", change: "+31% неделя", color: "var(--green)", icon: <MessageSquare size={20} /> },
 ];
 
 function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) {
@@ -83,69 +81,28 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 pb-28" style={{ background: "#08080c" }}>
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          style={{
-            position: "absolute",
-            top: "15%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "70vw",
-            height: "70vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(232,180,248,0.06) 0%, transparent 70%)",
-            filter: "blur(50px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "10%",
-            right: "10%",
-            width: "40vw",
-            height: "40vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-6 pb-28" style={{ background: "var(--bg)" }}>
       <div className="relative z-10 w-full max-w-sm">
         <form onSubmit={handleLogin}>
-          <div className="glass-card space-y-5" style={{ borderRadius: "1.5rem", padding: "1.75rem", boxShadow: "0 24px 80px rgba(0,0,0,0.25)" }}>
+          <div className="ios-card space-y-5" style={{ padding: "1.75rem" }}>
             <div className="flex flex-col items-center text-center gap-3 pb-1">
               <div
-                className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center relative"
-                style={{
-                  background: "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.06))",
-                  border: "1px solid rgba(232,180,248,0.2)",
-                  boxShadow: "0 0 32px rgba(129,140,248,0.15)",
-                }}
+                className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center"
+                style={{ background: "var(--bg-tertiary)" }}
               >
-                <Shield size={32} style={{ color: "#E8B4F8" }} />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: -3,
-                    borderRadius: "18px",
-                    background: "conic-gradient(from 0deg, rgba(232,180,248,0.4), transparent, rgba(232,180,248,0.4))",
-                    animation: "adel-ring-spin 4s linear infinite",
-                    zIndex: -1,
-                  }}
-                />
+                <Shield size={32} style={{ color: "var(--blue)" }} />
               </div>
               <div>
-                <h2 className="text-xl font-black">Админ-панель</h2>
-                <p className="text-sm mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <h2 className="ios-title-large">Админ-панель</h2>
+                <p className="ios-subhead">
                   {user?.username ? `@${user.username} · введите пароль` : "Введите пароль для входа"}
                 </p>
               </div>
             </div>
             {error && (
               <div
-                className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
-                style={{ background: "rgba(251,113,133,0.1)", border: "1px solid rgba(251,113,133,0.2)", color: "#FB7185" }}
+                className="flex items-start gap-2 rounded-xl px-3 py-2.5 ios-caption"
+                style={{ background: "rgba(255,69,58,0.08)", color: "var(--red)" }}
               >
                 <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
@@ -153,26 +110,22 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
             )}
             {loading ? (
               <div className="flex items-center justify-center gap-2 py-3">
-                <Loader2 className="animate-spin" size={22} style={{ color: "#E8B4F8" }} />
-                <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <Loader2 className="animate-spin" size={22} style={{ color: "var(--text-secondary)" }} />
+                <span className="ios-body" style={{ color: "var(--text-secondary)" }}>
                   Проверка...
                 </span>
               </div>
             ) : (
               <>
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Аккаунт
-                  </label>
-                  <div className="input-luxe flex items-center gap-2">
-                    <Shield size={13} style={{ color: "#E8B4F8", opacity: 0.6 }} className="flex-shrink-0" />
+                  <label className="ios-caption block mb-1.5">Аккаунт</label>
+                  <div className="ios-input flex items-center gap-2">
+                    <Shield size={13} style={{ color: "var(--text-tertiary)" }} className="flex-shrink-0" />
                     <span className="font-medium">{ADMIN_USERNAME}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Пароль
-                  </label>
+                  <label className="ios-caption block mb-1.5">Пароль</label>
                   <input
                     type="password"
                     value={password}
@@ -180,13 +133,13 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
                     placeholder="Введите пароль"
                     autoFocus
                     autoComplete="current-password"
-                    className="input-luxe"
+                    className="ios-input"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={!password.trim()}
-                  className="btn-luxe w-full disabled:opacity-40"
+                  className="ios-btn w-full disabled:opacity-40"
                 >
                   <LogIn size={16} /> Войти в панель
                 </button>
@@ -194,7 +147,7 @@ function AdminAuthScreen({ onSuccess }: { onSuccess: (token: string) => void }) 
             )}
           </div>
         </form>
-        <p className="text-center text-[11px] mt-4" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-center ios-caption mt-4">
           Сессия действует 12 часов · только для @{ADMIN_USERNAME}
         </p>
       </div>
@@ -338,23 +291,21 @@ export default function Admin() {
 
   if (!authChecked)
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#08080c" }}>
-        <Loader2 className="animate-spin" size={32} style={{ color: "#E8B4F8" }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+        <Loader2 className="animate-spin" size={32} style={{ color: "var(--text-tertiary)" }} />
       </div>
     );
   if (!isAdmin) return <AdminAuthScreen onSuccess={handleAuthSuccess} />;
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: "#08080c" }}>
-      <div className="sticky top-0 z-30 glass" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <div className="min-h-screen pb-28" style={{ background: "var(--bg)" }}>
+      <div className="sticky top-0 z-30 ios-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black flex items-center gap-2">
-              <BarChart3 size={22} style={{ color: "#E8B4F8" }} /> Админ-панель
+            <h1 className="ios-title-large flex items-center gap-2">
+              <BarChart3 size={22} style={{ color: "var(--blue)" }} /> Админ-панель
             </h1>
-            <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-              @{user?.username ?? "admin"}
-            </p>
+            <p className="ios-caption">@{user?.username ?? "admin"}</p>
           </div>
           <button
             onClick={() => {
@@ -362,8 +313,7 @@ export default function Admin() {
               setIsAdmin(false);
               setAuthChecked(true);
             }}
-            className="btn-ghost-luxe text-xs"
-            style={{ padding: "0.375rem 0.75rem", borderRadius: "0.5rem" }}
+            className="ios-btn-ghost text-xs"
           >
             Выйти
           </button>
@@ -378,11 +328,10 @@ export default function Admin() {
               type="button"
               onClick={() => setTab(t.key as any)}
               className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-              style={
-                tab === t.key
-                  ? { background: "linear-gradient(135deg, #E8B4F8, #818CF8)", color: "#000", boxShadow: "0 2px 12px rgba(129,140,248,0.3)" }
-                  : { background: "hsl(var(--card))", border: "1px solid hsl(240 12% 20% / 0.4)" }
-              }
+              style={{
+                background: tab === t.key ? "var(--blue)" : "var(--bg-secondary)",
+                color: tab === t.key ? "#fff" : "var(--text-secondary)",
+              }}
             >
               {t.label}
             </button>
@@ -393,11 +342,9 @@ export default function Admin() {
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-5">
         <div className="grid grid-cols-2 gap-3">
           {stats.map((stat, i) => (
-            <div key={i} className="card-luxe p-4">
+            <div key={i} className="ios-card p-4">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {stat.label}
-                </p>
+                <p className="ios-caption">{stat.label}</p>
                 <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center"
                   style={{ background: `${stat.color}15`, color: stat.color }}
@@ -405,47 +352,39 @@ export default function Admin() {
                   {stat.icon}
                 </div>
               </div>
-              <p className="text-2xl font-black tabular-nums">{stat.value}</p>
-              <p className="text-[11px] font-semibold mt-0.5" style={{ color: stat.color }}>
-                {stat.change}
-              </p>
+              <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{stat.value}</p>
+              <p className="ios-caption" style={{ color: stat.color }}>{stat.change}</p>
             </div>
           ))}
         </div>
 
         {tab === "settings" && (
-          <div className="card-luxe p-5 space-y-5">
+          <div className="ios-card p-5 space-y-5">
             <div className="flex items-center gap-2">
-              <Settings2 size={18} style={{ color: "#E8B4F8" }} />
-              <h3 className="font-bold">Premium и оплата</h3>
+              <Settings2 size={18} style={{ color: "var(--blue)" }} />
+              <h3 className="ios-headline" style={{ color: "var(--text-primary)" }}>Premium и оплата</h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest mb-2 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Цена Premium (₽/мес)
-                </label>
+                <label className="ios-caption block mb-2">Цена Premium (₽/мес)</label>
                 <input
                   type="number"
                   value={settings.premiumPriceRub}
                   onChange={(e) => setSettings((s) => ({ ...s, premiumPriceRub: Number(e.target.value) }))}
-                  className="input-luxe"
+                  className="ios-input"
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest mb-2 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Цена в звёздах (⭐/мес)
-                </label>
+                <label className="ios-caption block mb-2">Цена в звёздах (⭐/мес)</label>
                 <input
                   type="number"
                   value={settings.premiumPriceStars}
                   onChange={(e) => setSettings((s) => ({ ...s, premiumPriceStars: Number(e.target.value) }))}
-                  className="input-luxe"
+                  className="ios-input"
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest mb-2 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  Способы оплаты
-                </label>
+                <label className="ios-caption block mb-2">Способы оплаты</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(
                     [
@@ -458,11 +397,10 @@ export default function Admin() {
                       key={id}
                       type="button"
                       onClick={() => setSettings((s) => ({ ...s, premiumPaymentMethods: id }))}
-                      className="py-2 px-2 rounded-xl text-xs font-semibold border transition-all"
+                      className="py-2 px-2 rounded-xl text-xs font-semibold transition-all"
                       style={{
-                        borderColor: settings.premiumPaymentMethods === id ? "rgba(232,180,248,0.3)" : "hsl(240 12% 20% / 0.4)",
-                        background: settings.premiumPaymentMethods === id ? "rgba(232,180,248,0.1)" : "hsl(var(--card))",
-                        color: settings.premiumPaymentMethods === id ? "#E8B4F8" : "hsl(var(--muted-foreground))",
+                        background: settings.premiumPaymentMethods === id ? "var(--bg-quaternary)" : "var(--bg-tertiary)",
+                        color: settings.premiumPaymentMethods === id ? "var(--blue)" : "var(--text-secondary)",
                       }}
                     >
                       {label}
@@ -474,7 +412,7 @@ export default function Admin() {
                 type="button"
                 onClick={saveSettings}
                 disabled={settingsSaving}
-                className="btn-luxe w-full disabled:opacity-50"
+                className="ios-btn w-full disabled:opacity-50"
               >
                 {savedBadge ? (
                   <>
@@ -493,78 +431,79 @@ export default function Admin() {
         )}
 
         {tab === "users" && (
-          <div className="section-card overflow-hidden">
-            <div className="p-4 border-b" style={{ borderColor: "hsl(240 12% 20% / 0.3)" }}>
+          <div className="ios-card-grouped overflow-hidden">
+            <div className="p-4" style={{ borderBottom: "1px solid var(--separator)" }}>
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <Search
                     className="absolute left-3 top-1/2 -translate-y-1/2"
                     size={15}
-                    style={{ color: "hsl(var(--muted-foreground))" }}
+                    style={{ color: "var(--text-tertiary)" }}
                   />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Поиск пользователей..."
-                    className="input-luxe"
+                    className="ios-input"
                     style={{ paddingLeft: "2.25rem" }}
                   />
                 </div>
                 <button
                   onClick={() => loadUsers()}
-                  className="btn-icon-luxe"
+                  className="ios-icon-btn"
                 >
-                  <RefreshCw size={15} />
+                  <span className="sr-only">Обновить</span>
+                  <Settings2 size={15} />
                 </button>
               </div>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="animate-spin" size={28} style={{ color: "#E8B4F8" }} />
+                <Loader2 className="animate-spin" size={28} style={{ color: "var(--text-tertiary)" }} />
               </div>
             ) : filteredUsers.length === 0 ? (
-              <p className="text-center py-10 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-center py-10 ios-body" style={{ color: "var(--text-secondary)" }}>
                 Пользователи не найдены
               </p>
             ) : (
               <div>
-                {filteredUsers.map((u) => (
+                {filteredUsers.map((u, i) => (
                   <div
                     key={u.id}
-                    className="setting-row"
+                    className="ios-card-row"
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
-                        style={{ background: "rgba(129,140,248,0.1)", color: "#818CF8" }}
+                        style={{ background: "var(--bg-tertiary)", color: "var(--blue)" }}
                       >
                         {u.name[0]}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="font-semibold text-sm truncate">{u.name}</p>
-                          {u.isAdmin && <Shield size={12} style={{ color: "#E8B4F8" }} className="flex-shrink-0" />}
-                          {u.isBanned && <Ban size={12} className="flex-shrink-0" style={{ color: "#FB7185" }} />}
+                          <p className="ios-headline truncate" style={{ color: "var(--text-primary)" }}>{u.name}</p>
+                          {u.isAdmin && <Shield size={12} style={{ color: "var(--blue)" }} className="flex-shrink-0" />}
+                          {u.isBanned && <Ban size={12} className="flex-shrink-0" style={{ color: "var(--red)" }} />}
                         </div>
-                        <p className="text-xs truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
-                          {u.username}
-                        </p>
+                        <p className="ios-caption truncate">{u.username}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="text-[11px] text-right mr-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      <div className="ios-caption text-right mr-2">
                         <p>{u.posts} постов</p>
                         <p>{u.followers} подп.</p>
                       </div>
                       <button
                         onClick={() => setSelectedUser(u)}
-                        className="btn-ghost-luxe text-xs"
-                        style={{ padding: "0.375rem 0.75rem", borderRadius: "0.5rem" }}
+                        className="ios-btn-ghost text-xs"
                       >
                         Изменить
                       </button>
                     </div>
+                    {i < filteredUsers.length - 1 && (
+                      <div className="ios-separator" style={{ position: "absolute", bottom: 0, left: 56, right: 0 }} />
+                    )}
                   </div>
                 ))}
               </div>
@@ -575,61 +514,51 @@ export default function Admin() {
 
       {selectedUser && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={() => setSelectedUser(null)}
         >
           <div
-            className="glass-card w-full max-w-sm space-y-4"
-            style={{ borderRadius: "1.5rem", padding: "1.25rem" }}
+            className="ios-card w-full max-w-sm space-y-4"
+            style={{ padding: "1.25rem" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base">Управление</h3>
+              <h3 className="ios-headline" style={{ color: "var(--text-primary)" }}>Управление</h3>
               <button
                 onClick={() => {
                   setSelectedUser(null);
                   setBanReason("");
                 }}
-                className="btn-icon-luxe"
+                className="ios-icon-btn"
                 style={{ width: "2rem", height: "2rem" }}
               >
                 <X size={16} />
               </button>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
+            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                style={{ background: "rgba(129,140,248,0.1)", color: "#818CF8" }}
+                style={{ background: "var(--bg-quaternary)", color: "var(--blue)" }}
               >
                 {selectedUser.name[0]}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm">{selectedUser.name}</p>
-                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {selectedUser.username}
-                </p>
+                <p className="ios-headline" style={{ color: "var(--text-primary)" }}>{selectedUser.name}</p>
+                <p className="ios-caption">{selectedUser.username}</p>
               </div>
               <div className="flex gap-1 ml-auto">
-                {selectedUser.isAdmin && <span className="badge-neon">Админ</span>}
+                {selectedUser.isAdmin && <span className="ios-badge" style={{ color: "var(--blue)" }}>Админ</span>}
                 {selectedUser.isBanned && (
-                  <span
-                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                    style={{ background: "rgba(251,113,133,0.1)", color: "#FB7185" }}
-                  >
-                    Забанен
-                  </span>
+                  <span className="ios-badge" style={{ color: "var(--red)" }}>Забанен</span>
                 )}
               </div>
             </div>
             <div className="space-y-2">
               <button
                 onClick={() => handleSetAdmin(selectedUser.id, !selectedUser.isAdmin)}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 border"
-                style={{
-                  borderColor: selectedUser.isAdmin ? "rgba(251,113,133,0.3)" : "rgba(129,140,248,0.3)",
-                  background: selectedUser.isAdmin ? "rgba(251,113,133,0.08)" : "rgba(129,140,248,0.08)",
-                  color: selectedUser.isAdmin ? "#FB7185" : "#818CF8",
-                }}
+                className="ios-btn-secondary w-full"
+                style={{ color: selectedUser.isAdmin ? "var(--red)" : "var(--blue)" }}
               >
                 {selectedUser.isAdmin ? (
                   <>
@@ -644,8 +573,8 @@ export default function Admin() {
               {selectedUser.isBanned ? (
                 <button
                   onClick={() => handleBanUser(selectedUser.id, false)}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border transition-all active:scale-95"
-                  style={{ borderColor: "rgba(52,211,153,0.3)", background: "rgba(52,211,153,0.08)", color: "#34D399" }}
+                  className="ios-btn-secondary w-full"
+                  style={{ color: "var(--green)" }}
                 >
                   <UserCheck size={16} /> Разбанить
                 </button>
@@ -656,11 +585,11 @@ export default function Admin() {
                     value={banReason}
                     onChange={(e) => setBanReason(e.target.value)}
                     placeholder="Причина бана (необязательно)"
-                    className="input-luxe"
+                    className="ios-input"
                   />
                   <button
                     onClick={() => handleBanUser(selectedUser.id, true)}
-                    className="btn-danger-luxe w-full"
+                    className="ios-btn-destructive w-full"
                   >
                     <Ban size={16} /> Забанить
                   </button>

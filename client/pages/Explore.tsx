@@ -49,52 +49,43 @@ export default function Explore() {
     });
 
   return (
-    <div className="min-h-screen" style={{ background: "#08080c" }}>
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <div className="max-w-2xl mx-auto px-4 pb-28 pt-4">
-        {/* Search bar */}
         <div className="mb-4 relative">
           <Search
             className="absolute left-3.5 top-1/2 transform -translate-y-1/2"
             size={16}
-            style={{ color: "hsl(var(--muted-foreground))" }}
+            style={{ color: "var(--text-tertiary)" }}
           />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Найти контент..."
-            className="input-luxe"
+            className="ios-input"
             style={{ paddingLeft: "2.5rem" }}
           />
         </div>
 
-        {/* Active search query indicator */}
         {searchQuery && (
           <div className="mb-4 flex items-center gap-2">
-            <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Поиск:
-            </span>
-            <span className="text-sm font-semibold" style={{ color: "#E8B4F8" }}>
-              &laquo;{searchQuery}&raquo;
+            <span className="ios-body" style={{ color: "var(--text-secondary)" }}>Поиск:</span>
+            <span className="ios-headline" style={{ color: "var(--text-primary)" }}>
+              «{searchQuery}»
             </span>
             <button
               onClick={() => setSearchQuery("")}
-              className="ml-auto text-xs transition-colors"
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              className="ml-auto ios-caption touch-manipulation"
+              style={{ color: "var(--text-tertiary)" }}
             >
               Сбросить
             </button>
           </div>
         )}
 
-        {/* Filters */}
         <div className="mb-6 space-y-4">
           <div>
-            <p
-              className="section-label"
-            >
-              Категории
-            </p>
+            <p className="ios-section-header">Категории</p>
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {categories.map((category) => {
                 const isActive =
@@ -104,16 +95,10 @@ export default function Explore() {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
-                    className="rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all"
+                    className="ios-badge touch-manipulation whitespace-nowrap"
                     style={{
-                      background: isActive
-                        ? "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.1))"
-                        : "hsl(var(--card))",
-                      border: isActive
-                        ? "1px solid rgba(232,180,248,0.25)"
-                        : "1px solid hsl(240 12% 20% / 0.4)",
-                      color: isActive ? "#E8B4F8" : "hsl(var(--muted-foreground))",
-                      boxShadow: isActive ? "0 2px 12px rgba(129,140,248,0.1)" : "none",
+                      background: isActive ? "var(--bg-quaternary)" : "var(--bg-tertiary)",
+                      color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
                     }}
                   >
                     {category}
@@ -124,11 +109,7 @@ export default function Explore() {
           </div>
 
           <div>
-            <p
-              className="section-label"
-            >
-              Сортировка
-            </p>
+            <p className="ios-section-header">Сортировка</p>
             <div className="flex gap-2">
               {[
                 { key: "popular" as const, label: "Популярные" },
@@ -140,15 +121,10 @@ export default function Explore() {
                   <button
                     key={s.key}
                     onClick={() => setSortBy(s.key)}
-                    className="rounded-xl px-4 py-2 text-sm font-medium transition-all"
+                    className="ios-badge touch-manipulation"
                     style={{
-                      background: isActive
-                        ? "linear-gradient(135deg, rgba(232,180,248,0.15), rgba(129,140,248,0.1))"
-                        : "hsl(var(--card))",
-                      border: isActive
-                        ? "1px solid rgba(232,180,248,0.25)"
-                        : "1px solid hsl(240 12% 20% / 0.4)",
-                      color: isActive ? "#E8B4F8" : "hsl(var(--muted-foreground))",
+                      background: isActive ? "var(--bg-quaternary)" : "var(--bg-tertiary)",
+                      color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
                     }}
                   >
                     {s.label}
@@ -159,25 +135,20 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Trending */}
         {!searchQuery && !selectedCategory && (
           <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <TrendingUp size={20} style={{ color: "#E8B4F8" }} />
+            <h2 className="ios-headline mb-4 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+              <TrendingUp size={20} style={{ color: "var(--text-secondary)" }} />
               Тренды сейчас
             </h2>
             <div className="grid grid-cols-2 gap-3 mb-8">
               {["#Дизайн", "#Фотография", "#Путешествие", "#Искусство"].map((tag) => (
                 <div
                   key={tag}
-                  className="card-luxe-hover p-4 cursor-pointer"
+                  className="ios-card p-4 cursor-pointer touch-manipulation"
                 >
-                  <p className="font-bold text-lg" style={{ color: "#E8B4F8" }}>
-                    {tag}
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    2.5M постов
-                  </p>
+                  <p className="ios-headline" style={{ color: "var(--text-primary)" }}>{tag}</p>
+                  <p className="ios-caption">2.5M постов</p>
                 </div>
               ))}
             </div>
@@ -185,20 +156,16 @@ export default function Explore() {
         )}
 
         {searchQuery || selectedCategory ? (
-          <div className="mb-4 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="mb-4 ios-body" style={{ color: "var(--text-secondary)" }}>
             Найдено результатов: {filteredItems.length}
           </div>
         ) : null}
 
-        {/* Grid */}
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => (
               <div key={item.id} className="break-inside-avoid mb-4 group cursor-pointer">
-                <div
-                  className="relative rounded-2xl overflow-hidden transition-all"
-                  style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}
-                >
+                <div className="relative rounded-2xl overflow-hidden">
                   <img
                     src={item.image}
                     alt={item.title}
@@ -206,14 +173,12 @@ export default function Explore() {
                     draggable={false}
                     onContextMenu={(e) => e.preventDefault()}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4"
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)" }}>
                     <h3 className="font-semibold text-white mb-1">{item.title}</h3>
-                    <p className="text-xs text-gray-300 mb-2">от {item.author}</p>
+                    <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>от {item.author}</p>
                     <div className="flex items-center justify-between text-white text-xs">
-                      <span
-                        className="px-2 py-1 rounded-full backdrop-blur-sm"
-                        style={{ background: "rgba(255,255,255,0.15)" }}
-                      >
+                      <span className="px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
                         {item.category}
                       </span>
                       <div className="flex items-center gap-3">
@@ -232,20 +197,14 @@ export default function Explore() {
             <div className="col-span-full py-16 text-center">
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                style={{
-                  background: "rgba(129,140,248,0.08)",
-                  border: "1px solid rgba(129,140,248,0.12)",
-                }}
+                style={{ background: "var(--bg-tertiary)" }}
               >
-                <Sparkles size={24} style={{ color: "#E8B4F8" }} />
+                <Sparkles size={24} style={{ color: "var(--text-tertiary)" }} />
               </div>
-              <p className="font-semibold mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="ios-headline mb-2" style={{ color: "var(--text-secondary)" }}>
                 Ничего не найдено
               </p>
-              <p
-                className="text-xs max-w-[240px] mx-auto"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
+              <p className="ios-caption max-w-[240px] mx-auto">
                 Попробуйте другой поисковый запрос или категорию
               </p>
             </div>

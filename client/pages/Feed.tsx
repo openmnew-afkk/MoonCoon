@@ -176,7 +176,7 @@ export default function Feed() {
   };
 
   const renderCard = (post: Post) => (
-    <div className="relative w-full h-full bg-[#08080c]">
+    <div className="relative w-full h-full" style={{ background: "var(--bg)" }}>
       {post.image && (
         <img
           src={post.image}
@@ -198,13 +198,13 @@ export default function Feed() {
       )}
       <div className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(to top, rgba(8,8,12,0.92) 0%, rgba(8,8,12,0.15) 40%, rgba(8,8,12,0.3) 100%)",
+          background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.12) 40%, rgba(0,0,0,0.25) 100%)",
         }}
       />
 
       <div className="absolute top-3 left-3 right-3 flex items-center gap-2.5 z-10">
         <div className="story-ring">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#12121a]">
+          <div className="w-10 h-10 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
             <img
               src={post.author.avatar}
               alt=""
@@ -213,10 +213,10 @@ export default function Feed() {
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-sm font-semibold truncate drop-shadow-lg">{post.author.name}</p>
-          <p className="text-white/40 text-xs truncate">{post.author.username}</p>
+          <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{post.author.name}</p>
+          <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>{post.author.username}</p>
         </div>
-        <span className="text-white/30 text-[10px] font-medium">{post.timestamp}</span>
+        <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>{post.timestamp}</span>
       </div>
 
       <div className="absolute right-2.5 bottom-20 flex flex-col items-center gap-3.5 z-10">
@@ -225,36 +225,46 @@ export default function Feed() {
           onClick={() => toggleLike(post.id)}
           className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${post.liked ? 'bg-red-500/20' : 'bg-black/25'}`}
-            style={{ border: post.liked ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: post.liked ? "rgba(255,69,58,0.18)" : "rgba(28,28,30,0.85)",
+              border: `0.5px solid ${post.liked ? "rgba(255,69,58,0.35)" : "var(--separator)"}`,
+            }}>
             <Heart
               size={22}
-              className={cn("text-white drop-shadow-lg transition-all", post.liked && "fill-red-500 text-red-500 scale-110")}
+              className={cn("transition-all", post.liked && "fill-[var(--red)] text-[var(--red)] scale-110")}
+              style={{ color: post.liked ? "var(--red)" : "var(--text-primary)" }}
             />
           </div>
-          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.likes}</span>
+          <span className="text-[10px] font-medium" style={{ color: "var(--text-primary)" }}>{post.likes}</span>
         </button>
         <button
           type="button"
           onClick={() => setShowCommentSheet(post.id)}
           className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/25 backdrop-blur-sm"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-            <MessageCircle size={22} className="text-white drop-shadow-lg" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(28,28,30,0.85)",
+              border: "0.5px solid var(--separator)",
+            }}>
+            <MessageCircle size={22} style={{ color: "var(--text-primary)" }} />
           </div>
-          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.comments}</span>
+          <span className="text-[10px] font-medium" style={{ color: "var(--text-primary)" }}>{post.comments}</span>
         </button>
         <button
           type="button"
           onClick={() => setShowStarModal(post.id)}
           className="flex flex-col items-center gap-0.5 post-action-btn"
         >
-          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/25 backdrop-blur-sm"
-            style={{ border: "1px solid rgba(251,191,36,0.15)" }}>
-            <Star size={22} className="text-[#FBBF24] fill-[#FBBF24] drop-shadow-lg" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(28,28,30,0.85)",
+              border: "0.5px solid rgba(255,214,10,0.2)",
+            }}>
+            <Star size={22} className="fill-[var(--yellow)]" style={{ color: "var(--yellow)" }} />
           </div>
-          <span className="text-[10px] text-white font-medium drop-shadow-lg">{post.stars || ""}</span>
+          <span className="text-[10px] font-medium" style={{ color: "var(--text-primary)" }}>{post.stars || ""}</span>
         </button>
         <button
           type="button"
@@ -264,16 +274,19 @@ export default function Feed() {
           }}
           className="post-action-btn"
         >
-          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-black/25 backdrop-blur-sm"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-            <Share2 size={20} className="text-white drop-shadow-lg" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(28,28,30,0.85)",
+              border: "0.5px solid var(--separator)",
+            }}>
+            <Share2 size={20} style={{ color: "var(--text-primary)" }} />
           </div>
         </button>
       </div>
 
       {post.caption && (
         <div className="absolute bottom-3 left-3 right-16 z-10">
-          <p className="text-white text-[13px] leading-snug line-clamp-2 drop-shadow-lg font-medium">
+          <p className="text-[13px] leading-snug line-clamp-2 font-medium" style={{ color: "var(--text-primary)" }}>
             {post.caption}
           </p>
         </div>
@@ -282,7 +295,7 @@ export default function Feed() {
   );
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-8rem)] max-w-lg mx-auto w-full">
+    <div className="flex flex-col min-h-[calc(100dvh-8rem)] max-w-lg mx-auto w-full" style={{ background: "var(--bg)" }}>
       <div className="px-1 pt-1 pb-2">
         <Stories />
       </div>
@@ -291,12 +304,11 @@ export default function Feed() {
         <button
           type="button"
           onClick={() => navigate("/goals")}
-          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-semibold press-scale"
+          className="mx-4 mb-2 flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-semibold"
           style={{
-            background: "linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.06))",
-            border: "1px solid rgba(251,191,36,0.2)",
-            color: "#FBBF24",
-            boxShadow: "0 0 24px rgba(251,191,36,0.06)",
+            background: "rgba(255,214,10,0.08)",
+            border: "0.5px solid rgba(255,214,10,0.18)",
+            color: "var(--yellow)",
           }}
         >
           <Target size={14} /> {liveGoals.length} активных целей
@@ -306,30 +318,24 @@ export default function Feed() {
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-3">
-            <div className="relative">
-              <Loader2 className="animate-spin text-[#E8B4F8]" size={28} />
-              <div className="absolute inset-0 animate-ping opacity-20">
-                <Loader2 className="text-[#E8B4F8]" size={28} />
-              </div>
-            </div>
-            <span className="text-xs text-[#555] font-medium">Загружаем ленту...</span>
+            <Loader2 className="animate-spin" size={28} style={{ color: "var(--text-secondary)" }} />
+            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>Загружаем ленту...</span>
           </div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center animate-fade-up">
+        <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center">
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5"
             style={{
-              background: "linear-gradient(135deg, rgba(232,180,248,0.1), rgba(129,140,248,0.06))",
-              border: "1px solid rgba(232,180,248,0.12)",
-              boxShadow: "0 0 40px rgba(232,180,248,0.05)",
+              background: "var(--bg-secondary)",
+              border: "0.5px solid var(--separator)",
             }}>
-            <Plus size={32} className="text-[#E8B4F8]" />
+            <Plus size={32} style={{ color: "var(--text-secondary)" }} />
           </div>
-          <p className="text-lg font-bold mb-2">Лента пуста</p>
-          <p className="text-sm text-[#555] mb-6 max-w-[260px]">
+          <p className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Лента пуста</p>
+          <p className="text-sm mb-6 max-w-[260px]" style={{ color: "var(--text-secondary)" }}>
             Создайте первый пост — он появится здесь для всех подписчиков {APP_NAME}.
           </p>
-          <Link to="/create" className="btn-luxe px-6 py-3 text-sm inline-flex items-center gap-2">
+          <Link to="/create" className="ios-btn text-sm inline-flex items-center gap-2">
             <Plus size={18} /> Создать пост
           </Link>
         </div>
@@ -348,15 +354,12 @@ export default function Feed() {
                 className="h-1 rounded-full transition-all duration-300"
                 style={{
                   width: i === currentIndex ? 24 : 4,
-                  background: i === currentIndex
-                    ? "linear-gradient(90deg, #E8B4F8, #FBBF24)"
-                    : "rgba(85,85,85,0.2)",
-                  boxShadow: i === currentIndex ? "0 0 10px rgba(232,180,248,0.35)" : "none",
+                  background: i === currentIndex ? "var(--blue)" : "rgba(142,142,147,0.2)",
                 }}
               />
             ))}
           </div>
-          <p className="text-center text-[11px] text-[#555] pb-2 font-medium">
+          <p className="text-center text-[11px] pb-2 font-medium" style={{ color: "var(--text-secondary)" }}>
             Свайп влево / вправо · {currentIndex + 1} / {posts.length}
           </p>
         </>
@@ -364,18 +367,18 @@ export default function Feed() {
 
       {showCommentSheet && (
         <div className="fixed inset-0 z-50 flex items-end" onClick={() => setShowCommentSheet(null)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
           <div
-            className="relative z-10 w-full rounded-t-3xl overflow-hidden glass-card"
-            style={{ boxShadow: "0 -8px 48px rgba(0,0,0,0.4)", borderRadius: "1.5rem 1.5rem 0 0", padding: 0 }}
+            className="relative z-10 w-full ios-blur"
+            style={{ background: "var(--bg-secondary)", borderRadius: "1.5rem 1.5rem 0 0" }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full" style={{ background: "var(--separator)" }} />
             </div>
-            <div className="px-4 py-3 border-b border-white/5 font-semibold flex items-center gap-2 text-sm">
-              <MessageCircle size={16} className="text-[#E8B4F8]" />
-              Комментарии
+            <div className="px-4 py-3 flex items-center gap-2 text-sm" style={{ borderBottom: "0.5px solid var(--separator)" }}>
+              <MessageCircle size={16} style={{ color: "var(--blue)" }} />
+              <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Комментарии</span>
             </div>
             <div className="overflow-y-auto max-h-[55vh]">
               <Comments postId={showCommentSheet} onClose={() => setShowCommentSheet(null)} />
@@ -386,33 +389,28 @@ export default function Feed() {
 
       {showStarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowStarModal(null)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-sm rounded-3xl p-6 animate-fade-up glass-card" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-lg mb-1">Поддержать</h3>
-            <p className="text-sm text-[#555] mb-5">Баланс: {starsBalance} ⭐</p>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)" }} />
+          <div className="relative z-10 w-full max-w-sm ios-card p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-lg mb-1" style={{ color: "var(--text-primary)" }}>Поддержать</h3>
+            <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>Баланс: {starsBalance} ⭐</p>
             <div className="flex flex-wrap gap-2 mb-5">
               {[1, 5, 10, 25, 50].map(n => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setStarAmount(n)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all press-scale"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
                   style={{
-                    background: starAmount === n
-                      ? "linear-gradient(135deg, #E8B4F8, #818CF8)"
-                      : "hsl(240 12% 12%)",
-                    color: starAmount === n ? "#000" : "hsl(220 10% 80%)",
-                    boxShadow: starAmount === n
-                      ? "0 4px 20px rgba(129,140,248,0.3), inset 0 1px 0 rgba(255,255,255,0.12)"
-                      : "none",
-                    border: starAmount === n ? "none" : "1px solid hsl(240 12% 20% / 0.4)",
+                    background: starAmount === n ? "var(--blue)" : "var(--bg-tertiary)",
+                    color: starAmount === n ? "#FFFFFF" : "var(--text-secondary)",
+                    border: `0.5px solid ${starAmount === n ? "var(--blue)" : "var(--separator)"}`,
                   }}
                 >
                   {n} ⭐
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => handleSendStar(showStarModal)} className="btn-luxe w-full py-3.5 text-sm">
+            <button type="button" onClick={() => handleSendStar(showStarModal)} className="ios-btn w-full py-3.5 text-sm">
               Отправить {starAmount} ⭐
             </button>
           </div>

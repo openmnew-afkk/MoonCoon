@@ -13,7 +13,6 @@ interface Track {
   duration: number;
   src: string;
   liked: boolean;
-  color: string;
 }
 
 const TRACKS: Track[] = [
@@ -21,49 +20,49 @@ const TRACKS: Track[] = [
     id: "1", title: "Chill Vibes", artist: "FASSounds",
     cover: "https://picsum.photos/id/1062/400/400",
     duration: 132, src: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3",
-    liked: false, color: "#E8B4F8",
+    liked: false,
   },
   {
     id: "2", title: "Lofi Study", artist: "FASSounds",
     cover: "https://picsum.photos/id/1025/400/400",
     duration: 147, src: "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3",
-    liked: true, color: "#818CF8",
+    liked: true,
   },
   {
     id: "3", title: "Ambient Dreams", artist: "Lesfm",
     cover: "https://picsum.photos/id/1047/400/400",
     duration: 180, src: "https://cdn.pixabay.com/audio/2022/08/02/audio_884fe92c21.mp3",
-    liked: false, color: "#34D399",
+    liked: false,
   },
   {
     id: "4", title: "Good Night", artist: "FASSounds",
     cover: "https://picsum.photos/id/1039/400/400",
     duration: 146, src: "https://cdn.pixabay.com/audio/2022/05/16/audio_460b6b4bce.mp3",
-    liked: false, color: "#FBBF24",
+    liked: false,
   },
   {
     id: "5", title: "Beautiful Day", artist: "Lesfm",
     cover: "https://picsum.photos/id/1015/400/400",
     duration: 150, src: "https://cdn.pixabay.com/audio/2022/10/12/audio_870ca3019f.mp3",
-    liked: false, color: "#FB7185",
+    liked: false,
   },
   {
     id: "6", title: "Jazzy Abstract", artist: "Coma-Media",
     cover: "https://picsum.photos/id/1043/400/400",
     duration: 120, src: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3",
-    liked: false, color: "#34D399",
+    liked: false,
   },
   {
     id: "7", title: "Spirit Blossom", artist: "RomanBelov",
     cover: "https://picsum.photos/id/1057/400/400",
     duration: 208, src: "https://cdn.pixabay.com/audio/2022/01/20/audio_d16737dc28.mp3",
-    liked: true, color: "#E8B4F8",
+    liked: true,
   },
   {
     id: "8", title: "Unlock Me", artist: "Nojisuma",
     cover: "https://picsum.photos/id/1069/400/400",
     duration: 128, src: "https://cdn.pixabay.com/audio/2023/07/30/audio_e3a7a3e3ab.mp3",
-    liked: false, color: "#818CF8",
+    liked: false,
   },
 ];
 
@@ -178,35 +177,27 @@ export default function MusicPage() {
     return (
       <div style={{
         position: "fixed", inset: 0, zIndex: 100,
-        background: "#08080c",
+        background: "var(--bg)",
         display: "flex", flexDirection: "column",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
       }}>
         <div style={{
-          position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)",
-          width: "150%", height: 500,
-          background: `radial-gradient(ellipse 60% 50% at 50% 30%, ${track.color}30 0%, transparent 70%)`,
-          filter: "blur(60px)", pointerEvents: "none",
-        }} />
-
-        <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "16px 20px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
           position: "relative", zIndex: 10,
         }}>
-          <button onClick={() => setView("list")} className="btn-icon-luxe" style={{ width: 40, height: 40 }}>
-            <ChevronDown size={22} style={{ color: "rgba(255,255,255,0.7)" }} />
+          <button onClick={() => setView("list")} className="ios-icon-btn" style={{ width: 40, height: 40 }}>
+            <ChevronDown size={22} style={{ color: "var(--text-secondary)" }} />
           </button>
           <span style={{
             fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
-            background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
-            WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+            color: "var(--text-secondary)",
           }}>
             Сейчас играет
           </span>
-          <button className="btn-icon-luxe" style={{ width: 40, height: 40 }}>
-            <MoreHorizontal size={20} style={{ color: "rgba(255,255,255,0.5)" }} />
+          <button className="ios-icon-btn" style={{ width: 40, height: 40 }}>
+            <MoreHorizontal size={20} style={{ color: "var(--text-tertiary)" }} />
           </button>
         </div>
 
@@ -214,10 +205,9 @@ export default function MusicPage() {
           <div style={{
             width: "min(80vw, 340px)", height: "min(80vw, 340px)", borderRadius: 28,
             overflow: "hidden", position: "relative",
-            boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 80px ${track.color}20`,
+            border: "0.5px solid var(--separator)",
             transform: playing ? "scale(1)" : "scale(0.92)",
             transition: "transform 0.5s cubic-bezier(0.34,1.56,0.64,1)",
-            border: "2px solid rgba(255,255,255,0.06)",
           }}>
             <img
               src={track.cover}
@@ -231,10 +221,10 @@ export default function MusicPage() {
             {!coverLoaded && (
               <div style={{
                 position: "absolute", inset: 0,
-                background: `linear-gradient(135deg, #12121a, #1a1a2e)`,
+                background: "var(--bg-secondary)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <ListMusic size={48} style={{ color: `${track.color}55` }} />
+                <ListMusic size={48} style={{ color: "var(--text-tertiary)" }} />
               </div>
             )}
           </div>
@@ -245,62 +235,60 @@ export default function MusicPage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <h2 style={{
                 fontSize: 24, fontWeight: 900, margin: 0, letterSpacing: "-0.02em",
-                color: "#fff",
+                color: "var(--text-primary)",
               }}>{track.title}</h2>
               <p style={{
                 fontSize: 14, margin: "4px 0 0", fontWeight: 500,
-                background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
-                WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+                color: "var(--text-secondary)",
               }}>{track.artist}</p>
             </div>
-            <button onClick={() => toggleLike(track.id)} className="btn-icon-luxe" style={{ width: 44, height: 44 }}>
-              <Heart size={22} fill={track.liked ? "#FB7185" : "none"}
-                style={{ color: track.liked ? "#FB7185" : "rgba(255,255,255,0.3)" }} />
+            <button onClick={() => toggleLike(track.id)} className="ios-icon-btn" style={{ width: 44, height: 44 }}>
+              <Heart size={22} fill={track.liked ? "var(--red)" : "none"}
+                style={{ color: track.liked ? "var(--red)" : "var(--text-tertiary)" }} />
             </button>
           </div>
 
           <div ref={progressBarRef} onClick={seek} style={{ height: 28, display: "flex", alignItems: "center", cursor: "pointer", marginBottom: 4 }}>
-            <div style={{ width: "100%", height: 5, borderRadius: 4, background: "rgba(255,255,255,0.08)", position: "relative", overflow: "hidden" }}>
+            <div style={{ width: "100%", height: 3, borderRadius: 2, background: "var(--separator)", position: "relative", overflow: "hidden" }}>
               <div style={{
-                height: "100%", borderRadius: 4,
-                background: "linear-gradient(90deg, #E8B4F8, #818CF8)",
+                height: "100%", borderRadius: 2,
+                background: "var(--blue)",
                 width: `${pct}%`, transition: "width 0.1s linear",
-                boxShadow: "0 0 12px rgba(129,140,248,0.5)",
               }} />
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-            <span style={{ fontSize: 11, color: "rgba(148,163,184,0.5)", fontWeight: 500 }}>{fmt(progress)}</span>
-            <span style={{ fontSize: 11, color: "rgba(148,163,184,0.5)", fontWeight: 500 }}>{fmt(duration)}</span>
+            <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 500 }}>{fmt(progress)}</span>
+            <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 500 }}>{fmt(duration)}</span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-            <button onClick={() => setShuffle(!shuffle)} className="btn-icon-luxe" style={{ width: 44, height: 44 }}>
-              <Shuffle size={18} style={{ color: shuffle ? "#E8B4F8" : "rgba(255,255,255,0.3)" }} />
+            <button onClick={() => setShuffle(!shuffle)} className="ios-icon-btn" style={{ width: 44, height: 44 }}>
+              <Shuffle size={18} style={{ color: shuffle ? "var(--blue)" : "var(--text-tertiary)" }} />
             </button>
-            <button onClick={skipPrev} className="btn-icon-luxe" style={{ width: 48, height: 48 }}>
-              <SkipBack size={24} fill="rgba(255,255,255,0.9)" style={{ color: "rgba(255,255,255,0.9)" }} />
+            <button onClick={skipPrev} className="ios-icon-btn" style={{ width: 48, height: 48 }}>
+              <SkipBack size={24} fill="var(--text-primary)" style={{ color: "var(--text-primary)" }} />
             </button>
-            <button onClick={togglePlay} className="btn-luxe" style={{
+            <button onClick={togglePlay} className="ios-btn" style={{
               width: 72, height: 72, borderRadius: 36, padding: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               {playing
-                ? <Pause size={28} strokeWidth={2.5} style={{ color: "#000" }} />
-                : <Play size={28} strokeWidth={2.5} style={{ color: "#000", marginLeft: 3 }} />
+                ? <Pause size={28} strokeWidth={2.5} style={{ color: "var(--text-primary)" }} />
+                : <Play size={28} strokeWidth={2.5} style={{ color: "var(--text-primary)", marginLeft: 3 }} />
               }
             </button>
-            <button onClick={skipNext} className="btn-icon-luxe" style={{ width: 48, height: 48 }}>
-              <SkipForward size={24} fill="rgba(255,255,255,0.9)" style={{ color: "rgba(255,255,255,0.9)" }} />
+            <button onClick={skipNext} className="ios-icon-btn" style={{ width: 48, height: 48 }}>
+              <SkipForward size={24} fill="var(--text-primary)" style={{ color: "var(--text-primary)" }} />
             </button>
-            <button onClick={() => setRepeat(!repeat)} className="btn-icon-luxe" style={{ width: 44, height: 44 }}>
-              <Repeat size={18} style={{ color: repeat ? "#E8B4F8" : "rgba(255,255,255,0.3)" }} />
+            <button onClick={() => setRepeat(!repeat)} className="ios-icon-btn" style={{ width: 44, height: 44 }}>
+              <Repeat size={18} style={{ color: repeat ? "var(--blue)" : "var(--text-tertiary)" }} />
             </button>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={() => setMuted(!muted)} className="btn-icon-luxe" style={{ width: 36, height: 36 }}>
-              {muted ? <VolumeX size={16} style={{ color: "rgba(148,163,184,0.3)" }} /> : <Volume2 size={16} style={{ color: "rgba(255,255,255,0.5)" }} />}
+            <button onClick={() => setMuted(!muted)} className="ios-icon-btn" style={{ width: 36, height: 36 }}>
+              {muted ? <VolumeX size={16} style={{ color: "var(--text-tertiary)" }} /> : <Volume2 size={16} style={{ color: "var(--text-secondary)" }} />}
             </button>
             <div style={{ flex: 1, height: 20, display: "flex", alignItems: "center" }}>
               <input
@@ -309,7 +297,7 @@ export default function MusicPage() {
                 onChange={e => { setVolume(parseFloat(e.target.value)); setMuted(false); }}
                 style={{
                   width: "100%", height: 3, appearance: "none", WebkitAppearance: "none",
-                  background: `linear-gradient(to right, #E8B4F8 ${(muted ? 0 : volume) * 100}%, rgba(255,255,255,0.08) ${(muted ? 0 : volume) * 100}%)`,
+                  background: `linear-gradient(to right, var(--blue) ${(muted ? 0 : volume) * 100}%, var(--separator) ${(muted ? 0 : volume) * 100}%)`,
                   borderRadius: 2, outline: "none", cursor: "pointer",
                 }}
               />
@@ -323,32 +311,23 @@ export default function MusicPage() {
   return (
     <div style={{ maxWidth: 480, margin: "0 auto", fontFamily: "Inter, sans-serif", paddingBottom: track ? 140 : 80 }}>
       <div style={{ padding: "16px 16px 8px" }}>
-        <h1 className="text-gradient" style={{ fontSize: 26, fontWeight: 900, margin: "0 0 4px" }}>Музыка</h1>
-        <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", margin: 0 }}>{tracks.length} треков · бесплатные биты</p>
+        <h1 className="ios-title-large" style={{ margin: "0 0 4px" }}>Музыка</h1>
+        <p className="ios-caption" style={{ color: "var(--text-tertiary)", margin: 0 }}>{tracks.length} треков · бесплатные биты</p>
       </div>
 
-      <div style={{ padding: "8px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className="ios-card-grouped mx-3" style={{ padding: 0 }}>
         {tracks.map((t, i) => (
           <button
             key={t.id}
             onClick={() => { setCurrent(i); setPlaying(true); }}
-            className="press-scale"
+            className="ios-card-row"
             style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "10px 12px", borderRadius: 18,
-              background: current === i ? `hsl(var(--card))` : "transparent",
-              border: current === i ? "1px solid hsl(240 12% 20% / 0.5)" : "1px solid transparent",
-              cursor: "pointer", textAlign: "left", width: "100%",
-              WebkitTapHighlightColor: "transparent",
-              transition: "all 0.15s",
-              boxShadow: current === i ? "0 2px 12px rgba(0,0,0,0.15)" : "none",
+              borderLeft: current === i ? "2px solid var(--blue)" : "2px solid transparent",
             }}
           >
             <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+              width: 48, height: 48, borderRadius: 12, flexShrink: 0,
               overflow: "hidden", position: "relative",
-              boxShadow: current === i ? `0 4px 16px ${t.color}30` : "none",
-              border: "1px solid rgba(255,255,255,0.06)",
             }}>
               <img src={t.cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               {current === i && playing && (
@@ -360,7 +339,7 @@ export default function MusicPage() {
                     {[0,1,2].map(j => (
                       <div key={j} style={{
                         width: 3, borderRadius: 2,
-                        background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
+                        background: "var(--text-primary)",
                         animation: `eq-bar 0.6s ease-in-out infinite ${j * 0.15}s alternate`,
                       }} />
                     ))}
@@ -370,24 +349,20 @@ export default function MusicPage() {
             </div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{
-                fontSize: 14, fontWeight: 600, margin: 0,
-                color: current === i ? "#E8B4F8" : "#fff",
+              <p className="ios-body" style={{
+                fontWeight: 600, margin: 0,
+                color: current === i ? "var(--blue)" : "var(--text-primary)",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>{t.title}</p>
-              <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", margin: "2px 0 0" }}>
+              <p className="ios-caption" style={{ color: "var(--text-tertiary)", margin: "2px 0 0" }}>
                 {t.artist} · {fmt(t.duration)}
               </p>
             </div>
 
             <button onClick={e => { e.stopPropagation(); toggleLike(t.id); }}
-              className="press-scale"
-              style={{
-                background: "none", border: "none", cursor: "pointer", padding: 6,
-                WebkitTapHighlightColor: "transparent",
-              }}>
-              <Heart size={16} fill={t.liked ? "#FB7185" : "none"}
-                style={{ color: t.liked ? "#FB7185" : "hsl(var(--muted-foreground))" }} />
+              className="ios-icon-btn" style={{ width: 36, height: 36 }}>
+              <Heart size={16} fill={t.liked ? "var(--red)" : "none"}
+                style={{ color: t.liked ? "var(--red)" : "var(--text-tertiary)" }} />
             </button>
           </button>
         ))}
@@ -401,14 +376,15 @@ export default function MusicPage() {
             padding: "0 12px", cursor: "pointer",
           }}
         >
-          <div className="glass-card" style={{
+          <div className="ios-card" style={{
             maxWidth: 456, margin: "0 auto", borderRadius: 20,
             padding: 0, overflow: "hidden",
+            background: "var(--bg-secondary)", border: "0.5px solid var(--separator)",
           }}>
-            <div style={{ height: 2, background: "rgba(255,255,255,0.05)" }}>
+            <div style={{ height: 2, background: "var(--separator)" }}>
               <div style={{
                 height: "100%", width: `${pct}%`,
-                background: "linear-gradient(90deg, #E8B4F8, #818CF8)",
+                background: "var(--blue)",
                 transition: "width 0.3s linear",
               }} />
             </div>
@@ -416,36 +392,35 @@ export default function MusicPage() {
             <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
                 width: 42, height: 42, borderRadius: 12, overflow: "hidden", flexShrink: 0,
-                border: "1px solid rgba(255,255,255,0.06)",
               }}>
                 <img src={track.cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{
-                  fontSize: 13, fontWeight: 700, margin: 0,
-                  color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                <p className="ios-body" style={{
+                  fontWeight: 700, margin: 0,
+                  color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {track.title}
                 </p>
-                <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", margin: "1px 0 0" }}>{track.artist}</p>
+                <p className="ios-caption" style={{ color: "var(--text-tertiary)", margin: "1px 0 0" }}>{track.artist}</p>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 4 }} onClick={e => e.stopPropagation()}>
-                <button onClick={skipPrev} className="btn-icon-luxe" style={{ width: 36, height: 36 }}>
-                  <SkipBack size={16} style={{ color: "rgba(255,255,255,0.6)" }} />
+                <button onClick={skipPrev} className="ios-icon-btn" style={{ width: 36, height: 36 }}>
+                  <SkipBack size={16} style={{ color: "var(--text-secondary)" }} />
                 </button>
-                <button onClick={togglePlay} className="btn-luxe" style={{
+                <button onClick={togglePlay} className="ios-btn" style={{
                   width: 42, height: 42, borderRadius: 14, padding: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   {playing
-                    ? <Pause size={16} style={{ color: "#000" }} />
-                    : <Play size={16} style={{ color: "#000", marginLeft: 2 }} />
+                    ? <Pause size={16} style={{ color: "var(--text-primary)" }} />
+                    : <Play size={16} style={{ color: "var(--text-primary)", marginLeft: 2 }} />
                   }
                 </button>
-                <button onClick={skipNext} className="btn-icon-luxe" style={{ width: 36, height: 36 }}>
-                  <SkipForward size={16} style={{ color: "rgba(255,255,255,0.6)" }} />
+                <button onClick={skipNext} className="ios-icon-btn" style={{ width: 36, height: 36 }}>
+                  <SkipForward size={16} style={{ color: "var(--text-secondary)" }} />
                 </button>
               </div>
             </div>
@@ -462,10 +437,9 @@ export default function MusicPage() {
           -webkit-appearance: none;
           width: 14px; height: 14px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #E8B4F8, #818CF8);
-          border: 2px solid #08080c;
+          background: var(--blue);
+          border: 2px solid var(--bg);
           margin-top: -5px;
-          box-shadow: 0 0 12px rgba(129,140,248,0.5);
         }
       `}</style>
     </div>

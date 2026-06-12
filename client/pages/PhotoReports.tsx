@@ -34,38 +34,36 @@ export default function PhotoReports() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#08080c" }}>
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <header
-        className="fixed top-0 left-0 right-0 z-30 glass"
+        className="fixed top-0 left-0 right-0 z-30 ios-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link to="/profile" className="btn-icon-luxe">
+          <Link to="/profile" className="ios-icon-btn">
             <ArrowLeft size={18} />
           </Link>
           <div className="flex-1">
-            <h1 className="text-base font-bold">Фотоотчёты</h1>
-            <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Голосуй: &gt;50% «Да» и минимум 3 голоса
-            </p>
+            <h1 className="ios-title">Фотоотчёты</h1>
+            <p className="ios-caption">Голосуй: &gt;50% «Да» и минимум 3 голоса</p>
           </div>
-          <Camera size={22} style={{ color: "#FBBF24" }} />
+          <Camera size={22} style={{ color: "var(--yellow)" }} />
         </div>
       </header>
 
       <div
-        className="max-w-2xl mx-auto px-4 pb-28 section-gap"
+        className="max-w-2xl mx-auto px-4 pb-28"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 5rem)" }}
       >
         {goals.length === 0 ? (
-          <div className="card-luxe p-8 text-center animate-fade-up">
-            <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="ios-card p-8 text-center">
+            <p className="ios-body" style={{ color: "var(--text-secondary)" }}>
               Нет активных фотоотчётов на голосовании
             </p>
             <Link
               to="/goals"
-              className="inline-block mt-3 text-sm font-medium"
-              style={{ color: "#E8B4F8" }}
+              className="inline-block mt-3 ios-body"
+              style={{ color: "var(--blue)" }}
             >
               Перейти к целям →
             </Link>
@@ -88,20 +86,21 @@ export default function PhotoReports() {
 
       {detail && (
         <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end"
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={() => setDetail(null)}
           onKeyDown={() => {}}
           role="presentation"
         >
           <div
-            className="glass-card w-full max-w-lg p-6 pb-10 max-h-[80vh] overflow-y-auto scrollbar-hide"
-            style={{ borderRadius: "1.5rem 1.5rem 0 0", borderTop: "1px solid hsl(240 12% 20% / 0.4)" }}
+            className="ios-card w-full max-w-lg p-6 pb-10 max-h-[80vh] overflow-y-auto scrollbar-hide"
+            style={{ borderRadius: "1.5rem 1.5rem 0 0" }}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={() => {}}
             role="dialog"
           >
-            <h2 className="text-lg font-bold mb-2">{detail.title}</h2>
-            <p className="text-sm mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <h2 className="ios-title-large mb-2">{detail.title}</h2>
+            <p className="ios-body mb-4" style={{ color: "var(--text-secondary)" }}>
               {detail.proofDescription}
             </p>
             {detail.proofImage && (

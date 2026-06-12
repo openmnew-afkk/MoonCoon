@@ -58,11 +58,10 @@ export default function Profile() {
   };
 
   if (showStars) return (
-    <div className="min-h-screen bg-background">
-      <div className="glass sticky top-0 z-20 border-b border-white/5"
-        style={{ paddingTop: "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))" }}>
+    <div style={{ minHeight: "100dvh", background: "var(--bg)" }}>
+      <div className="ios-blur" style={{ position: "sticky", top: 0, zIndex: 20, borderBottom: "0.5px solid var(--separator)", paddingTop: "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))" }}>
         <div className="flex items-center gap-2 px-4 h-12">
-          <button onClick={() => { setShowStars(false); loadData(); }} className="btn-ghost-luxe !px-3 !py-1.5 !text-sm !gap-1 !rounded-xl">
+          <button onClick={() => { setShowStars(false); loadData(); }} className="ios-btn-text" style={{ padding: "6px 12px", fontSize: 15 }}>
             ← Назад
           </button>
         </div>
@@ -72,11 +71,10 @@ export default function Profile() {
   );
 
   if (showPremium) return (
-    <div className="min-h-screen bg-background">
-      <div className="glass sticky top-0 z-20 border-b border-white/5"
-        style={{ paddingTop: "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))" }}>
+    <div style={{ minHeight: "100dvh", background: "var(--bg)" }}>
+      <div className="ios-blur" style={{ position: "sticky", top: 0, zIndex: 20, borderBottom: "0.5px solid var(--separator)", paddingTop: "calc(var(--tg-safe-top, 0px) + var(--tg-chrome-top, 52px))" }}>
         <div className="flex items-center gap-2 px-4 h-12">
-          <button onClick={() => setShowPremium(false)} className="btn-ghost-luxe !px-3 !py-1.5 !text-sm !gap-1 !rounded-xl">
+          <button onClick={() => setShowPremium(false)} className="ios-btn-text" style={{ padding: "6px 12px", fontSize: 15 }}>
             ← Назад
           </button>
         </div>
@@ -91,128 +89,98 @@ export default function Profile() {
 
       <div className="flex justify-end gap-2 px-4 pt-3 pb-1">
         {isAdmin && (
-          <Link to="/admin" className="btn-icon-luxe !w-9 !h-9">
-            <Shield size={15} style={{ color: "#E8B4F8" }} />
+          <Link to="/admin" className="ios-icon-btn">
+            <Shield size={16} style={{ color: "var(--text-secondary)" }} />
           </Link>
         )}
-        <Link to="/settings" className="btn-icon-luxe !w-9 !h-9">
-          <Settings size={15} style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
+        <Link to="/settings" className="ios-icon-btn">
+          <Settings size={16} style={{ color: "var(--text-secondary)" }} />
         </Link>
       </div>
 
       <div className="flex flex-col items-center text-center px-5 pt-4 pb-8">
         <button type="button" onClick={() => fileRef.current?.click()} className="relative bg-transparent border-none cursor-pointer mb-5">
-          {isPremium && (
-            <div className="absolute -inset-1.5 rounded-full"
-              style={{
-                background: "conic-gradient(from 0deg, #E8B4F8, #818CF8, #FB7185, #FBBF24, #E8B4F8)",
-                animation: "profile-ring 4s linear infinite",
-                boxShadow: "0 0 32px rgba(129,140,248,0.35), 0 0 64px rgba(232,180,248,0.15)",
-              }} />
-          )}
-          <div className="relative w-24 h-24 rounded-full overflow-hidden"
-            style={{
-              border: isPremium ? "3px solid #08080c" : "2px solid hsl(280 60% 75% / 0.2)",
-              boxShadow: isPremium ? "0 0 24px rgba(129,140,248,0.25)" : "none",
-            }}>
+          <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: "2px solid var(--bg-tertiary)" }}>
             <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, #E8B4F8, #818CF8)",
-              border: "2.5px solid #08080c",
-              boxShadow: "0 2px 12px rgba(129,140,248,0.4)",
-            }}>
-            <Camera size={11} style={{ color: "white" }} />
+          <div className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "var(--bg-tertiary)", border: "2px solid var(--bg)" }}>
+            <Camera size={11} style={{ color: "var(--text-secondary)" }} />
           </div>
         </button>
 
-        <h1 className="text-2xl font-extrabold tracking-tight mb-1">{displayName}</h1>
-        <p className="text-[13px] font-semibold" style={{ color: "#E8B4F8" }}>{username}</p>
-        {bio && <p className="text-[13px] leading-relaxed max-w-[260px] mt-2" style={{ color: "hsl(var(--muted-foreground))" }}>{bio}</p>}
+        <h1 className="ios-title-large" style={{ margin: "0 0 4px" }}>{displayName}</h1>
+        <p className="ios-subhead" style={{ color: "var(--text-secondary)" }}>{username}</p>
+        {bio && <p className="ios-caption" style={{ color: "var(--text-tertiary)", marginTop: 8, maxWidth: 260 }}>{bio}</p>}
 
         {isPremium && (
-          <div className="badge-premium mt-3">
+          <div className="ios-badge ios-badge-gold" style={{ marginTop: 12 }}>
             <Crown size={12} />
             <span>Premium</span>
           </div>
         )}
 
-        <Link to="/settings" className="btn-ghost-luxe !px-4 !py-2 !text-xs !rounded-full mt-4">
-          <Edit3 size={11} /> Редактировать
+        <Link to="/settings" className="ios-btn-ghost" style={{ marginTop: 16, padding: "6px 16px", fontSize: 13 }}>
+          <Edit3 size={12} /> Редактировать
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-2.5 mx-4 mb-6">
-        {[
-          { label: "Постов", value: stats.posts, color: "#E8B4F8" },
-          { label: "Звёзд", value: starsBalance, color: "#FBBF24" },
-          { label: "Получено", value: stats.starsReceived, color: "#818CF8" },
-        ].map((s) => (
-          <div key={s.label} className="card-luxe text-center !p-4">
-            <div className="text-2xl font-extrabold tracking-tight" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>{s.label}</div>
-          </div>
-        ))}
+      <div className="ios-card-grouped mx-4 mb-6">
+        <div className="grid grid-cols-3">
+          {[
+            { label: "Постов", value: stats.posts },
+            { label: "Звёзд", value: starsBalance },
+            { label: "Получено", value: stats.starsReceived },
+          ].map((s, i) => (
+            <div key={s.label} className="ios-card-row" style={{ justifyContent: "center", padding: "16px 12px" }}>
+              <div className="ios-title" style={{ color: "var(--text-primary)" }}>{s.value}</div>
+              <div className="ios-caption" style={{ color: "var(--text-tertiary)", marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="px-4 flex flex-col gap-2.5">
-        <button onClick={() => setShowStars(true)} className="card-luxe-hover press-scale text-left">
-          <div className="setting-row !px-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.15)" }}>⭐</div>
-              <div>
-                <div className="text-sm font-bold">Пополнить звёзды</div>
-                <div className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Баланс: {starsBalance} ⭐</div>
-              </div>
+      <div className="ios-card-grouped mx-4">
+        <button onClick={() => setShowStars(true)} className="ios-card-row w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--bg-tertiary)" }}>
+              <span style={{ fontSize: 18 }}>⭐</span>
             </div>
-            <ChevronRight size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <div className="ios-body" style={{ fontWeight: 500 }}>Пополнить звёзды</div>
+              <div className="ios-caption" style={{ color: "var(--text-tertiary)", marginTop: 2 }}>Баланс: {starsBalance} ⭐</div>
+            </div>
           </div>
+          <ChevronRight size={16} style={{ color: "var(--text-tertiary)" }} />
         </button>
 
         {!isPremium && (
-          <button onClick={() => setShowPremium(true)} className="card-luxe-hover press-scale text-left">
-            <div className="setting-row !px-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(232,180,248,0.1), rgba(251,191,36,0.08))",
-                    border: "1px solid rgba(232,180,248,0.15)",
-                  }}>
-                  <Crown size={18} style={{ color: "#FBBF24" }} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gradient-gold">Получить Premium</div>
-                  <div className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Эксклюзивные возможности</div>
-                </div>
+          <button onClick={() => setShowPremium(true)} className="ios-card-row w-full">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--bg-tertiary)" }}>
+                <Crown size={16} style={{ color: "var(--yellow)" }} />
               </div>
-              <ChevronRight size={16} style={{ color: "#FBBF24" }} />
+              <div>
+                <div className="ios-body" style={{ fontWeight: 500, color: "var(--yellow)" }}>Получить Premium</div>
+                <div className="ios-caption" style={{ color: "var(--text-tertiary)", marginTop: 2 }}>Эксклюзивные возможности</div>
+              </div>
             </div>
+            <ChevronRight size={16} style={{ color: "var(--text-tertiary)" }} />
           </button>
         )}
 
-        <Link to="/create" className="card-luxe-hover press-scale" style={{ textDecoration: "none" }}>
-          <div className="setting-row !px-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                style={{ background: "hsl(280 60% 75% / 0.08)", border: "1px solid hsl(280 60% 75% / 0.12)" }}>📸</div>
-              <div>
-                <div className="text-sm font-bold">Создать публикацию</div>
-                <div className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>Пост или история</div>
-              </div>
+        <Link to="/create" className="ios-card-row" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--bg-tertiary)" }}>
+              <span style={{ fontSize: 18 }}>📸</span>
             </div>
-            <ChevronRight size={16} style={{ color: "hsl(var(--muted-foreground))" }} />
+            <div>
+              <div className="ios-body" style={{ fontWeight: 500 }}>Создать публикацию</div>
+              <div className="ios-caption" style={{ color: "var(--text-tertiary)", marginTop: 2 }}>Пост или история</div>
+            </div>
           </div>
+          <ChevronRight size={16} style={{ color: "var(--text-tertiary)" }} />
         </Link>
       </div>
-
-      <style>{`
-        @keyframes profile-ring {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

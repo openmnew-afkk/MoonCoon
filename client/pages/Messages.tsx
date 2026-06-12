@@ -128,9 +128,9 @@ export default function Messages() {
   const activeConvo = mockConversations.find((c) => c.id === selectedConversation);
 
   return (
-    <div className="min-h-screen" style={{ background: "#08080c" }}>
+    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <div
-        className="fixed top-0 left-0 right-0 z-30 glass"
+        className="fixed top-0 left-0 right-0 z-30 ios-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-4">
@@ -138,14 +138,14 @@ export default function Messages() {
             <Search
               className="absolute left-3.5 top-1/2 transform -translate-y-1/2"
               size={16}
-              style={{ color: "hsl(var(--muted-foreground))" }}
+              style={{ color: "var(--text-tertiary)" }}
             />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Поиск..."
-              className="input-luxe"
+              className="ios-input"
               style={{ paddingLeft: "2.5rem" }}
             />
           </div>
@@ -155,17 +155,16 @@ export default function Messages() {
       <div className="max-w-2xl mx-auto pt-28 h-[calc(100vh-5rem)] flex flex-col pb-24">
         {notifications > 0 && (
           <div
-            className="fixed top-20 right-4 glass-card px-3 py-2 flex items-center gap-2 animate-pulse z-40"
-            style={{ borderRadius: "1rem" }}
+            className="fixed top-20 right-4 ios-card px-3 py-2 flex items-center gap-2 animate-pulse z-40"
           >
-            <Bell size={16} style={{ color: "#E8B4F8" }} />
-            <span className="text-sm font-semibold">{notifications} новых</span>
+            <Bell size={16} style={{ color: "var(--blue)" }} />
+            <span className="ios-headline">{notifications} новых</span>
           </div>
         )}
 
         {selectedConversation ? (
           <div className="flex flex-col h-full">
-            <div className="card-luxe mb-4 mx-4 overflow-hidden">
+            <div className="ios-card mb-4 mx-4 overflow-hidden">
               {activeConvo && (
                 <div className="flex items-center gap-3 p-4">
                   <div className="relative">
@@ -173,24 +172,23 @@ export default function Messages() {
                       src={activeConvo.avatar}
                       alt={activeConvo.name}
                       className="w-12 h-12 rounded-full"
-                      style={{ border: "1px solid hsl(240 12% 20% / 0.4)" }}
                     />
                     {activeConvo.online && (
                       <div
                         className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
-                        style={{ background: "#34D399", borderColor: "hsl(var(--card))" }}
+                        style={{ background: "var(--green)", borderColor: "var(--bg-secondary)" }}
                       />
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold">{activeConvo.name}</p>
-                    <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="ios-headline" style={{ color: "var(--text-primary)" }}>{activeConvo.name}</p>
+                    <p className="ios-caption">
                       {activeConvo.online ? "Онлайн" : "Был(а) недавно"}
                     </p>
                   </div>
                   <button
                     onClick={() => setSelectedConversation(null)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="ios-icon-btn"
                   >
                     ✕
                   </button>
@@ -203,19 +201,12 @@ export default function Messages() {
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-                    style={{
-                      background: "rgba(129,140,248,0.08)",
-                      border: "1px solid rgba(129,140,248,0.12)",
-                    }}
+                    style={{ background: "var(--bg-tertiary)" }}
                   >
-                    <MessageCircle size={24} style={{ color: "#E8B4F8" }} />
+                    <MessageCircle size={24} style={{ color: "var(--text-tertiary)" }} />
                   </div>
-                  <p className="font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Нет сообщений
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    Начните диалог!
-                  </p>
+                  <p className="ios-headline" style={{ color: "var(--text-secondary)" }}>Нет сообщений</p>
+                  <p className="ios-caption">Начните диалог!</p>
                 </div>
               ) : (
                 messages.map((msg) => (
@@ -231,17 +222,12 @@ export default function Messages() {
                       style={{
                         background:
                           msg.senderId === user?.id?.toString()
-                            ? "linear-gradient(135deg, #E8B4F8, #818CF8)"
-                            : "hsl(var(--card))",
-                        border:
-                          msg.senderId === user?.id?.toString()
-                            ? "none"
-                            : "1px solid hsl(240 12% 20% / 0.4)",
+                            ? "var(--blue)"
+                            : "var(--bg-secondary)",
                         color:
                           msg.senderId === user?.id?.toString()
-                            ? "#000"
-                            : "hsl(var(--foreground))",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                            ? "#fff"
+                            : "var(--text-primary)",
                       }}
                     >
                       <p className="text-sm">{msg.text}</p>
@@ -250,8 +236,8 @@ export default function Messages() {
                         style={{
                           color:
                             msg.senderId === user?.id?.toString()
-                              ? "rgba(0,0,0,0.45)"
-                              : "hsl(var(--muted-foreground))",
+                              ? "rgba(255,255,255,0.6)"
+                              : "var(--text-tertiary)",
                         }}
                       >
                         {new Date(msg.timestamp).toLocaleTimeString("ru-RU", {
@@ -273,13 +259,13 @@ export default function Messages() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 placeholder="Напишите сообщение..."
-                className="input-luxe flex-1"
+                className="ios-input flex-1"
               />
               <button
                 onClick={handleSendMessage}
                 className={cn(
-                  "rounded-full p-3 transition-all active:scale-95 flex items-center justify-center",
-                  message.trim() ? "btn-luxe" : "btn-ghost-luxe",
+                  "rounded-full p-3 flex items-center justify-center",
+                  message.trim() ? "ios-btn" : "ios-btn-ghost",
                 )}
                 style={{
                   width: "44px",
@@ -295,57 +281,45 @@ export default function Messages() {
           <div className="space-y-2 px-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-12">
-                <p style={{ color: "hsl(var(--muted-foreground))" }}>Диалоги не найдены</p>
+                <p className="ios-body" style={{ color: "var(--text-secondary)" }}>Диалоги не найдены</p>
               </div>
             ) : (
               filteredConversations.map((conversation) => (
                 <button
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation.id)}
-                  className="w-full card-luxe-hover flex items-center gap-3 p-3 text-left"
+                  className="ios-card-row touch-manipulation text-left"
+                  style={{ width: "100%" }}
                 >
                   <div className="relative">
                     <img
                       src={conversation.avatar}
                       alt={conversation.name}
                       className="w-12 h-12 rounded-full"
-                      style={{ border: "1px solid hsl(240 12% 20% / 0.4)" }}
                     />
                     {conversation.online && (
                       <div
                         className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
-                        style={{ background: "#34D399", borderColor: "hsl(var(--card))" }}
+                        style={{ background: "var(--green)", borderColor: "var(--bg-secondary)" }}
                       />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p
-                        className={cn("font-semibold", conversation.unread && "text-gradient-gold")}
-                        style={
-                          !conversation.unread
-                            ? { color: "hsl(var(--foreground))" }
-                            : undefined
-                        }
+                        className={cn("ios-headline", conversation.unread && "font-bold")}
+                        style={{ color: conversation.unread ? "var(--text-primary)" : "var(--text-secondary)" }}
                       >
                         {conversation.name}
                       </p>
-                      <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {conversation.timestamp}
-                      </span>
+                      <span className="ios-caption">{conversation.timestamp}</span>
                     </div>
-                    <p
-                      className="text-sm truncate"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
+                    <p className="ios-body truncate" style={{ color: "var(--text-secondary)" }}>
                       {conversation.lastMessage}
                     </p>
                   </div>
                   {conversation.unread && (
-                    <div
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ background: "linear-gradient(135deg, #E8B4F8, #818CF8)" }}
-                    />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--blue)" }} />
                   )}
                 </button>
               ))

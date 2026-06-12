@@ -115,7 +115,7 @@ export default function FeedCardStack<T>({
         className="feed-card relative z-10 w-full max-w-[390px] aspect-[4/5] rounded-2xl overflow-hidden"
         style={{
           x, rotate, opacity,
-          boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)",
+          border: "0.5px solid var(--separator)",
         }}
         drag={animating ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
