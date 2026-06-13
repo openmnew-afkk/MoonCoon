@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { MovieCard as MovieCardType } from "@/lib/api";
 
@@ -8,23 +9,39 @@ interface Props {
 
 export default function MovieCard({ movie, size = "medium" }: Props) {
   const navigate = useNavigate();
+  const [posterLoaded, setPosterLoaded] = useState(false);
   const width = size === "small" ? 130 : 160;
+
+  const fallback = `https://picsum.photos/seed/${movie.id}/300/450`;
+  const posterSrc = movie.poster || fallback;
 
   return (
     <div
       className="movie-card"
-      style={{ width, flexShrink: 0 }}
+      style={{
+        width,
+        flexShrink: 0,
+        background: !posterLoaded && movie.backdrop
+          ? `url(${movie.backdrop}) center/cover no-repeat`
+          : undefined,
+      }}
       onClick={() => navigate(`/movie/${movie.id}`)}
     >
       {/* Постер */}
       <img
-        src={movie.poster || `https://picsum.photos/seed/${movie.id}/300/450`}
+        src={posterSrc}
         alt={movie.title}
         className="poster-img"
-        style={{ width: "100%", display: "block" }}
+        style={{
+          width: "100%",
+          display: "block",
+          opacity: posterLoaded ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
         loading="lazy"
+        onLoad={() => setPosterLoaded(true)}
         onError={(e) => {
-          (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${movie.id}/300/450`;
+          (e.target as HTMLImageElement).src = fallback;
         }}
       />
 
