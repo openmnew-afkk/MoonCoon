@@ -6,20 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <meta name="theme-color" content="#050508" />
-    <title>Vexora ✨</title>
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="description" content="VseOkNax — бесплатный просмотр фильмов, сериалов и мультфильмов в Telegram" />
+    <title>VseOkNax 🎬</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script>
-      (function () {
-        var m = localStorage.getItem("vexora-theme") || "dark";
-        var dark =
-          m === "dark" ||
-          (m === "auto" &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches);
-        document.documentElement.classList.toggle("dark", dark);
-        document.documentElement.dataset.theme = dark ? "dark" : "light";
-        var tc = document.querySelector('meta[name="theme-color"]');
-        if (tc) tc.setAttribute("content", dark ? "#050508" : "#fafafa");
-      })();
+      document.documentElement.classList.add("dark");
+      document.documentElement.dataset.theme = "dark";
     </script>
     <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
   </head>

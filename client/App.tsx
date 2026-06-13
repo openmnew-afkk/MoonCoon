@@ -1,96 +1,57 @@
 import "./global.css";
 
-import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import MainLayout from "@/components/MainLayout";
-import { useEffect, useState, useCallback } from "react";
-import { enableAppProtection } from "@/lib/security";
-import AdminGate from "@/components/AdminGate";
 import { useTelegram } from "@/hooks/useTelegram";
-import { initTheme } from "@/lib/theme";
 
 // Pages
-import Feed from "./pages/Feed";
-import Explore from "./pages/Explore";
-import Create from "./pages/Create";
-import Profile from "./pages/Profile";
-import SettingsPage from "./pages/SettingsPage";
-import AI from "./pages/AI";
-import Music from "./pages/Music";
-import StarsHistory from "./pages/StarsHistory";
-import PhotoReports from "./pages/PhotoReports";
-import Admin from "./pages/Admin";
+import Home from "./pages/Home";
+import Search from "./pages/Search";
+import MovieDetail from "./pages/MovieDetail";
+import Player from "./pages/Player";
+import MusicPage from "./pages/MusicPage";
 import NotFound from "./pages/NotFound";
-import Splash from "./pages/Splash";
-import BirthdayGreeting from "@/components/BirthdayGreeting";
-
-const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { webApp, user, isReady } = useTelegram();
-  const [showSplash, setShowSplash] = useState(true);
-  const [showGreeting, setShowGreeting] = useState(false);
-
-  const handleSplashComplete = useCallback(() => {
-    setShowSplash(false);
-    setShowGreeting(true);
-  }, []);
+  const { webApp } = useTelegram();
 
   useEffect(() => {
-    enableAppProtection();
-    initTheme(webApp ?? undefined);
     if (webApp) {
       webApp.expand();
-      webApp.enableClosingConfirmation();
+      webApp.setHeaderColor("#0a0a0a");
+      webApp.setBackgroundColor("#0a0a0a");
+      try {
+        webApp.enableClosingConfirmation();
+      } catch {}
     }
   }, [webApp]);
 
-  if (showSplash) {
-    return <Splash onComplete={handleSplashComplete} />;
-  }
-
-  if (showGreeting) {
-    return <BirthdayGreeting onComplete={() => setShowGreeting(false)} />;
-  }
-
   return (
-    <>
-      <AdminGate onAuthenticated={() => {}} />
-      <BrowserRouter>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Feed />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/create" element={<Create />} />
-          <Route path="/ai" element={<AI />} />
-          <Route path="/music" element={<Music />} />
-          <Route path="/stars-history" element={<StarsHistory />} />
-          <Route path="/photo-reports" element={<PhotoReports />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </MainLayout>
+    <BrowserRouter>
+      <Routes>
+        {/* Плеер — без MainLayout (полноэкранный) */}
+        <Route path="/player/:movieId" element={<Player />} />
+
+        {/* Остальные страницы с навигацией */}
+        <Route
+          path="*"
+          element={
+            <MainLayout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/movie/:movieId" element={<MovieDetail />} />
+                <Route path="/music" element={<MusicPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayout>
+          }
+        />
+      </Routes>
     </BrowserRouter>
-    </>
   );
 };
 
-const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppContent />
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
-
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<AppContent />);

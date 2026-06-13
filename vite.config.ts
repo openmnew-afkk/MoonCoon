@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// Dev config - proxies /api to Express on port 3001
 export default defineConfig({
   build: {
     outDir: "dist/spa",
@@ -19,7 +18,7 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
