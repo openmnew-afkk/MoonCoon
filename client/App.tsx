@@ -2,8 +2,9 @@ import "./global.css";
 
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import MainLayout from "@/components/MainLayout";
+import Splash from "@/components/Splash";
 import { useTelegram } from "@/hooks/useTelegram";
 
 // Pages
@@ -16,6 +17,11 @@ import NotFound from "./pages/NotFound";
 
 const AppContent = () => {
   const { webApp } = useTelegram();
+  const [showSplash, setShowSplash] = useState(true);
+
+  const handleSplashComplete = useCallback(() => {
+    setShowSplash(false);
+  }, []);
 
   useEffect(() => {
     if (webApp) {
@@ -28,13 +34,17 @@ const AppContent = () => {
     }
   }, [webApp]);
 
+  if (showSplash) {
+    return <Splash onComplete={handleSplashComplete} />;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Плеер — без MainLayout (полноэкранный) */}
+        {/* Плеер — без навигации (полноэкранный) */}
         <Route path="/player/:movieId" element={<Player />} />
 
-        {/* Остальные страницы с навигацией */}
+        {/* Остальные страницы с нижней навигацией */}
         <Route
           path="*"
           element={
