@@ -1,12 +1,8 @@
 {
-  "buildCommand": "npm run build:prod",
+  "buildCommand": "npm run build:client",
   "outputDirectory": "dist/spa",
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/serverless"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
