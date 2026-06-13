@@ -1,8 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api, getZonaUrl, type MovieDetail as MovieDetailType } from "@/lib/api";
 import { addToHistory } from "@/lib/history";
 import { useTelegram } from "@/hooks/useTelegram";
+
+const FAVORITES_KEY = "vseok_favorites";
+
+function getFavorites(): string[] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function toggleFavorite(id: string): boolean {
+  const favs = getFavorites();
+  const idx = favs.indexOf(id);
+  if (idx >= 0) { favs.splice(idx, 1); } else { favs.push(id); }
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+  return idx < 0;
+}
+
+function formatMoney(n?: number): string | null {
+  if (!n) return null;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)} млрд`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)} млн`;
+  return `$${n.toLocaleString()}`;
+}
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  Released: { label: "Вышел", color: "#22c55e" },
+  "Post Production": { label: "Пост-продакшн", color: "#f59e0b" },
+  "In Production": { label: "В производстве", color: "#3b82f6" },
+  Rumored: { label: "Слухи", color: "#8b5cf6" },
+  Planned: { label: "Ожидается", color: "#8b5cf6" },
+  Canceled: { label: "Отменён", color: "#ef4444" },
+};
+
+const PLATFORMS = [
+  { name: "Кинопоиск", base: "https://www.kinopoisk.ru/index.php?kp_query=", icon: "🎬" },
+  { name: "IVI", base: "https://www.ivi.ru/search/?q=", icon: "📺" },
+  { name: "Wink", base: "https://wink.ru/search?query=", icon: "📺" },
+  { name: "Okko", base: "https://okko.tv/search?q=", icon: "📺" },
+  { name: "YouTube", base: "https://www.youtube.com/results?search_query=", icon: "▶️" },
+];
 
 export default function MovieDetail() {
   const { movieId = "" } = useParams<{ movieId: string }>();
@@ -12,12 +53,15 @@ export default function MovieDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedTranslation, setSelectedTranslation] = useState("");
   const [similar, setSimilar] = useState<any[]>([]);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const decodedId = movieId.replace(/~/g, "/");
 
   useEffect(() => {
     if (!decodedId) return;
     setLoading(true);
+    setIsFavorite(getFavorites().includes(decodedId));
     api.getMovie(decodedId).then((data) => {
       setMovie(data);
       if (data.translations?.length) {
@@ -30,7 +74,6 @@ export default function MovieDetail() {
         rating: data.rating,
         year: data.year,
       });
-      // Load similar movies
       api.getSimilar(decodedId).then(s => setSimilar(s.results || [])).catch(() => {});
     }).catch((err) => console.error("Movie detail error:", err))
       .finally(() => setLoading(false));
@@ -45,18 +88,38 @@ export default function MovieDetail() {
     }
   }, [webApp, navigate]);
 
-  const handleWatch = () => {
+  const handleWatch = useCallback(() => {
     const zonaUrl = movie?.zona_url || getZonaUrl(decodedId);
     if (webApp) {
       webApp.openLink(zonaUrl, { try_instant_view: false });
     } else {
       window.open(zonaUrl, "_blank");
     }
-  };
+  }, [movie, decodedId, webApp]);
 
-  const handleWatchInApp = () => {
+  const handleWatchInApp = useCallback(() => {
     navigate(`/player/${movieId}`);
-  };
+  }, [navigate, movieId]);
+
+  const handleToggleFavorite = useCallback(() => {
+    const added = toggleFavorite(decodedId);
+    setIsFavorite(added);
+    webApp?.HapticFeedback?.notificationOccurred(added ? "success" : "warning");
+  }, [decodedId, webApp]);
+
+  const handleShare = useCallback(async () => {
+    if (!movie) return;
+    try {
+      await navigator.clipboard.writeText(movie.title);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      webApp?.HapticFeedback?.notificationOccurred("success");
+    } catch {
+      webApp?.showAlert?.(movie.title);
+    }
+  }, [movie, webApp]);
+
+  const statusInfo = movie?.status ? STATUS_MAP[movie.status] : null;
 
   if (loading) {
     return (
@@ -110,6 +173,20 @@ export default function MovieDetail() {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
+        {/* Share button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); handleShare(); }}
+          style={{
+            position: "absolute", top: 16, right: 16, zIndex: 5,
+            width: 40, height: 40, borderRadius: "50%",
+            background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "#fff", fontSize: 16,
+          }}
+          title={copied ? "Скопировано!" : "Поделиться"}
+        >
+          {copied ? "✓" : "📤"}
+        </button>
       </div>
 
       {/* Info */}
@@ -130,9 +207,34 @@ export default function MovieDetail() {
               {movie.rating && <span className="rating-badge" style={{ position: "static" }}>⭐ {movie.rating}</span>}
               {movie.year && <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{movie.year}</span>}
               {movie.runtime && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>⏱ {movie.runtime} мин</span>}
+              {statusInfo && (
+                <span style={{
+                  fontSize: 11, fontWeight: 600, padding: "3px 8px",
+                  borderRadius: 6, background: `${statusInfo.color}22`,
+                  color: statusInfo.color, border: `1px solid ${statusInfo.color}44`,
+                }}>
+                  {statusInfo.label}
+                </span>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Budget / Revenue */}
+        {(movie.budget || movie.revenue) && (
+          <div style={{ display: "flex", gap: 16, marginTop: 14 }}>
+            {movie.budget ? (
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                Бюджет: <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{formatMoney(movie.budget)}</span>
+              </div>
+            ) : null}
+            {movie.revenue ? (
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                Сборы: <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{formatMoney(movie.revenue)}</span>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {movie.genres?.length > 0 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
@@ -146,7 +248,7 @@ export default function MovieDetail() {
           </p>
         )}
 
-        {/* Cast */}
+        {/* Cast — horizontal scroll with photos */}
         {movie.cast && movie.cast.length > 0 && (
           <div style={{ marginTop: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>
@@ -158,9 +260,10 @@ export default function MovieDetail() {
                   <div style={{
                     width: 60, height: 60, borderRadius: 30, overflow: "hidden",
                     margin: "0 auto 6px", background: "var(--bg-tertiary)",
+                    border: c.profile ? "2px solid var(--bg-tertiary)" : "none",
                   }}>
                     {c.profile ? (
-                      <img src={c.profile} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={c.profile} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--text-muted)" }}>
                         {c.name[0]}
@@ -191,15 +294,52 @@ export default function MovieDetail() {
           </div>
         )}
 
+        {/* Где смотреть */}
+        <div style={{ marginTop: 24 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>
+            Где смотреть
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {PLATFORMS.map((p) => {
+              const url = `${p.base}${encodeURIComponent(movie.title)}`;
+              return (
+                <a
+                  key={p.name}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px", borderRadius: 10,
+                    background: "var(--bg-tertiary)", border: "1px solid var(--separator)",
+                    color: "var(--text-secondary)", fontSize: 13, fontWeight: 500,
+                    textDecoration: "none", transition: "all 0.2s", flexShrink: 0,
+                  }}
+                >
+                  <span>{p.icon}</span>
+                  {p.name}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Watch Buttons */}
         <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10 }}>
           {movie.trailer_url && (
             <button
               className="btn-accent"
-              style={{ width: "100%", padding: "14px 24px", fontSize: 15 }}
+              style={{
+                width: "100%", padding: "16px 24px", fontSize: 16,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                boxShadow: "0 0 30px rgba(99,102,241,0.3)",
+              }}
               onClick={() => navigate(`/player/${movieId}?trailer=true`)}
             >
-              ▶ Смотреть трейлер
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 4 }}>
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Смотреть трейлер
             </button>
           )}
           <button
@@ -229,6 +369,22 @@ export default function MovieDetail() {
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
             Встроенный плеер
+          </button>
+          <button
+            style={{
+              width: "100%", padding: "14px 24px", fontSize: 14, fontWeight: 600,
+              fontFamily: "inherit", background: isFavorite ? "rgba(255,42,42,0.15)" : "var(--bg-tertiary)",
+              border: `1px solid ${isFavorite ? "rgba(255,42,42,0.3)" : "var(--separator)"}`, borderRadius: 12,
+              color: isFavorite ? "var(--accent)" : "var(--text-secondary)", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "all 0.2s",
+            }}
+            onClick={handleToggleFavorite}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            {isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
           </button>
         </div>
 

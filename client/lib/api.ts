@@ -191,6 +191,27 @@ export const api = {
       { results: [] }
     ),
 
+  /** Get trending movies or TV shows */
+  getTrending: (mediaType: "movie" | "tv") =>
+    fetchWithFallback<{ results: MovieCard[] }>(
+      `/api/tmdb/trending/${mediaType}`,
+      { results: DEMO_TRENDING }
+    ),
+
+  /** Get upcoming movies */
+  getUpcoming: () =>
+    fetchWithFallback<{ results: MovieCard[] }>(
+      "/api/tmdb/upcoming",
+      { results: DEMO_NEW }
+    ),
+
+  /** Get top rated movies */
+  getTopRated: () =>
+    fetchWithFallback<{ results: MovieCard[] }>(
+      "/api/tmdb/top_rated",
+      { results: DEMO_TRENDING }
+    ),
+
   /** Music data */
   getMusic: () =>
     fetchWithFallback<MusicData>("/api/music", {

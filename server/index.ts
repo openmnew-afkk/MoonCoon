@@ -311,6 +311,56 @@ export function createServer() {
     }
   });
 
+  // ── Trending movies or TV shows ──
+  app.get("/api/tmdb/trending/:media_type", async (req, res) => {
+    const mediaType = req.params.media_type;
+    if (mediaType !== "movie" && mediaType !== "tv") {
+      return res.json({ results: [] });
+    }
+
+    if (!TMDB_KEY) {
+      return res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+
+    try {
+      const data = await tmdbFetch<{ results: MovieResult[] }>(`/trending/${mediaType}/week`);
+      const results = (data?.results || []).slice(0, 20).map(mapMovie);
+      res.json({ results });
+    } catch {
+      res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+  });
+
+  // ── Upcoming movies ──
+  app.get("/api/tmdb/upcoming", async (_req, res) => {
+    if (!TMDB_KEY) {
+      return res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+
+    try {
+      const data = await tmdbFetch<{ results: MovieResult[] }>("/movie/upcoming");
+      const results = (data?.results || []).slice(0, 20).map(mapMovie);
+      res.json({ results });
+    } catch {
+      res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+  });
+
+  // ── Top rated movies ──
+  app.get("/api/tmdb/top_rated", async (_req, res) => {
+    if (!TMDB_KEY) {
+      return res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+
+    try {
+      const data = await tmdbFetch<{ results: MovieResult[] }>("/movie/top_rated");
+      const results = (data?.results || []).slice(0, 20).map(mapMovie);
+      res.json({ results });
+    } catch {
+      res.json({ results: DEMO_TRENDING.map(m => mapMovie(m as any)) });
+    }
+  });
+
   // ── YouTube trailer embed URL helper ──
   app.get("/api/tmdb/trailer/:id", async (req, res) => {
     const id = req.params.id;

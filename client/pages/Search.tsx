@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback } from "react";
 import { api, type MovieCard as MovieCardType } from "@/lib/api";
 import MovieCard from "@/components/MovieCard";
 
+const SUGGESTIONS = [
+  "Матрица",
+  "Интерстеллар",
+  "Друзья",
+  "Начало",
+  "Оппенгеймер",
+  "Во все тяжкие",
+  "Дюна",
+  "Игра престолов",
+];
+
 export default function Search() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MovieCardType[]>([]);
@@ -27,7 +38,6 @@ export default function Search() {
     }
   }, []);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       doSearch(query);
@@ -128,19 +138,52 @@ export default function Search() {
           </div>
         </div>
       ) : (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "60px 20px",
-            color: "var(--text-muted)",
-          }}
-        >
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
-            Найдите фильм или сериал
+        /* Empty state with suggestions */
+        <div style={{ padding: "0 16px" }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px 20px 24px",
+              color: "var(--text-muted)",
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-secondary)" }}>
+              Найдите фильм или сериал
+            </div>
+            <div style={{ fontSize: 13, marginTop: 6 }}>
+              Введите название для поиска
+            </div>
           </div>
-          <div style={{ fontSize: 13, marginTop: 6 }}>
-            Введите название для поиска
+
+          <div style={{ marginTop: 8 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--text-muted)",
+                marginBottom: 12,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Популярные запросы
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setQuery(s)}
+                  className="genre-tag"
+                  style={{
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
